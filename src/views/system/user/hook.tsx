@@ -70,10 +70,10 @@ export function useHook() {
       cellRenderer: ({ row, props }) => (
         <el-tag
           size={props.size}
-          type={row.sex === 1 ? "" : "danger"}
+          type={row.sex === 1 ? "primary" : row.sex === 2 ? "danger" : "info"}
           effect="plain"
         >
-          {row.sex === 1 ? "男" : "女"}
+          {row.sex === 1 ? "男" : row.sex === 2 ? "女" : "未知"}
         </el-tag>
       )
     },
