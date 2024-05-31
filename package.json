@@ -1,5 +1,5 @@
 {
-  "name": "easymoney-ui",
+  "name": "fortuneboot-ui",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -136,7 +136,7 @@
       "stable": "*"
     }
   },
-  "repository": "ssh://git@gitea.shuai.com:40922/EasyMoney/EasyMoney-Ui.git",
+  "repository": "ssh://git@gitea.shuai.com:40922/FortuneBoot/FortuneBoot-Ui.git",
   "author": "valarchie",
   "license": "MIT"
 }

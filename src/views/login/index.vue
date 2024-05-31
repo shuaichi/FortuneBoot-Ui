@@ -324,7 +324,7 @@ onBeforeUnmount(() => {
     <!--  底部  -->
     <div class="flex items-center justify-center h-full">
       <div class="flex flex-col items-center justify-center mb-3">
-        <span>Copyright © 2024-2024 EasyMoney All Rights Reserved. </span>
+        <span>Copyright © 2024-2024 FortuneBoot All Rights Reserved. </span>
         <el-link href="" rel="external nofollow" target="_blank" type="primary"
           >暂无
         </el-link>
