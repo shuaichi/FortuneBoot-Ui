@@ -23,7 +23,7 @@ export function rsaEncrypt(txt): string {
   return encryptedValue;
 }
 
-const aesKey = "easymoney1234567";
+const aesKey = "fortuneboot1234567";
 
 export function aesEncrypt(txt): string {
   if (isEmpty(txt)) {

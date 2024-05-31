@@ -22,7 +22,7 @@ export function viteBuildInfo(): Plugin {
           green(
             `👏欢迎使用${blue(
               "[好记私人财务管理系统]"
-            )}，如果您感觉不错，记得点击后面链接给个star哦💖 http://gitea.shuai.com:4090/EasyMoney/EasyMoney-Ui`
+            )}，如果您感觉不错，记得点击后面链接给个star哦💖 http://gitea.shuai.com:4090/FortuneBoot/FortuneBoot-Ui`
           )
         )
       );
