@@ -136,7 +136,7 @@
       "stable": "*"
     }
   },
-  "repository": "ssh://git@gitea.shuai.com:40922/FortuneBoot/FortuneBoot-Ui.git",
+  "repository": "ssh://git@gitea.fortuneboot.com:38577/FortuneBoot/FortuneBoot-Ui.git",
   "author": "valarchie",
   "license": "MIT"
 }

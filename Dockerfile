@@ -1,4 +1,4 @@
-FROM nginx:1.26.0-alpine
+FROM nginx:1.27.2-alpine
 
 ENV LANG C.UTF-8
 ENV TZ=Asia/Shanghai
