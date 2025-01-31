@@ -26,7 +26,7 @@
           </el-form-item>
         </re-col>
         <re-col :value="12">
-          <el-form-item prop="defaultCurrency" label="账本模板" required>
+          <el-form-item prop="defaultCurrency" label="默认币种" required>
             <el-select
               v-model="formData.defaultCurrency"
               placeholder="请选择默认币种"
@@ -91,10 +91,12 @@
 <script setup lang="ts">
 import VDialog from "@/components/VDialog/VDialog.vue";
 import {
+  addGroupApi,
   AddGroupCommand,
   getBookTemplate,
   getCurrencyTemplate,
   GroupVo,
+  modifyGroupApi,
   ModifyGroupCommand
 } from "@/api/fortune/group";
 import { computed, onMounted, reactive, ref } from "vue";
@@ -106,6 +108,7 @@ const loading = ref(false);
 
 const bookTemplateOptions = ref();
 const currencyTemplateOptions = ref();
+
 onMounted(async () => {
   const book = await getBookTemplate();
   bookTemplateOptions.value = book.data;
@@ -150,13 +153,23 @@ const formData = reactive<AddGroupCommand | ModifyGroupCommand>({
   remark: ""
 });
 
+function handleOpened() {
+  console.log("opened", props.row);
+  if (props.row) {
+    Object.assign(formData, props.row);
+    //formData.menuIds = props.row.selectedMenuList;
+  } else {
+    //formRef.value?.resetFields();
+  }
+}
+
 async function handleConfirm() {
   try {
     loading.value = true;
     if (props.type === "add") {
-      //await addRoleApi(formData);
+      await addGroupApi(formData as AddGroupCommand);
     } else if (props.type === "modify") {
-      //await updateRoleApi(formData as UpdateRoleCommand);
+      await modifyGroupApi(formData as ModifyGroupCommand);
     }
     ElMessage.info("提交成功");
     visible.value = false;
@@ -166,16 +179,6 @@ async function handleConfirm() {
     ElMessage.error((e as Error)?.message || "提交失败");
   } finally {
     loading.value = false;
-  }
-}
-
-function handleOpened() {
-  console.log("opened", props.row);
-  if (props.row) {
-    Object.assign(formData, props.row);
-    //formData.menuIds = props.row.selectedMenuList;
-  } else {
-    //formRef.value?.resetFields();
   }
 }
 

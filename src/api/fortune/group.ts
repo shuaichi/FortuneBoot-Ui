@@ -1,6 +1,9 @@
 import { http } from "@/utils/http";
 
-export type GroupQuery = BasePageQuery;
+export interface GroupQuery extends BasePageQuery {
+  pageNum?: number;
+  pageSize?: number;
+}
 
 export interface GroupVo {
   groupId: number;
@@ -44,5 +47,31 @@ export function getCurrencyTemplate() {
   return http.request<ResponseData<any>>(
     "get",
     "/fortune/group/getCurrencyTemplate"
+  );
+}
+
+export function addGroupApi(params: AddGroupCommand) {
+  return http.request<ResponseData<AddGroupCommand>>(
+    "post",
+    "/fortune/group/add",
+    {
+      headers: {
+        "Content-Type": "application/json" // 确保设置了正确的内容类型
+      },
+      data: params
+    }
+  );
+}
+
+export function modifyGroupApi(params: ModifyGroupCommand) {
+  return http.request<ResponseData<ModifyGroupCommand>>(
+    "post",
+    "/fortune/group/modify",
+    {
+      headers: {
+        "Content-Type": "application/json" // 确保设置了正确的内容类型
+      },
+      data: params
+    }
   );
 }
