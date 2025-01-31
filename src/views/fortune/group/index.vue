@@ -84,6 +84,11 @@ import { ElMessage } from "element-plus";
 import { GroupVo } from "@/api/fortune/group";
 import GroupForm from "@/views/fortune/group/groupForm.vue";
 
+/** 组件name最好和菜单表中的router_name一致 */
+defineOptions({
+  name: "FortuneGroup"
+});
+
 //const tableRef = ref();
 const opType = ref<"add" | "modify">("add");
 const opRow = ref<GroupVo>();

@@ -21,6 +21,7 @@ export function useHook() {
     pagination.total = data.total;
     loading.value = false;
   }
+
   const form = reactive<GroupQuery>({});
   const pagination = reactive<PaginationProps>({
     total: 0,
@@ -28,6 +29,7 @@ export function useHook() {
     currentPage: 1,
     background: true
   });
+
   async function handleDelete(row: GroupVo) {
     try {
       loading.value = true;
