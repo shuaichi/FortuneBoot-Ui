@@ -82,7 +82,7 @@ import EditPen from "@iconify-icons/ep/edit-pen";
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import { ElMessage } from "element-plus";
 import { GroupVo } from "@/api/fortune/group";
-import GroupForm from "@/views/fortune/group/groupForm.vue";
+import GroupForm from "@/views/fortune/group/group-form.vue";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
