@@ -38,7 +38,7 @@
               type="primary"
               :size="size"
               :icon="useRenderIcon(EditPen)"
-              @click="openDialog('modify', row)"
+              @click="openDialog('upload', row)"
             >
               编辑
             </el-button>
@@ -90,13 +90,13 @@ defineOptions({
 });
 
 //const tableRef = ref();
-const opType = ref<"add" | "modify">("add");
+const opType = ref<"add" | "upload">("add");
 const opRow = ref<GroupVo>();
 const modalVisible = ref(false);
 const { loading, columns, dataList, pagination, onSearch, handleDelete } =
   useHook();
 
-async function openDialog(type: "add" | "modify", row?: GroupVo) {
+async function openDialog(type: "add" | "upload", row?: GroupVo) {
   // debugger;
   try {
     opType.value = type;

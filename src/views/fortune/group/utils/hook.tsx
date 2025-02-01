@@ -72,7 +72,7 @@ export function useHook() {
       prop: "enable",
       minWidth: 100,
       cellRenderer: ({ row, props }) => (
-        <el-tag size={props.size} style={tagStyle.value(row.enable)}>
+        <el-tag size={props.size} style={tagStyle.value(row.enable ? 1 : 0)}>
           {row.enable ? "启用" : "禁用"}
         </el-tag>
       )
