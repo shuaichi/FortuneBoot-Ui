@@ -24,6 +24,7 @@ export interface AddGroupCommand {
 
 export interface ModifyGroupCommand extends AddGroupCommand {
   groupId: number;
+  defaultBookId: number;
 }
 
 export function getFortuneGroupPage(params: GroupQuery) {
@@ -65,7 +66,7 @@ export function addGroupApi(params: AddGroupCommand) {
 
 export function modifyGroupApi(params: ModifyGroupCommand) {
   return http.request<ResponseData<ModifyGroupCommand>>(
-    "post",
+    "put",
     "/fortune/group/modify",
     {
       headers: {

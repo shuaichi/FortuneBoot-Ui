@@ -1,8 +1,7 @@
 <template>
   <v-dialog
     show-full-screen
-    fixed-body-height
-    use-body-scrolling
+    :fixed-body-height="false"
     :title="type === 'add' ? '新增分组' : '修改分组'"
     v-model="visible"
     :loading="loading"
@@ -36,12 +35,12 @@
                 v-for="item in currencyTemplateOptions"
                 :key="item.value"
                 :label="item.label"
-                :value="item.value"
+                :value="item.label"
               />
             </el-select>
           </el-form-item>
         </re-col>
-        <re-col :value="12">
+        <re-col :value="12" v-if="props.type === 'add'">
           <el-form-item prop="bookTemplate" label="账本模板" required>
             <el-select
               v-model="formData.bookTemplate"
@@ -53,6 +52,22 @@
                 :key="item.value"
                 :label="item.label"
                 :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+        </re-col>
+        <re-col :value="12" v-if="props.type !== 'add'">
+          <el-form-item prop="defaultBookId" label="默认账本" required>
+            <el-select
+              v-model="formData.defaultBookId"
+              placeholder="请选择默认账本"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="item in bookOptions"
+                :key="item.bookId"
+                :label="item.bookName"
+                :value="item.bookId"
               />
             </el-select>
           </el-form-item>
@@ -102,6 +117,7 @@ import {
 import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
 import ReCol from "@/components/ReCol";
+import { getBookByGroupId } from "@/api/fortune/book";
 
 const props = defineProps<Props>();
 const loading = ref(false);
@@ -109,27 +125,33 @@ const loading = ref(false);
 const bookTemplateOptions = ref();
 const currencyTemplateOptions = ref();
 
+const bookOptions = ref();
 onMounted(async () => {
-  const book = await getBookTemplate();
-  bookTemplateOptions.value = book.data;
+  const bookTemplate = await getBookTemplate();
+  bookTemplateOptions.value = bookTemplate.data;
   const currency = await getCurrencyTemplate();
   currencyTemplateOptions.value = currency.data;
+  if (props.type !== "add") {
+    const book = await getBookByGroupId(props.row.groupId);
+    bookOptions.value = book.data;
+  }
 });
 
 interface Props {
-  type: "add" | "modify";
+  type: "add" | "upload";
   modelValue: boolean;
   row?: GroupVo;
 }
 
 const emits = defineEmits<{
-  (e: "modify:modelValue", v: boolean): void;
+  (e: "update:modelValue", v: boolean): void;
   (e: "success"): void;
 }>();
+
 const visible = computed({
   get: () => props.modelValue,
   set(v) {
-    emits("modify:modelValue", v);
+    emits("update:modelValue", v);
   }
 });
 const enableOptions = [
@@ -150,6 +172,7 @@ const formData = reactive<AddGroupCommand | ModifyGroupCommand>({
   defaultCurrency: "",
   bookTemplate: null,
   enable: null,
+  defaultBookId: null,
   remark: ""
 });
 
@@ -166,13 +189,19 @@ function handleOpened() {
 async function handleConfirm() {
   try {
     loading.value = true;
-    if (props.type === "add") {
-      await addGroupApi(formData as AddGroupCommand);
-    } else if (props.type === "modify") {
-      await modifyGroupApi(formData as ModifyGroupCommand);
+    switch (props.type) {
+      case "add":
+        await addGroupApi(formData as AddGroupCommand);
+        break;
+      case "upload":
+        await modifyGroupApi(formData as ModifyGroupCommand);
+        break;
+      default:
+        break;
     }
     ElMessage.info("提交成功");
     visible.value = false;
+    console.log(visible.value);
     emits("success");
   } catch (e) {
     console.error(e);
@@ -186,19 +215,19 @@ const rules: FormRules = {
   groupName: [
     {
       required: true,
-      message: "分组名称不能为空"
+      message: "分组名称不能为空；"
     }
   ],
   defaultCurrency: [
     {
       required: true,
-      message: "默认币种不能为空"
+      message: "默认币种不能为空；"
     }
   ],
   bookTemplate: [
     {
       required: true,
-      message: "账本模板不能为空"
+      message: "账本模板不能为空；"
     }
   ]
 };
