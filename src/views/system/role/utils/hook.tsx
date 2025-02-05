@@ -139,7 +139,7 @@ export function useRole() {
       loading.value = true;
       await deleteRoleApi(row.roleId);
       message(`您删除了角色名称为${row.roleName}的这条数据`, { type: "info" });
-      onSearch();
+      await onSearch();
     } catch (e) {
       console.error(e);
       message((e as Error)?.message || "删除失败", { type: "error" });

@@ -215,19 +215,25 @@ const rules: FormRules = {
   groupName: [
     {
       required: true,
-      message: "分组名称不能为空；"
+      message: "分组名称不能为空"
     }
   ],
   defaultCurrency: [
     {
       required: true,
-      message: "默认币种不能为空；"
+      message: "默认币种不能为空"
     }
   ],
   bookTemplate: [
     {
-      required: true,
-      message: "账本模板不能为空；"
+      required: props.type === "add",
+      message: "账本模板不能为空"
+    }
+  ],
+  defaultBookId: [
+    {
+      required: props.type !== "add",
+      message: "默认账本不能为空"
     }
   ]
 };
