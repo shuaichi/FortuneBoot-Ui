@@ -67,6 +67,7 @@
       :type="opType"
       :row="opRow"
       v-if="modalVisible"
+      @success="onSearch"
     />
   </div>
 </template>
@@ -83,6 +84,7 @@ import AddFill from "@iconify-icons/ri/add-circle-line";
 import { ElMessage } from "element-plus";
 import { GroupVo } from "@/api/fortune/group";
 import GroupForm from "@/views/fortune/group/group-form.vue";
+import PureTable from "@pureadmin/table";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
