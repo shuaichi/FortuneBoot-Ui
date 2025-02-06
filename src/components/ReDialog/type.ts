@@ -85,7 +85,7 @@ type ButtonProps = {
   loading?: boolean;
   /** 自定义加载中状态图标组件 */
   loadingIcon?: string | Component;
-  /** 按钮是否为禁用状态，默认 `false` */
+  /** 按钮是否为停用状态，默认 `false` */
   disabled?: boolean;
   /** 图标组件 */
   icon?: string | Component;

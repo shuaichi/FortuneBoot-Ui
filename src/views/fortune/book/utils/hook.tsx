@@ -6,9 +6,9 @@ import {
   BookQuery,
   BookVo,
   getFortuneBookPage,
-  removeBookApi,
   enableBookApi,
-  disableBookApi
+  disableBookApi,
+  bookMove2RecycleBinApi
 } from "@/api/fortune/book";
 import { getEnableGroupList } from "@/api/fortune/group";
 
@@ -16,8 +16,7 @@ export function useHook() {
   const { tagStyle } = usePublicHooks();
   const loading = ref(true);
   const dataList = ref<BookVo[]>([]);
-  const form = reactive<BookQuery>({});
-  const groupNameTemp = ref<string>("");
+  const searchFormParams = reactive<BookQuery>({});
   const pagination = reactive({
     total: 0,
     pageSize: 10,
@@ -70,8 +69,17 @@ export function useHook() {
     {
       label: "启用状态",
       prop: "enable",
-      slot: "enable",
-      width: 120
+      minWidth: 100,
+      cellRenderer: ({ row, props }) => (
+        <el-tag
+          size={props.size}
+          style={tagStyle.value(row.enable ? 1 : 0)}
+          onClick={() => handleStatusClick(row)}
+          class="cursor-pointer" // 添加点击指针样式
+        >
+          {row.enable ? "启用" : "停用"}
+        </el-tag>
+      )
     },
     {
       label: "备注",
@@ -86,30 +94,32 @@ export function useHook() {
     }
   ];
 
-  onMounted(() => {
-    getEnableGroupList().then(res => {
-      if (res.data.length === 0) {
-        message("请先创建分组");
-      }
-      form.groupId = res.data[0].groupId;
-      groupNameTemp.value = res.data[0].groupName;
-      onSearch();
-    });
+  onMounted(async () => {
+    const res = await getEnableGroupList();
+    if (res.data.length === 0) {
+      message("请先启用或创建分组");
+    }
+    searchFormParams.groupId = res.data[0].groupId;
+    await onSearch();
   });
 
   async function onSearch() {
     try {
       loading.value = true;
       const { data } = await getFortuneBookPage({
-        ...form,
+        ...searchFormParams,
         recycleBin: false,
         pageSize: pagination.pageSize,
         pageNum: pagination.currentPage
       });
+      const group = await getEnableGroupList();
+      if (group.data.length === 0) {
+        message("请先启用或创建分组");
+      }
       dataList.value = data.rows.map(item => {
         return {
           ...item,
-          groupName: groupNameTemp.value
+          groupName: group.data.find(g => g.groupId === item.groupId).groupName
         };
       });
       pagination.total = data.total;
@@ -120,12 +130,12 @@ export function useHook() {
     }
   }
 
-  async function handleDelete(row: BookVo) {
+  async function handleRecycleBin(row: BookVo) {
     try {
       loading.value = true;
-      await removeBookApi(row.groupId, row.bookId);
+      await bookMove2RecycleBinApi(row.groupId, row.bookId);
       message(`已删除【${row.bookName}】账本`, { type: "success" });
-      onSearch();
+      await onSearch();
     } catch (e) {
       message(e.message || "删除失败", { type: "error" });
     } finally {
@@ -135,7 +145,7 @@ export function useHook() {
 
   async function handleStatusClick(row: BookVo) {
     try {
-      const action = row.enable ? "禁用" : "启用";
+      const action = row.enable ? "停用" : "启用";
       await ElMessageBox.confirm(
         `确认${action}【${row.bookName}】账本吗？`,
         `${action}确认`,
@@ -152,7 +162,7 @@ export function useHook() {
         await enableBookApi(row.groupId, row.bookId);
       }
       message(`${action}成功`, { type: "success" });
-      onSearch();
+      await onSearch();
     } catch (error) {
       console.log("操作取消");
     }
@@ -168,15 +178,27 @@ export function useHook() {
     onSearch();
   }
 
+  async function resetForm() {
+    searchFormParams.bookName = null;
+    searchFormParams.enable = null;
+    const res = await getEnableGroupList();
+    if (res.data.length === 0) {
+      message("请先启用或创建分组");
+    }
+    searchFormParams.groupId = res.data[0].groupId;
+    await onSearch();
+  }
+
   return {
+    searchFormParams,
+    resetForm,
     loading,
     columns,
     dataList,
     pagination,
     tagStyle,
     onSearch,
-    handleDelete,
-    handleStatusClick,
+    handleRecycleBin,
     handleSizeChange,
     handleCurrentChange
   };

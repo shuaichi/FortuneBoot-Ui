@@ -11,6 +11,7 @@ export interface AddBookCommand {
   sort: number;
   remark?: string;
   enable?: boolean;
+  bookTemplate: string;
 }
 
 export interface ModifyBookCommand extends AddBookCommand {
@@ -61,20 +62,27 @@ export function modifyBookApi(command: ModifyBookCommand) {
 export function removeBookApi(groupId: number, bookId: number) {
   return http.request<ResponseData<any>>(
     "delete",
-    `/fortune/book/${groupId}/${bookId}/remove`
+    `/fortune/book/base/${groupId}/${bookId}/remove`
   );
 }
 
 export function enableBookApi(groupId: number, bookId: number) {
   return http.request<ResponseData<any>>(
     "patch",
-    `/fortune/book/${groupId}/${bookId}/enable`
+    `/fortune/book/base/${groupId}/${bookId}/enable`
   );
 }
 
 export function disableBookApi(groupId: number, bookId: number) {
   return http.request<ResponseData<any>>(
     "patch",
-    `/fortune/book/${groupId}/${bookId}/disable`
+    `/fortune/book/base/${groupId}/${bookId}/disable`
+  );
+}
+
+export function bookMove2RecycleBinApi(groupId: number, bookId: number) {
+  return http.request<ResponseData<any>>(
+    "patch",
+    `/fortune/book/base/${groupId}/${bookId}/moveToRecycleBin`
   );
 }

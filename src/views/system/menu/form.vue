@@ -31,6 +31,7 @@ const props = withDefaults(defineProps<FormProps>(), {
 const ruleFormRef = ref();
 const { switchStyle } = usePublicHooks();
 const newFormInline = ref(props.formInline);
+const deptOptions = ref(props.higherMenuOptions);
 
 const typeName = computed(() => {
   return newFormInline.value.isButton ? "按钮" : "菜单";
@@ -50,6 +51,25 @@ defineExpose({ getRef });
     :rules="formRules"
     label-width="82px"
   >
+    <el-row :gutter="30">
+      <re-col>
+        <el-form-item label="父菜单">
+          <el-cascader
+            class="w-full"
+            v-model="newFormInline.parentId"
+            :options="deptOptions"
+            :props="{
+              value: 'id',
+              label: 'menuName',
+              emitPath: false,
+              checkStrictly: true
+            }"
+            clearable
+            placeholder="请选择父菜单（不选则为根目录菜单）"
+          />
+        </el-form-item>
+      </re-col>
+    </el-row>
     <el-row :gutter="30">
       <re-col :value="12" :xs="24" :sm="24">
         <el-form-item label="类型">
@@ -77,8 +97,6 @@ defineExpose({ getRef });
           </el-form-item>
         </re-col>
       </template>
-    </el-row>
-    <el-row :gutter="30">
       <re-col :value="12" :xs="24" :sm="24">
         <el-form-item :label="`${typeName}图标`" prop="meta.icon">
           <IconSelect v-model="newFormInline.meta.icon" />
