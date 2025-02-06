@@ -1,13 +1,13 @@
 <template>
   <div class="main">
-    <PureTableBar title="分组列表" :columns="columns" @refresh="onSearch">
+    <PureTableBar title="账本管理" :columns="columns" @refresh="onSearch">
       <template #buttons>
         <el-button
           type="primary"
           :icon="useRenderIcon(AddFill)"
           @click="openDialog('add')"
         >
-          新增分组
+          新增账本
         </el-button>
       </template>
       <template v-slot="{ size, dynamicColumns }">
@@ -30,42 +30,36 @@
           @page-size-change="handleSizeChange"
           @page-current-change="handleCurrentChange"
         >
-          <template #operation="{ row }">
-            <el-button
-              class="reset-margin"
-              link
-              type="primary"
-              :size="size"
-              :icon="useRenderIcon(EditPen)"
-              @click="openDialog('upload', row)"
+          <!--<template #enable="{ row }">
+            <el-tag
+              :style="tagStyle(row.enable ? 1 : 0)"
+              class="cursor-pointer"
+              @click="handleStatusClick(row)"
             >
+              {{ row.enable ? "启用" : "禁用" }}
+            </el-tag>
+          </template>-->
+
+          <template #operation="{ row }">
+            <el-button link type="primary" @click="openDialog('edit', row)">
               编辑
             </el-button>
             <el-popconfirm
-              :title="`是否确认删除分组名称为${row.groupName}的这条数据`"
+              :title="`确认删除【${row.bookName}】账本？`"
               @confirm="handleDelete(row)"
             >
               <template #reference>
-                <el-button
-                  class="reset-margin"
-                  link
-                  type="danger"
-                  :size="size"
-                  :icon="useRenderIcon(Delete)"
-                >
-                  删除
-                </el-button>
+                <el-button link type="danger">删除</el-button>
               </template>
             </el-popconfirm>
           </template>
         </pure-table>
       </template>
     </PureTableBar>
-    <group-form
+    <book-form
       v-model="modalVisible"
       :type="opType"
-      :row="opRow"
-      v-if="modalVisible"
+      :row="currentRow"
       @success="onSearch"
     />
   </div>
@@ -73,50 +67,44 @@
 
 <script setup lang="ts">
 import { PureTableBar } from "@/components/RePureTableBar";
-import { useHook } from "@/views/fortune/group/utils/hook";
+import PureTable from "@pureadmin/table";
 import { ref } from "vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-
-import Delete from "@iconify-icons/ep/delete";
-import EditPen from "@iconify-icons/ep/edit-pen";
 import AddFill from "@iconify-icons/ri/add-circle-line";
-import { ElMessage } from "element-plus";
-import { GroupVo } from "@/api/fortune/group";
-import GroupForm from "@/views/fortune/group/group-form.vue";
-import PureTable from "@pureadmin/table";
+import { BookVo } from "@/api/fortune/book";
+import BookForm from "./book-form.vue";
+import { useHook } from "./utils/hook";
+import { useRoute } from "vue-router";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
-  name: "FortuneGroup"
+  name: "FortuneBook"
 });
 
-//const tableRef = ref();
-const opType = ref<"add" | "upload">("add");
-const opRow = ref<GroupVo>();
-const modalVisible = ref(false);
+const route = useRoute();
+console.log("当前路由信息：", route);
+// 确认输出包含正确的 parent 路由信息
+
 const {
   loading,
   columns,
   dataList,
   pagination,
+  //tagStyle,
   onSearch,
   handleDelete,
+  //handleStatusClick,
   handleSizeChange,
   handleCurrentChange
 } = useHook();
 
-async function openDialog(type: "add" | "upload", row?: GroupVo) {
-  // debugger;
-  try {
-    opType.value = type;
-    opRow.value = row;
-    modalVisible.value = true;
-    /*    if (row) {
+const opType = ref<"add" | "edit">("add");
+const currentRow = ref<BookVo>();
+const modalVisible = ref(false);
 
-        }*/
-  } catch (e) {
-    console.error(e);
-    ElMessage.error((e as Error)?.message || "加载菜单失败");
-  }
+function openDialog(type: "add" | "edit", row?: BookVo) {
+  opType.value = type;
+  currentRow.value = row;
+  modalVisible.value = true;
 }
 </script>

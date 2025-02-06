@@ -30,6 +30,7 @@
               v-model="formData.defaultCurrency"
               placeholder="请选择默认币种"
               style="width: 100%"
+              filterable
             >
               <el-option
                 v-for="item in currencyTemplateOptions"
