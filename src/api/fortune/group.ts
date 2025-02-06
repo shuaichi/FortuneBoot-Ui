@@ -76,3 +76,24 @@ export function modifyGroupApi(params: ModifyGroupCommand) {
     }
   );
 }
+
+export function enableGroup(groupId: number) {
+  return http.request<ResponseData<any>>(
+    "patch",
+    "/fortune/group/enable/" + groupId
+  );
+}
+
+export function disableGroup(groupId: number) {
+  return http.request<ResponseData<any>>(
+    "patch",
+    "/fortune/group/disable/" + groupId
+  );
+}
+
+export function getEnableGroupList() {
+  return http.request<ResponseData<Array<GroupVo>>>(
+    "get",
+    "/fortune/group/getEnableGroupList"
+  );
+}
