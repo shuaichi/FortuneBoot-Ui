@@ -41,6 +41,8 @@
             </el-select>
           </el-form-item>
         </re-col>
+      </el-row>
+      <el-row :gutter="30">
         <re-col :value="12" v-if="props.type === 'add'">
           <el-form-item prop="bookTemplate" label="账本模板" required>
             <el-select
@@ -73,22 +75,21 @@
             </el-select>
           </el-form-item>
         </re-col>
-        <re-col :value="12">
-          <el-form-item prop="enable" label="是否启用">
-            <el-select
+        <re-col :value="12" :xs="24" :sm="24">
+          <el-form-item label="是否启用">
+            <el-switch
               v-model="formData.enable"
-              placeholder="请选择是否启用"
-              style="width: 100%"
-            >
-              <el-option
-                v-for="item in enableOptions"
-                :key="item.key"
-                :label="item.label"
-                :value="item.value"
-              />
-            </el-select>
+              inline-prompt
+              :active-value="true"
+              :inactive-value="false"
+              active-text="启用"
+              inactive-text="停用"
+              :style="switchStyle"
+            />
           </el-form-item>
         </re-col>
+      </el-row>
+      <el-row :gutter="30">
         <re-col :value="24">
           <el-form-item prop="remark" label="备注" style="margin-bottom: 0">
             <el-input
@@ -119,10 +120,11 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
 import ReCol from "@/components/ReCol";
 import { getBookByGroupId } from "@/api/fortune/book";
+import { usePublicHooks } from "@/views/system/hooks";
 
 const props = defineProps<Props>();
 const loading = ref(false);
-
+const { switchStyle } = usePublicHooks();
 const bookTemplateOptions = ref();
 const currencyTemplateOptions = ref();
 
@@ -155,24 +157,12 @@ const visible = computed({
     emits("update:modelValue", v);
   }
 });
-const enableOptions = [
-  {
-    key: 1,
-    label: "启用",
-    value: true
-  },
-  {
-    key: 2,
-    label: "禁用",
-    value: false
-  }
-];
 const formData = reactive<AddGroupCommand | ModifyGroupCommand>({
   groupId: null,
   groupName: "",
-  defaultCurrency: "",
+  defaultCurrency: "CNY",
   bookTemplate: null,
-  enable: null,
+  enable: true,
   defaultBookId: null,
   remark: ""
 });

@@ -42,8 +42,8 @@
               编辑
             </el-button>
             <el-popconfirm
-              :title="`是否确认删除分组名称为${row.groupName}的这条数据`"
-              @confirm="handleDelete(row)"
+              :title="`确认删除【${row.groupName}】这条数据？数据一旦删除，将不可恢复！`"
+              @confirm="handleRemoveGroupApi(row)"
             >
               <template #reference>
                 <el-button
@@ -100,7 +100,7 @@ const {
   dataList,
   pagination,
   onSearch,
-  handleDelete,
+  handleRemoveGroupApi,
   handleSizeChange,
   handleCurrentChange
 } = useHook();

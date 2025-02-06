@@ -12,7 +12,7 @@
     <el-form :model="formData" label-width="120px" :rules="rules" ref="formRef">
       <el-row :gutter="30">
         <re-col :value="12">
-          <el-form-item prop="bookName" label="账本名称" required>
+          <el-form-item prop="bookName" label="账本名称">
             <el-input
               v-model="formData.bookName"
               placeholder="请输入账本名称"
@@ -20,7 +20,7 @@
           </el-form-item>
         </re-col>
         <re-col :value="12">
-          <el-form-item prop="groupId" label="所属分组" required>
+          <el-form-item prop="groupId" label="所属分组">
             <el-select
               v-model="formData.groupId"
               placeholder="请选择分组"
@@ -36,8 +36,10 @@
             </el-select>
           </el-form-item>
         </re-col>
+      </el-row>
+      <el-row :gutter="30">
         <re-col :value="12">
-          <el-form-item prop="defaultCurrency" label="默认币种" required>
+          <el-form-item prop="defaultCurrency" label="默认币种">
             <el-select
               v-model="formData.defaultCurrency"
               placeholder="请选择币种"
@@ -54,7 +56,31 @@
           </el-form-item>
         </re-col>
         <re-col :value="12">
-          <el-form-item prop="sort" label="排序" required>
+          <el-form-item
+            prop="bookTemplate"
+            label="账本模板"
+            v-if="props.type === 'add'"
+          >
+            <el-select
+              v-model="formData.bookTemplate"
+              placeholder="请选择账本模板"
+              style="width: 100%"
+              filterable
+              clearable
+            >
+              <el-option
+                v-for="item in bookTemplateOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.label"
+              />
+            </el-select>
+          </el-form-item>
+        </re-col>
+      </el-row>
+      <el-row :gutter="30">
+        <re-col :value="12">
+          <el-form-item prop="sort" label="排序">
             <el-input-number
               v-model="formData.sort"
               :min="1"
@@ -64,6 +90,21 @@
             />
           </el-form-item>
         </re-col>
+        <re-col :value="12" :xs="24" :sm="24">
+          <el-form-item label="是否启用">
+            <el-switch
+              v-model="formData.enable"
+              inline-prompt
+              :active-value="true"
+              :inactive-value="false"
+              active-text="启用"
+              inactive-text="停用"
+              :style="switchStyle"
+            />
+          </el-form-item>
+        </re-col>
+      </el-row>
+      <el-row :gutter="30">
         <re-col :value="12">
           <el-form-item prop="defaultExpenseAccountId" label="默认支出账户">
             <el-select
@@ -96,6 +137,8 @@
             </el-select>
           </el-form-item>
         </re-col>
+      </el-row>
+      <el-row :gutter="30">
         <re-col :value="12">
           <el-form-item prop="defaultTransferOutAccountId" label="默认转出账户">
             <el-select
@@ -128,6 +171,8 @@
             </el-select>
           </el-form-item>
         </re-col>
+      </el-row>
+      <el-row :gutter="30">
         <re-col :value="24">
           <el-form-item prop="remark" label="备注">
             <el-input
@@ -151,19 +196,20 @@ import ReCol from "@/components/ReCol";
 import {
   addBookApi,
   modifyBookApi,
+  AddBookCommand,
   ModifyBookCommand,
   BookVo
 } from "@/api/fortune/book";
-import { getCurrencyTemplate } from "@/api/fortune/group";
-//import { getAccountList } from "@/api/fortune/account";
+import { getBookTemplate, getCurrencyTemplate } from "@/api/fortune/group";
 import { getEnableGroupList } from "@/api/fortune/group";
+import { usePublicHooks } from "@/views/system/hooks";
 
 const props = defineProps<{
   type: "add" | "edit";
   modelValue: boolean;
   row?: BookVo;
 }>();
-
+const { switchStyle } = usePublicHooks();
 const emits = defineEmits(["update:modelValue", "success"]);
 
 const visible = computed({
@@ -176,19 +222,21 @@ const formRef = ref();
 const currencyOptions = ref([]);
 const groupOptions = ref([]);
 const accountOptions = ref([]);
+const bookTemplateOptions = ref();
 
-const formData = reactive<ModifyBookCommand>({
+const formData = reactive<AddBookCommand | ModifyBookCommand>({
   bookId: null,
   bookName: "",
   groupId: null,
-  defaultCurrency: "",
+  defaultCurrency: "CNY",
   defaultExpenseAccountId: null,
   defaultIncomeAccountId: null,
   defaultTransferOutAccountId: null,
   defaultTransferInAccountId: null,
   sort: null,
   remark: "",
-  enable: true
+  enable: true,
+  bookTemplate: null
 });
 
 const rules: FormRules = {
@@ -199,13 +247,15 @@ const rules: FormRules = {
 };
 
 onMounted(async () => {
-  const [currencyRes, groupRes] = await Promise.all([
+  const [currencyRes, groupRes, bookTemplateRes] = await Promise.all([
     getCurrencyTemplate(),
-    getEnableGroupList()
+    getEnableGroupList(),
     //getAccountList()
+    getBookTemplate()
   ]);
   currencyOptions.value = currencyRes.data;
   groupOptions.value = groupRes.data;
+  bookTemplateOptions.value = bookTemplateRes.data;
   //accountOptions.value = accountRes.data;
 });
 

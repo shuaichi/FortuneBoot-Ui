@@ -80,14 +80,14 @@ export function modifyGroupApi(params: ModifyGroupCommand) {
 export function enableGroup(groupId: number) {
   return http.request<ResponseData<any>>(
     "patch",
-    "/fortune/group/enable/" + groupId
+    `/fortune/group/${groupId}/enable/`
   );
 }
 
 export function disableGroup(groupId: number) {
   return http.request<ResponseData<any>>(
     "patch",
-    "/fortune/group/disable/" + groupId
+    `/fortune/group/${groupId}/disable/`
   );
 }
 
@@ -95,5 +95,12 @@ export function getEnableGroupList() {
   return http.request<ResponseData<Array<GroupVo>>>(
     "get",
     "/fortune/group/getEnableGroupList"
+  );
+}
+
+export function removeGroupApi(groupId: number) {
+  return http.request<ResponseData<any>>(
+    "patch",
+    `/fortune/group/${groupId}/remove`
   );
 }

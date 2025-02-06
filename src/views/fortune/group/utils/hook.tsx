@@ -6,7 +6,8 @@ import {
   disableGroup,
   getFortuneGroupPage,
   GroupQuery,
-  GroupVo
+  GroupVo,
+  removeGroupApi
 } from "@/api/fortune/group";
 import type { PaginationProps } from "@pureadmin/table";
 import { ElMessageBox } from "element-plus";
@@ -21,8 +22,8 @@ export function useHook() {
   const currentRow = ref<GroupVo>();
   const operationType = ref<"enable" | "disable">();
 
-  onMounted(() => {
-    onSearch();
+  onMounted(async () => {
+    await onSearch();
   });
 
   async function onSearch() {
@@ -46,13 +47,13 @@ export function useHook() {
     background: true
   });
 
-  async function handleDelete(row: GroupVo) {
+  async function handleRemoveGroupApi(row: GroupVo) {
     try {
       loading.value = true;
       //TODO 删除API调用
-      //await deleteRoleApi(row.roleId);
+      await removeGroupApi(row.groupId);
       message(`您删除了分组名称为${row.groupName}的这条数据`, { type: "info" });
-      onSearch();
+      await onSearch();
     } catch (e) {
       console.error(e);
       message((e as Error)?.message || "删除失败", { type: "error" });
@@ -94,7 +95,7 @@ export function useHook() {
   async function handleStatusClick(row: GroupVo) {
     currentRow.value = row;
     const isEnable = row.enable;
-    const action = isEnable ? "禁用" : "启用";
+    const action = isEnable ? "停用" : "启用";
     try {
       await ElMessageBox.confirm(`确定要${action}该分组吗？`, `${action}确认`, {
         confirmButtonText: "确定",
@@ -131,7 +132,7 @@ export function useHook() {
       minWidth: 170
     },
     {
-      label: "是否启用",
+      label: "启用状态",
       prop: "enable",
       minWidth: 100,
       cellRenderer: ({ row, props }) => (
@@ -141,7 +142,7 @@ export function useHook() {
           onClick={() => handleStatusClick(row)}
           class="cursor-pointer" // 添加点击指针样式
         >
-          {row.enable ? "启用" : "禁用"}
+          {row.enable ? "启用" : "停用"}
         </el-tag>
       )
     },
@@ -164,7 +165,7 @@ export function useHook() {
     dataList,
     pagination,
     onSearch,
-    handleDelete,
+    handleRemoveGroupApi,
     handleSizeChange,
     handleCurrentChange
   };
