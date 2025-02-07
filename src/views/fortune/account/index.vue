@@ -92,9 +92,12 @@
         <!-- 操作列 -->
         <template #operation="{ row }">
           <el-button @click="openDialog('edit', row)">编辑</el-button>
-          <el-popconfirm @confirm="handleMove2RecycleBin(row)">
+          <el-popconfirm
+            :title="`确认将【${row.accountName}】账户移入回收站？`"
+            @confirm="handleMove2RecycleBin(row)"
+          >
             <template #reference>
-              <el-button type="danger">回收站</el-button>
+              <el-button link type="danger">回收站</el-button>
             </template>
           </el-popconfirm>
         </template>
