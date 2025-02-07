@@ -6,11 +6,11 @@
       :model="searchFormParams"
       class="search-form bg-bg_color w-[99/100] pl-8 pt-[12px]"
     >
-      <el-form-item label="分组：" prop="groupId">
+      <el-form-item label="所属分组：" prop="groupId">
         <el-select
           v-model="searchFormParams.groupId"
           placeholder="请选择分组"
-          clearable
+          filterable
           class="!w-[180px]"
         >
           <el-option
@@ -49,7 +49,7 @@
         >
           搜索
         </el-button>
-        <el-button :icon="useRenderIcon(Refresh)" @click="resetForm(formRef)">
+        <el-button :icon="useRenderIcon(Refresh)" @click="resetForm()">
           重置
         </el-button>
       </el-form-item>
