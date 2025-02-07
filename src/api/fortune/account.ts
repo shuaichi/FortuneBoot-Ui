@@ -45,6 +45,13 @@ export function getFortuneAccountPage(params: AccountQuery) {
   );
 }
 
+export function getEnableAccountList(groupId: number) {
+  return http.request<ResponseData<Array<AccountVo>>>(
+    "get",
+    `/fortune/account/${groupId}/getEnableList`
+  );
+}
+
 export function addAccountApi(param: AddAccountCommand) {
   return http.request<ResponseData<any>>("post", "/fortune/account/add", {
     data: param
