@@ -113,7 +113,7 @@
               style="width: 100%"
             >
               <el-option
-                v-for="item in accountOptions"
+                v-for="item in canExpenseOptions"
                 :key="item.accountId"
                 :label="item.accountName"
                 :value="item.accountId"
@@ -129,7 +129,7 @@
               style="width: 100%"
             >
               <el-option
-                v-for="item in accountOptions"
+                v-for="item in canIncomeOptions"
                 :key="item.accountId"
                 :label="item.accountName"
                 :value="item.accountId"
@@ -147,7 +147,7 @@
               style="width: 100%"
             >
               <el-option
-                v-for="item in accountOptions"
+                v-for="item in canTransferOutOption"
                 :key="item.accountId"
                 :label="item.accountName"
                 :value="item.accountId"
@@ -163,7 +163,7 @@
               style="width: 100%"
             >
               <el-option
-                v-for="item in accountOptions"
+                v-for="item in canTransferInOption"
                 :key="item.accountId"
                 :label="item.accountName"
                 :value="item.accountId"
@@ -189,7 +189,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { ElMessage, FormRules } from "element-plus";
 import VDialog from "@/components/VDialog/VDialog.vue";
 import ReCol from "@/components/ReCol";
@@ -203,6 +203,7 @@ import {
 import { getBookTemplate, getCurrencyTemplate } from "@/api/fortune/group";
 import { getEnableGroupList } from "@/api/fortune/group";
 import { usePublicHooks } from "@/views/system/hooks";
+import { getEnableAccountList } from "@/api/fortune/account";
 
 const props = defineProps<{
   type: "add" | "edit";
@@ -221,8 +222,11 @@ const loading = ref(false);
 const formRef = ref();
 const currencyOptions = ref([]);
 const groupOptions = ref([]);
-const accountOptions = ref([]);
-const bookTemplateOptions = ref();
+const canExpenseOptions = ref([]);
+const canIncomeOptions = ref([]);
+const canTransferOutOption = ref([]);
+const canTransferInOption = ref([]);
+const bookTemplateOptions = ref([]);
 
 const formData = reactive<AddBookCommand | ModifyBookCommand>({
   bookId: null,
@@ -250,15 +254,31 @@ onMounted(async () => {
   const [currencyRes, groupRes, bookTemplateRes] = await Promise.all([
     getCurrencyTemplate(),
     getEnableGroupList(),
-    //getAccountList()
     getBookTemplate()
   ]);
   currencyOptions.value = currencyRes.data;
   groupOptions.value = groupRes.data;
   bookTemplateOptions.value = bookTemplateRes.data;
-  //accountOptions.value = accountRes.data;
 });
-
+watch(
+  () => formData.groupId,
+  async () => {
+    const enableAccountRes = await getEnableAccountList(formData.groupId);
+    console.log(enableAccountRes);
+    canExpenseOptions.value = enableAccountRes.data.filter(
+      item => item.canExpense
+    );
+    canIncomeOptions.value = enableAccountRes.data.filter(
+      item => item.canIncome
+    );
+    canTransferOutOption.value = enableAccountRes.data.filter(
+      item => item.canTransferOut
+    );
+    canTransferInOption.value = enableAccountRes.data.filter(
+      item => item.canTransferIn
+    );
+  }
+);
 function handleOpened() {
   if (props.row) {
     Object.assign(formData, props.row);
