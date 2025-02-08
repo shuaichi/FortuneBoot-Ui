@@ -122,6 +122,7 @@ import { useRoute } from "vue-router";
 import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
 import { getEnableGroupList } from "@/api/fortune/group";
+import { message } from "@/utils/message";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -154,6 +155,9 @@ const groupOptions = ref([]);
 onMounted(async () => {
   const groupRes = await getEnableGroupList();
   groupOptions.value = groupRes.data;
+  if (groupRes.data.length === 0) {
+    message("请先启用或创建分组");
+  }
 });
 
 function openDialog(type: "add" | "edit", row?: BookVo) {

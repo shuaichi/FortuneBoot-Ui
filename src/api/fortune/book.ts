@@ -31,7 +31,7 @@ export interface BookQuery extends BasePageQuery {
 }
 
 export function getBookByGroupId(groupId: number) {
-  return http.request<ResponseData<any>>(
+  return http.request<ResponseData<BookVo>>(
     "get",
     `/fortune/book/base/${groupId}/getByGroupId`
   );
@@ -44,6 +44,13 @@ export function getFortuneBookPage(params: BookQuery) {
     {
       params
     }
+  );
+}
+
+export function getEnableBookList(groupId: number) {
+  return http.request<ResponseData<Array<BookVo>>>(
+    "get",
+    `/fortune/book/base/${groupId}/getEnableBookList`
   );
 }
 
@@ -86,3 +93,41 @@ export function bookMove2RecycleBinApi(groupId: number, bookId: number) {
     `/fortune/book/base/${groupId}/${bookId}/moveToRecycleBin`
   );
 }
+
+export interface CategoryVo {
+  categoryId?: number;
+  categoryName?: string;
+  categoryType?: number;
+  bookId?: number;
+  parentId?: number;
+  sort?: number;
+  remark?: string;
+  enable?: boolean;
+  recycleBin?: boolean;
+  children?: CategoryVo;
+}
+export interface PayeeVo {
+  payeeId?: number;
+  payeeName?: string;
+  bookId?: number;
+  sort?: number;
+  remark?: string;
+  enable?: boolean;
+  recycleBin?: boolean;
+}
+
+// 分类
+export const getEnableCategoryList = (bookId: number, billType: number) => {
+  return http.request<ResponseData<Array<CategoryVo>>>(
+    "get",
+    `/fortune/book/config/category/${bookId}/${billType}/getEnableList`
+  );
+};
+
+//交易对象
+export const getEnablePayeeList = (bookId: number, billType: number) => {
+  return http.request<ResponseData<Array<PayeeVo>>>(
+    "get",
+    `/fortune/book/config/payee/${bookId}/${billType}/getEnableList`
+  );
+};
