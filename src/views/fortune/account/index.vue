@@ -1,5 +1,11 @@
 <template>
   <!-- 结构类似账本index.vue，调整搜索表单和表格列 -->
+  <el-radio-group v-model="currentType" size="large">
+    <el-radio-button :label="1">New York</el-radio-button>
+    <el-radio-button :label="2">Washington</el-radio-button>
+    <el-radio-button :label="3">Los Angeles</el-radio-button>
+    <el-radio-button :label="4">Chicago</el-radio-button>
+  </el-radio-group>
   <el-form
     ref="formRef"
     :inline="true"
@@ -49,7 +55,11 @@
         type="primary"
         :icon="useRenderIcon(Search)"
         :loading="loading"
-        @click="onSearch"
+        @click="
+          () => {
+            onSearch(barRef);
+          }
+        "
       >
         搜索
       </el-button>
@@ -58,7 +68,12 @@
       </el-button>
     </el-form-item>
   </el-form>
-  <PureTableBar title="账户管理" :columns="columns" @refresh="onSearch">
+  <PureTableBar
+    ref="barRef"
+    title="账户管理"
+    :columns="columns"
+    @refresh="onSearch"
+  >
     <template #buttons>
       <el-button
         type="primary"
@@ -134,6 +149,8 @@ const currentRow = ref<AccountVo>();
 const modalVisible = ref(false);
 const groupOptions = ref([]);
 const formRef = ref();
+const barRef = ref();
+const currentType = ref(1);
 
 const {
   searchFormParams,

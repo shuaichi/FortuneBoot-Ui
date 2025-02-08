@@ -196,9 +196,15 @@ export function useHook() {
     }
   ];
 
-  async function onSearch() {
+  async function onSearch(barRef?: any) {
     try {
       loading.value = true;
+      if (searchFormParams.accountType === 4) {
+        barRef?.handleCheckColumnListChange(false, "利率");
+      } else {
+        barRef?.handleCheckColumnListChange(true, "利率");
+      }
+      // columns.filter(item=> item.label === "利率")
       const { data } = await getFortuneAccountPage({
         ...searchFormParams,
         pageSize: pagination.pageSize,
