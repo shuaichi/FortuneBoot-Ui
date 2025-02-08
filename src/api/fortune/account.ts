@@ -32,6 +32,7 @@ export interface AccountQuery extends BasePageQuery {
   groupId?: number;
   accountName?: string;
   accountType?: number;
+  recycleBin?: boolean;
 }
 
 export function getFortuneAccountPage(params: AccountQuery) {
@@ -41,6 +42,13 @@ export function getFortuneAccountPage(params: AccountQuery) {
     {
       params
     }
+  );
+}
+
+export function getEnableAccountList(groupId: number) {
+  return http.request<ResponseData<Array<AccountVo>>>(
+    "get",
+    `/fortune/account/${groupId}/getEnableList`
   );
 }
 

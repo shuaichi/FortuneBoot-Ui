@@ -65,7 +65,7 @@
                 v-for="item in currencyOptions"
                 :key="item.value"
                 :label="item.label"
-                :value="item.value"
+                :value="item.label"
               />
             </el-select>
           </el-form-item>
@@ -88,14 +88,53 @@
           </el-form-item>
         </re-col>
       </el-row>
+
       <el-row :gutter="30">
         <re-col :value="12">
+          <el-form-item prop="balance" label="余额">
+            <el-input-number
+              v-model="formData.balance"
+              :min="0"
+              :precision="2"
+              style="width: 100%"
+            />
+          </el-form-item>
+        </re-col>
+        <re-col
+          :value="12"
+          v-if="formData.accountType === 2 || formData.accountType === 4"
+        >
+          <el-form-item prop="creditLimit" label="额度">
+            <el-input-number
+              v-model="formData.creditLimit"
+              :min="0"
+              :precision="2"
+              style="width: 100%"
+            />
+          </el-form-item>
+        </re-col>
+      </el-row>
+      <el-row
+        :gutter="30"
+        v-if="formData.accountType === 2 || formData.accountType === 4"
+      >
+        <re-col :value="12" v-if="formData.accountType === 2">
           <el-form-item prop="billDay" label="账单日">
             <el-date-picker
               v-model="formData.billDay"
               type="date"
               placeholder="选择日期"
               value-format="YYYY-MM-DD"
+              style="width: 100%"
+            />
+          </el-form-item>
+        </re-col>
+        <re-col :value="12" v-if="formData.accountType === 4">
+          <el-form-item prop="apr" label="利率（%）">
+            <el-input-number
+              v-model="formData.apr"
+              :min="0"
+              :precision="2"
               style="width: 100%"
             />
           </el-form-item>
@@ -107,29 +146,6 @@
               type="date"
               placeholder="选择日期"
               value-format="YYYY-MM-DD"
-              style="width: 100%"
-            />
-          </el-form-item>
-        </re-col>
-      </el-row>
-
-      <el-row :gutter="30">
-        <re-col :value="12">
-          <el-form-item prop="creditLimit" label="信用额度">
-            <el-input-number
-              v-model="formData.creditLimit"
-              :min="0"
-              :precision="2"
-              style="width: 100%"
-            />
-          </el-form-item>
-        </re-col>
-        <re-col :value="12">
-          <el-form-item prop="initialBalance" label="期初余额">
-            <el-input-number
-              v-model="formData.initialBalance"
-              :min="0"
-              :precision="2"
               style="width: 100%"
             />
           </el-form-item>
@@ -156,12 +172,12 @@
             <el-switch v-model="formData.canTransferIn" :style="switchStyle" />
           </el-form-item>
         </re-col>
-        <re-col :value="4">
+        <re-col :value="3">
           <el-form-item prop="include" label="计入总资产">
             <el-switch v-model="formData.include" :style="switchStyle" />
           </el-form-item>
         </re-col>
-        <re-col :value="4">
+        <re-col :value="3">
           <el-form-item prop="enable" label="启用状态">
             <el-switch v-model="formData.enable" :style="switchStyle" />
           </el-form-item>
@@ -241,8 +257,7 @@ const rules: FormRules = {
   groupId: [{ required: true, message: "所属分组不能为空" }],
   accountName: [{ required: true, message: "账户名称不能为空" }],
   accountType: [{ required: true, message: "账户名称不能为空" }],
-  currencyCode: [{ required: true, message: "币种不能为空" }],
-  balance: [{ required: true, message: "余额不能为空" }]
+  currencyCode: [{ required: true, message: "币种不能为空" }]
 };
 
 onMounted(async () => {

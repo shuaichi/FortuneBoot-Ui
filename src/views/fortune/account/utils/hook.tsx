@@ -21,6 +21,7 @@ import {
   excludeAccountApi
 } from "@/api/fortune/account";
 import { getEnableGroupList } from "@/api/fortune/group";
+import dayjs from "dayjs";
 
 export function useHook() {
   const { tagStyle } = usePublicHooks();
@@ -45,13 +46,13 @@ export function useHook() {
     {
       label: "账户名称",
       prop: "accountName",
-      width: 150,
+      width: 120,
       align: "left"
     },
     {
       label: "账户类型",
       prop: "accountType",
-      width: 80,
+      width: 100,
       formatter: ({ accountType }) =>
         accountTypeOptions.find(t => t.value === accountType)?.label
     },
@@ -59,12 +60,6 @@ export function useHook() {
       label: "币种",
       prop: "currencyCode",
       width: 80
-    },
-    {
-      label: "利率",
-      prop: "apr",
-      width: 80,
-      formatter: ({ apr }) => (apr ? `${apr}%` : "-")
     },
     {
       label: "余额",
@@ -97,6 +92,26 @@ export function useHook() {
           ? `￥${formattedAmount}`
           : `$${formattedAmount}`;
       }
+    },
+    {
+      label: "利率",
+      prop: "apr",
+      width: 80,
+      formatter: ({ apr }) => (apr ? `${apr}%` : "-")
+    },
+    {
+      label: "账单日",
+      minWidth: 100,
+      prop: "billDay",
+      formatter: ({ billDay }) =>
+        billDay ? dayjs(billDay).format("YYYY-MM-DD") : null
+    },
+    {
+      label: "还款日",
+      minWidth: 100,
+      prop: "repayDay",
+      formatter: ({ repayDay }) =>
+        repayDay ? dayjs(repayDay).format("YYYY-MM-DD") : null
     },
     {
       label: "可支出",
@@ -161,7 +176,7 @@ export function useHook() {
     {
       label: "计入净资产",
       prop: "include",
-      minWidth: 80,
+      minWidth: 100,
       cellRenderer: ({ row, props }) => (
         <el-tag
           size={props.size}
@@ -204,6 +219,7 @@ export function useHook() {
       } else {
         barRef?.handleCheckColumnListChange(true, "利率");
       }
+      searchFormParams.recycleBin = false;
       // columns.filter(item=> item.label === "利率")
       const { data } = await getFortuneAccountPage({
         ...searchFormParams,
