@@ -36,7 +36,7 @@ export default defineComponent({
   name: "PureTableBar",
   props,
   emits: ["refresh"],
-  setup(props, { emit, slots, attrs }) {
+  setup(props, { emit, slots, attrs, expose }) {
     const buttonRef = ref();
     const size = ref("default");
     const isExpandAll = ref(true);
@@ -122,7 +122,24 @@ export default defineComponent({
     }
 
     function handleCheckColumnListChange(val: boolean, label: string) {
-      dynamicColumns.value.filter(item => item.label === label)[0].hide = !val;
+      // 更新 dynamicColumns 中对应列的 hide 状态
+      const target = dynamicColumns.value.find(item => item.label === label);
+      if (target) {
+        target.hide = !val;
+      }
+
+      // 同步更新 checkedColumns
+      if (!val) {
+        // 隐藏时，从 checkedColumns 中移除该 label
+        checkedColumns.value = checkedColumns.value.filter(
+          item => item !== label
+        );
+      } else {
+        // 显示时，加入该 label（如果不在其中）
+        if (!checkedColumns.value.includes(label)) {
+          checkedColumns.value.push(label);
+        }
+      }
     }
 
     async function onReset() {
@@ -208,6 +225,12 @@ export default defineComponent({
         />
       )
     };
+
+    // ★ ★ ★ 在这里暴露需要给父组件调用的方法 ★ ★ ★
+    expose({
+      handleCheckColumnListChange
+      // 你也可以暴露其他方法，例如 onReFresh、onExpand 等
+    });
 
     return () => (
       <>
