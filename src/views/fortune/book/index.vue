@@ -84,16 +84,6 @@
           @page-size-change="handleSizeChange"
           @page-current-change="handleCurrentChange"
         >
-          <!--<template #enable="{ row }">
-            <el-tag
-              :style="tagStyle(row.enable ? 1 : 0)"
-              class="cursor-pointer"
-              @click="handleStatusClick(row)"
-            >
-              {{ row.enable ? "启用" : "停用" }}
-            </el-tag>
-          </template>-->
-
           <template #operation="{ row }">
             <el-button link type="primary" @click="openDialog('edit', row)">
               编辑

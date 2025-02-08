@@ -36,7 +36,6 @@
               link
               type="primary"
               :size="size"
-              :icon="useRenderIcon(EditPen)"
               @click="openDialog('upload', row)"
             >
               编辑
@@ -46,13 +45,7 @@
               @confirm="handleRemoveGroupApi(row)"
             >
               <template #reference>
-                <el-button
-                  class="reset-margin"
-                  link
-                  type="danger"
-                  :size="size"
-                  :icon="useRenderIcon(Delete)"
-                >
+                <el-button class="reset-margin" link type="danger" :size="size">
                   删除
                 </el-button>
               </template>
@@ -77,8 +70,6 @@ import { useHook } from "@/views/fortune/group/utils/hook";
 import { ref } from "vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 
-import Delete from "@iconify-icons/ep/delete";
-import EditPen from "@iconify-icons/ep/edit-pen";
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import { ElMessage } from "element-plus";
 import { GroupVo } from "@/api/fortune/group";

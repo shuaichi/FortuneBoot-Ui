@@ -154,7 +154,7 @@ export function useHook() {
     {
       label: "操作",
       fixed: "right",
-      width: 240,
+      width: 180,
       slot: "operation"
     }
   ];
