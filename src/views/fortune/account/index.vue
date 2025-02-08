@@ -136,6 +136,7 @@ import Refresh from "@iconify-icons/ep/refresh";
 import AccountForm from "@/views/fortune/account/account-form.vue";
 import { AccountVo } from "@/api/fortune/account";
 import { getEnableGroupList } from "@/api/fortune/group";
+import { message } from "@/utils/message";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -164,6 +165,9 @@ const {
 
 onMounted(async () => {
   const [groupRes] = await Promise.all([getEnableGroupList()]);
+  if (groupRes.data.length === 0) {
+    message("请先启用或创建分组");
+  }
   groupOptions.value = groupRes.data;
   searchFormParams.groupId = groupRes.data[0].groupId;
   searchFormParams.accountType = 1;

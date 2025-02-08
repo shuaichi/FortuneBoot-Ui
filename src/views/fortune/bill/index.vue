@@ -7,6 +7,21 @@
       :model="searchFormParams"
       class="search-form bg-bg_color w-[99/100] pl-8 pt-[12px]"
     >
+      <el-form-item label="分组：" prop="groupId">
+        <el-select
+          v-model="searchFormParams.groupId"
+          placeholder="请选择账本"
+          class="!w-[180px]"
+          filterable
+        >
+          <el-option
+            v-for="item in groupOptions"
+            :key="item.groupId"
+            :label="item.groupName"
+            :value="item.groupId"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item label="账本：" prop="bookId">
         <el-select
           v-model="searchFormParams.bookId"
@@ -82,7 +97,7 @@
         <el-button
           type="primary"
           :icon="useRenderIcon(AddFill)"
-          @click="openDialog('add')"
+          @click="openDialog('add', null)"
         >
           新增账单
         </el-button>
@@ -125,7 +140,10 @@
     </PureTableBar>
 
     <bill-form
+      v-if="modalVisible"
       v-model="modalVisible"
+      :groupId="groupIdProp"
+      :bookId="bookIdProp"
       :type="opType"
       :row="currentRow"
       @success="onSearch"
@@ -144,11 +162,21 @@ import Refresh from "@iconify-icons/ep/refresh";
 import BillForm from "./bill-form.vue";
 import { useHook } from "./utils/hook";
 import { getEnableBookList } from "@/api/fortune/book";
-import { getAccountList } from "@/api/fortune/account";
+import { getEnableAccountList } from "@/api/fortune/account";
+import { getEnableGroupList } from "@/api/fortune/group";
+import { message } from "@/utils/message";
+
+/** 组件name最好和菜单表中的router_name一致 */
+defineOptions({
+  name: "FortuneGroup"
+});
 
 const opType = ref<"add" | "edit">("add");
 const currentRow = ref();
 const modalVisible = ref(false);
+const groupIdProp = ref();
+const bookIdProp = ref();
+const groupOptions = ref([]);
 const bookOptions = ref([]);
 const accountOptions = ref([]);
 const formRef = ref();
@@ -168,17 +196,26 @@ const {
 } = useHook();
 
 onMounted(async () => {
+  const groupRes = await getEnableGroupList();
+  if (groupRes.data.length === 0) {
+    message("请先启用或创建分组");
+  }
+  groupOptions.value = groupRes.data;
+  searchFormParams.groupId = groupRes.data[0].groupId;
   const [booksRes, accountsRes] = await Promise.all([
-    getEnableBookList(),
-    getAccountList()
+    getEnableBookList(searchFormParams.groupId),
+    getEnableAccountList(searchFormParams.groupId)
   ]);
   bookOptions.value = booksRes.data;
+  searchFormParams.bookId = booksRes.data[0].bookId;
   accountOptions.value = accountsRes.data;
   await onSearch();
 });
 
 function openDialog(type: "add" | "edit", row?: any) {
   opType.value = type;
+  groupIdProp.value = searchFormParams.groupId;
+  bookIdProp.value = searchFormParams.bookId;
   currentRow.value = row;
   modalVisible.value = true;
 }
