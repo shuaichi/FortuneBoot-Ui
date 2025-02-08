@@ -1,11 +1,18 @@
 <template>
-  <!-- 结构类似账本index.vue，调整搜索表单和表格列 -->
-  <el-radio-group v-model="currentType" size="large">
-    <el-radio-button :label="1">New York</el-radio-button>
-    <el-radio-button :label="2">Washington</el-radio-button>
-    <el-radio-button :label="3">Los Angeles</el-radio-button>
-    <el-radio-button :label="4">Chicago</el-radio-button>
-  </el-radio-group>
+  <!-- 新增的父容器 -->
+  <div class="full-width-container">
+    <el-radio-group
+      v-model="searchFormParams.accountType"
+      size="large"
+      class="full-width-group"
+      @change="onSearch(barRef)"
+    >
+      <el-radio-button :label="1" class="quarter-width">活 期</el-radio-button>
+      <el-radio-button :label="2" class="quarter-width">信 用</el-radio-button>
+      <el-radio-button :label="3" class="quarter-width">资 产</el-radio-button>
+      <el-radio-button :label="4" class="quarter-width">贷 款</el-radio-button>
+    </el-radio-group>
+  </div>
   <el-form
     ref="formRef"
     :inline="true"
@@ -24,20 +31,6 @@
           :key="item.groupId"
           :label="item.groupName"
           :value="item.groupId"
-        />
-      </el-select>
-    </el-form-item>
-    <el-form-item label="账户类型：" prop="accountType">
-      <el-select
-        v-model="searchFormParams.accountType"
-        placeholder="请选择类型"
-        filterable
-      >
-        <el-option
-          v-for="item in accountTypeOptions"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
         />
       </el-select>
     </el-form-item>
@@ -106,7 +99,9 @@
       >
         <!-- 操作列 -->
         <template #operation="{ row }">
-          <el-button @click="openDialog('edit', row)">编辑</el-button>
+          <el-button link type="primary" @click="openDialog('edit', row)">
+            编辑
+          </el-button>
           <el-popconfirm
             :title="`确认将【${row.accountName}】账户移入回收站？`"
             @confirm="handleMove2RecycleBin(row)"
@@ -153,14 +148,12 @@ const modalVisible = ref(false);
 const groupOptions = ref([]);
 const formRef = ref();
 const barRef = ref();
-const currentType = ref(1);
 
 const {
   searchFormParams,
   dataList,
   columns,
   resetForm,
-  accountTypeOptions,
   loading,
   pagination,
   onSearch,
@@ -183,3 +176,22 @@ function openDialog(type: "add" | "edit", row?: AccountVo) {
   modalVisible.value = true;
 }
 </script>
+
+<style scoped>
+/* 深度选择器覆盖 element 样式 */
+:deep(.full-width-group) {
+  display: flex;
+  width: 100%;
+}
+
+:deep(.quarter-width) {
+  flex: 1; /* 等分剩余空间 */
+
+  /* 调整内部按钮宽度 */
+  .el-radio-button__inner {
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
+}
+</style>

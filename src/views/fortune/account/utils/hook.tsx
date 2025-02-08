@@ -46,7 +46,7 @@ export function useHook() {
     {
       label: "账户名称",
       prop: "accountName",
-      width: 120,
+      width: 150,
       align: "left"
     },
     {
@@ -78,7 +78,7 @@ export function useHook() {
       }
     },
     {
-      label: "信用额度",
+      label: "额度",
       prop: "creditLimit",
       width: 120,
       formatter: ({ creditLimit, currencyCode }) => {
@@ -91,32 +91,36 @@ export function useHook() {
         return currencyCode === "CNY"
           ? `￥${formattedAmount}`
           : `$${formattedAmount}`;
-      }
+      },
+      hide: true
     },
     {
       label: "利率",
       prop: "apr",
       width: 80,
-      formatter: ({ apr }) => (apr ? `${apr}%` : "-")
+      formatter: ({ apr }) => (apr ? `${apr}%` : "-"),
+      hide: true
     },
     {
       label: "账单日",
-      minWidth: 100,
+      width: 100,
       prop: "billDay",
       formatter: ({ billDay }) =>
-        billDay ? dayjs(billDay).format("YYYY-MM-DD") : null
+        billDay ? dayjs(billDay).format("YYYY-MM-DD") : null,
+      hide: true
     },
     {
       label: "还款日",
-      minWidth: 100,
+      width: 100,
       prop: "repayDay",
       formatter: ({ repayDay }) =>
-        repayDay ? dayjs(repayDay).format("YYYY-MM-DD") : null
+        repayDay ? dayjs(repayDay).format("YYYY-MM-DD") : null,
+      hide: true
     },
     {
       label: "可支出",
       prop: "canExpense",
-      minWidth: 80,
+      width: 100,
       cellRenderer: ({ row, props }) => (
         <el-tag
           size={props.size}
@@ -131,7 +135,7 @@ export function useHook() {
     {
       label: "可收入",
       prop: "canIncome",
-      minWidth: 80,
+      width: 100,
       cellRenderer: ({ row, props }) => (
         <el-tag
           size={props.size}
@@ -146,7 +150,7 @@ export function useHook() {
     {
       label: "可转出",
       prop: "canTransferOut",
-      minWidth: 80,
+      width: 100,
       cellRenderer: ({ row, props }) => (
         <el-tag
           size={props.size}
@@ -161,7 +165,7 @@ export function useHook() {
     {
       label: "可转入",
       prop: "canTransferIn",
-      minWidth: 80,
+      width: 100,
       cellRenderer: ({ row, props }) => (
         <el-tag
           size={props.size}
@@ -176,7 +180,7 @@ export function useHook() {
     {
       label: "计入净资产",
       prop: "include",
-      minWidth: 100,
+      width: 120,
       cellRenderer: ({ row, props }) => (
         <el-tag
           size={props.size}
@@ -191,7 +195,7 @@ export function useHook() {
     {
       label: "是否启用",
       prop: "enable",
-      minWidth: 80,
+      width: 100,
       cellRenderer: ({ row, props }) => (
         <el-tag
           size={props.size}
@@ -204,6 +208,11 @@ export function useHook() {
       )
     },
     {
+      label: "备注",
+      prop: "remark",
+      minWidth: 200
+    },
+    {
       label: "操作",
       slot: "operation",
       fixed: "right",
@@ -214,13 +223,9 @@ export function useHook() {
   async function onSearch(barRef?: any) {
     try {
       loading.value = true;
-      if (searchFormParams.accountType === 4) {
-        barRef?.handleCheckColumnListChange(false, "利率");
-      } else {
-        barRef?.handleCheckColumnListChange(true, "利率");
-      }
+      console.log("onSearch");
+      hideColumn(barRef);
       searchFormParams.recycleBin = false;
-      // columns.filter(item=> item.label === "利率")
       const { data } = await getFortuneAccountPage({
         ...searchFormParams,
         pageSize: pagination.pageSize,
@@ -233,6 +238,14 @@ export function useHook() {
     } finally {
       loading.value = false;
     }
+  }
+
+  function hideColumn(barRef?: any) {
+    const type = searchFormParams.accountType;
+    barRef?.handleCheckColumnListChange(type === 4, "利率");
+    barRef?.handleCheckColumnListChange(type === 4 || type === 2, "额度");
+    barRef?.handleCheckColumnListChange(type === 2, "账单日");
+    barRef?.handleCheckColumnListChange(type === 4 || type === 2, "还款日");
   }
 
   async function handleCanExpenseClick(row: AccountVo) {
@@ -392,6 +405,7 @@ export function useHook() {
       loading.value = false;
     }
   }
+
   async function resetForm() {
     searchFormParams.accountName = null;
     const res = await getEnableGroupList();
@@ -399,7 +413,6 @@ export function useHook() {
       message("请先启用或创建分组");
     }
     searchFormParams.groupId = res.data[0].groupId;
-    searchFormParams.accountType = 1;
     await onSearch();
   }
 
