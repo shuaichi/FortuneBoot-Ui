@@ -55,13 +55,28 @@ export function useHook() {
       label: "金额",
       prop: "convertedAmount",
       width: 150,
-      formatter: ({ convertedAmount, currencyCode }) =>
-        `${currencyCode} ${convertedAmount.toFixed(2)}`
+      formatter: ({ convertedAmount, currencyCode }) => {
+        if (!convertedAmount) {
+          return "-";
+        }
+        const formattedAmount = convertedAmount
+          .toString()
+          .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return currencyCode === "CNY"
+          ? `￥${formattedAmount}`
+          : `$${formattedAmount}`;
+      }
     },
     {
       label: "账户",
       prop: "accountName",
-      width: 120
+      minWidth: 120,
+      formatter: ({ accountName, toAccountName, billType }) => {
+        if (billType === 3) {
+          return accountName + " -> " + toAccountName;
+        }
+        return accountName;
+      }
     },
     {
       label: "交易时间",

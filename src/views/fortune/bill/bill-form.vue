@@ -2,6 +2,7 @@
 <template>
   <v-dialog
     show-full-screen
+    use-body-scrolling
     :fixed-body-height="false"
     :title="type === 'add' ? '新增账单' : '修改账单'"
     v-model="visible"
@@ -18,7 +19,7 @@
               v-model="formData.bookId"
               placeholder="请选择账本"
               style="width: 100%"
-              @change="handleBookChange"
+              @change="handleBookOrBillTypeChange"
             >
               <el-option
                 v-for="item in bookOptions"
@@ -85,22 +86,67 @@
           </el-form-item>
         </re-col>
       </el-row>
+      <div
+        v-for="(item, index) in formData.categoryAmountPair"
+        :key="index"
+        class="category-row"
+      >
+        <el-row :gutter="30">
+          <re-col :value="12">
+            <el-form-item
+              label="分类"
+              :prop="'categoryAmountPair.' + index + '.categoryId'"
+            >
+              <el-tree-select
+                v-model="item.categoryId"
+                :data="categoryOptions"
+                placeholder="请选择分类"
+                style="width: 100%"
+                :props="categoryTreeProps"
+                clearable
+              />
+            </el-form-item>
+          </re-col>
+          <re-col :value="9">
+            <el-form-item
+              :prop="'categoryAmountPair.' + index + '.amount'"
+              label="金额"
+            >
+              <el-input-number
+                v-model="item.amount"
+                :min="0"
+                :precision="2"
+                :controls="false"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </re-col>
+          <el-col :span="3" class="category-actions">
+            <el-button type="text" @click="insertCategory(index)">
+              添加
+            </el-button>
+            <el-button
+              type="text"
+              @click="removeCategory(index)"
+              v-if="formData.categoryAmountPair.length > 1"
+            >
+              删除
+            </el-button>
+          </el-col>
+        </el-row>
+      </div>
 
       <el-row :gutter="30">
         <re-col :value="12">
-          <el-form-item prop="categoryId" label="分类">
-            <el-select
-              v-model="formData.categoryId"
-              placeholder="请选择分类"
+          <el-form-item prop="tagIds" label="标签">
+            <el-tree-select
+              v-model="formData.tagIds"
+              :data="tagOptions"
+              placeholder="请选择标签"
               style="width: 100%"
-            >
-              <el-option
-                v-for="item in categoryOptions"
-                :key="item.categoryId"
-                :label="item.categoryName"
-                :value="item.categoryId"
-              />
-            </el-select>
+              multiple
+              :props="tagTreeProps"
+            />
           </el-form-item>
         </re-col>
         <re-col :value="12">
@@ -122,17 +168,6 @@
       </el-row>
 
       <el-row :gutter="30">
-        <re-col :value="12">
-          <el-form-item prop="amount" label="金额">
-            <el-input-number
-              v-model="formData.amount"
-              :min="0.01"
-              :precision="2"
-              :controls="false"
-              style="width: 100%"
-            />
-          </el-form-item>
-        </re-col>
         <re-col :value="12" v-if="formData.billType === 3">
           <el-form-item prop="toAccountId" label="转入账户">
             <el-select
@@ -195,7 +230,8 @@ import { addBillApi, modifyBillApi } from "@/api/fortune/bill";
 import {
   getEnableBookList,
   getEnableCategoryList,
-  getEnablePayeeList
+  getEnablePayeeList,
+  getEnableTagList
 } from "@/api/fortune/book";
 import { getEnableAccountList } from "@/api/fortune/account";
 import { getEnableGroupList } from "@/api/fortune/group";
@@ -222,20 +258,29 @@ const billTypeOptions = [
   { value: 2, label: "收入" },
   { value: 3, label: "转账" }
 ];
-
+const tagTreeProps = {
+  label: "tagName",
+  value: "tagId",
+  children: "children"
+};
+const categoryTreeProps = {
+  label: "categoryName",
+  value: "categoryId",
+  children: "children"
+};
 const formData = reactive({
   billId: null,
   bookId: null,
   title: "",
   tradeTime: null,
   accountId: null,
-  categoryId: null,
-  amount: 0,
+  tagIds: [],
   payeeId: null,
   billType: 1,
   toAccountId: null,
   confirm: true,
   include: true,
+  categoryAmountPair: [{ categoryId: null, amount: null }],
   remark: ""
 });
 
@@ -245,8 +290,33 @@ const rules: FormRules = {
   title: [{ required: true, message: "请输入标题" }],
   tradeTime: [{ required: true, message: "请选择交易时间" }],
   accountId: [{ required: true, message: "请选择账户" }],
-  categoryId: [{ required: true, message: "请选择分类" }],
-  amount: [{ required: true, message: "请输入金额" }],
+  // 动态规则：categoryAmountPair 校验
+  categoryAmountPair: [
+    {
+      validator: (rule, value, callback) => {
+        const invalidCategory = value.some(item => !item.categoryId);
+        if (invalidCategory) {
+          callback(new Error("请选择分类"));
+        } else {
+          callback();
+        }
+      },
+      trigger: "blur"
+    },
+    {
+      validator: (rule, value, callback) => {
+        const invalidAmount = value.some(
+          item => item.amount === null || item.amount <= 0
+        );
+        if (invalidAmount) {
+          callback(new Error("金额必须大于 0"));
+        } else {
+          callback();
+        }
+      },
+      trigger: "blur"
+    }
+  ],
   toAccountId: [
     {
       required: true,
@@ -254,7 +324,9 @@ const rules: FormRules = {
       trigger: "blur",
       validator: (rule, value, callback) => {
         if (formData.billType === 3 && !value) {
-          callback(new Error(rule.message));
+          const errorMessage =
+            typeof rule.message === "function" ? rule.message() : rule.message;
+          callback(new Error(errorMessage));
         } else {
           callback();
         }
@@ -268,6 +340,7 @@ const bookOptions = ref([]);
 const accountOptions = ref([]);
 const categoryOptions = ref([]);
 const payeeOptions = ref([]);
+const tagOptions = ref([]);
 
 onMounted(async () => {
   const groupRes = await getEnableGroupList();
@@ -288,12 +361,19 @@ onMounted(async () => {
 });
 
 async function handleBookOrBillTypeChange() {
-  const [categoryRes, payeeRes] = await Promise.all([
+  const [categoryRes, payeeRes, tagRes] = await Promise.all([
     getEnableCategoryList(formData.bookId, formData.billType),
-    getEnablePayeeList(formData.bookId, formData.billType)
+    getEnablePayeeList(formData.bookId, formData.billType),
+    getEnableTagList(formData.bookId, formData.billType)
   ]);
   categoryOptions.value = categoryRes.data;
   payeeOptions.value = payeeRes.data;
+  tagOptions.value = tagRes.data;
+  formData.categoryAmountPair = [formData.categoryAmountPair[0]];
+  formData.categoryAmountPair[0].categoryId = null;
+  formData.categoryAmountPair[0].amount = null;
+  formData.payeeId = null;
+  formData.tagIds = [];
 }
 
 function handleBillTypeChange(type: number) {
@@ -314,17 +394,26 @@ function handleOpened() {
   }
 }
 
+function insertCategory(index: number) {
+  formData.categoryAmountPair.splice(index + 1, 0, {
+    categoryId: null,
+    amount: null
+  });
+}
+
+function removeCategory(index: number) {
+  formData.categoryAmountPair.splice(index, 1);
+}
+
 async function handleConfirm() {
   try {
     await formRef.value.validate();
     loading.value = true;
-
     const params = { ...formData };
     // 清理非转账类型的字段
     if (params.billType !== 3) {
       params.toAccountId = null;
     }
-
     if (props.type === "add") {
       await addBillApi(params);
     } else {
