@@ -41,7 +41,7 @@
         <el-select
           v-model="searchFormParams.billType"
           placeholder="请选择类型"
-          class="!w-[120px]"
+          class="!w-[180px]"
           clearable
         >
           <el-option

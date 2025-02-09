@@ -94,7 +94,7 @@ export function disableGroup(groupId: number) {
 export function getEnableGroupList() {
   return http.request<ResponseData<Array<GroupVo>>>(
     "get",
-    "/fortune/group/getEnableGroupList"
+    "/fortune/group/getEnableList"
   );
 }
 
