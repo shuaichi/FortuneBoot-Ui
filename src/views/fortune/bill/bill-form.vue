@@ -376,9 +376,13 @@ async function handleBookOrBillTypeChange() {
   formData.tagIds = [];
 }
 
-function handleBillTypeChange(type: number) {
-  if (type !== 3) {
-    handleBookOrBillTypeChange();
+async function handleBillTypeChange(type: number) {
+  if (type === 3) {
+    const tagRes = await getEnableTagList(formData.bookId, formData.billType);
+    tagOptions.value = tagRes.data;
+    formData.tagIds = [];
+  } else {
+    await handleBookOrBillTypeChange();
     formData.toAccountId = null;
   }
 }
