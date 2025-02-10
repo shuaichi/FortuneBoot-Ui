@@ -30,7 +30,12 @@ export interface BillQuery extends BaseQuery {
   remark?: string;
 }
 
-export type BillVo = ModifyBillCommand;
+export interface BillVo extends ModifyBillCommand {
+  categoryAmountPair?: [{ categoryName: string; amount: number }];
+  tagList?: [{ tagName: string }];
+  currencyCode?: string;
+  payeeName?: string;
+}
 
 // 分页查询
 export const getBillPage = (params?: BillQuery) => {

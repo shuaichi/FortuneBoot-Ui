@@ -81,7 +81,7 @@ export function useHook() {
     {
       label: "交易时间",
       prop: "tradeTime",
-      width: 120
+      width: 160
     },
     {
       label: "分类",
@@ -95,7 +95,7 @@ export function useHook() {
     },
     {
       label: "交易对象",
-      prop: "payee",
+      prop: "payeeName",
       width: 100
     },
     {
@@ -153,9 +153,19 @@ export function useHook() {
       };
 
       const { data } = await getBillPage(params);
+      console.log(data.rows[5]);
       dataList.value = data.rows.map(item => ({
         ...item,
-        tradeTime: formatDateTime(item.tradeTime)
+        tradeTime: formatDateTime(item.tradeTime),
+        tagName: item.tagList
+          ? item.tagList.map(tag => tag.tagName).join(", ")
+          : "-",
+        categoryName: item.categoryAmountPair
+          ? item.categoryAmountPair
+              .map(category => category.categoryName)
+              .join(", ")
+          : "-",
+        payeeName: item.payeeName ? item.payeeName : "-"
       }));
       pagination.total = data.total;
     } catch (e) {

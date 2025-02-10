@@ -70,7 +70,10 @@
           </el-form-item>
         </re-col>
         <re-col :value="12">
-          <el-form-item prop="accountId" label="账户">
+          <el-form-item
+            prop="accountId"
+            :label="formData.billType === 3 ? '转出账户' : '账户'"
+          >
             <el-select
               v-model="formData.accountId"
               placeholder="请选择账户"
@@ -91,26 +94,12 @@
         :key="index"
         class="category-row"
       >
-        <el-row :gutter="30">
+        <el-row :gutter="30" v-if="formData.billType !== 3">
           <re-col :value="12">
-            <el-form-item
-              label="分类"
-              :prop="'categoryAmountPair.' + index + '.categoryId'"
-            >
-              <el-tree-select
-                v-model="item.categoryId"
-                :data="categoryOptions"
-                placeholder="请选择分类"
-                style="width: 100%"
-                :props="categoryTreeProps"
-                clearable
-              />
-            </el-form-item>
-          </re-col>
-          <re-col :value="9">
             <el-form-item
               :prop="'categoryAmountPair.' + index + '.amount'"
               label="金额"
+              required
             >
               <el-input-number
                 v-model="item.amount"
@@ -118,6 +107,25 @@
                 :precision="2"
                 :controls="false"
                 style="width: 100%"
+              />
+            </el-form-item>
+          </re-col>
+          <re-col :value="9">
+            <el-form-item
+              label="分类"
+              :prop="'categoryAmountPair.' + index + '.categoryId'"
+              :required="formData.billType !== 3"
+            >
+              <el-tree-select
+                :key="
+                  formData.billType + '-' + index + '-' + categoryOptions.length
+                "
+                v-model="item.categoryId"
+                :data="categoryOptions"
+                placeholder="请选择分类"
+                style="width: 100%"
+                :props="categoryTreeProps"
+                clearable
               />
             </el-form-item>
           </re-col>
@@ -137,10 +145,37 @@
       </div>
 
       <el-row :gutter="30">
+        <re-col :value="12" v-if="formData.billType === 3">
+          <el-form-item prop="amount" label="金额" required>
+            <el-input-number
+              v-model="formData.amount"
+              :min="0"
+              :precision="2"
+              :controls="false"
+              style="width: 100%"
+            />
+          </el-form-item>
+        </re-col>
+        <re-col :value="12" v-if="formData.billType === 3">
+          <el-form-item prop="toAccountId" label="转入账户">
+            <el-select
+              v-model="formData.toAccountId"
+              placeholder="请选择转入账户"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="item in toAccountOptions"
+                :key="item.accountId"
+                :label="item.accountName"
+                :value="item.accountId"
+              />
+            </el-select>
+          </el-form-item>
+        </re-col>
         <re-col :value="12">
-          <el-form-item prop="tagIds" label="标签">
+          <el-form-item prop="tagIdList" label="标签">
             <el-tree-select
-              v-model="formData.tagIds"
+              v-model="formData.tagIdList"
               :data="tagOptions"
               placeholder="请选择标签"
               style="width: 100%"
@@ -149,7 +184,7 @@
             />
           </el-form-item>
         </re-col>
-        <re-col :value="12">
+        <re-col :value="12" v-if="formData.billType !== 3">
           <el-form-item prop="payeeId" label="交易对象">
             <el-select
               v-model="formData.payeeId"
@@ -166,26 +201,6 @@
           </el-form-item>
         </re-col>
       </el-row>
-
-      <el-row :gutter="30">
-        <re-col :value="12" v-if="formData.billType === 3">
-          <el-form-item prop="toAccountId" label="转入账户">
-            <el-select
-              v-model="formData.toAccountId"
-              placeholder="请选择转入账户"
-              style="width: 100%"
-            >
-              <el-option
-                v-for="item in accountOptions"
-                :key="item.accountId"
-                :label="item.accountName"
-                :value="item.accountId"
-              />
-            </el-select>
-          </el-form-item>
-        </re-col>
-      </el-row>
-
       <el-row :gutter="30">
         <re-col :value="12">
           <el-form-item prop="confirm" label="是否确认">
@@ -274,7 +289,8 @@ const formData = reactive({
   title: "",
   tradeTime: null,
   accountId: null,
-  tagIds: [],
+  amount: null,
+  tagIdList: [],
   payeeId: null,
   billType: 1,
   toAccountId: null,
@@ -294,25 +310,21 @@ const rules: FormRules = {
   categoryAmountPair: [
     {
       validator: (rule, value, callback) => {
-        const invalidCategory = value.some(item => !item.categoryId);
-        if (invalidCategory) {
-          callback(new Error("请选择分类"));
-        } else {
-          callback();
-        }
-      },
-      trigger: "blur"
-    },
-    {
-      validator: (rule, value, callback) => {
-        const invalidAmount = value.some(
+        // 检查所有分类和金额是否有效
+        const hasEmptyCategory = value.some(item => !item.categoryId);
+        const hasInvalidAmount = value.some(
           item => item.amount === null || item.amount <= 0
         );
-        if (invalidAmount) {
-          callback(new Error("金额必须大于 0"));
-        } else {
-          callback();
+
+        if (hasEmptyCategory) {
+          callback(new Error("请填写所有分类"));
+          return;
         }
+        if (hasInvalidAmount) {
+          callback(new Error("金额必须大于0"));
+          return;
+        }
+        callback();
       },
       trigger: "blur"
     }
@@ -338,29 +350,64 @@ const rules: FormRules = {
 // 数据选项
 const bookOptions = ref([]);
 const accountOptions = ref([]);
+const toAccountOptions = ref([]);
 const categoryOptions = ref([]);
 const payeeOptions = ref([]);
 const tagOptions = ref([]);
 
 onMounted(async () => {
-  const groupRes = await getEnableGroupList();
+  const [groupRes, booksRes, accountsRes] = await Promise.all([
+    getEnableGroupList(),
+    getEnableBookList(props.groupId),
+    getEnableAccountList(props.groupId)
+  ]);
   if (groupRes.data.length === 0) {
     message("请先启用或创建分组");
     return;
   }
-  const [booksRes, accountsRes] = await Promise.all([
-    getEnableBookList(props.groupId),
-    getEnableAccountList(props.groupId)
-  ]);
   if (booksRes.data.length === 0) {
     message("请先启用或创建账本");
     return;
   }
   bookOptions.value = booksRes.data;
-  accountOptions.value = accountsRes.data;
+  accountOptions.value = accountsRes.data.filter(item => item.canExpense);
 });
 
-async function handleBookOrBillTypeChange() {
+async function handleBillTypeChange(type: number) {
+  if (type === 1) {
+    const accountsRes = await getEnableAccountList(props.groupId);
+    accountOptions.value = accountsRes.data.filter(item => item.canExpense);
+    handleBookOrBillTypeChange();
+    formData.toAccountId = null;
+  } else if (type === 2) {
+    const accountsRes = await getEnableAccountList(props.groupId);
+    accountOptions.value = accountsRes.data.filter(item => item.canIncome);
+    handleBookOrBillTypeChange();
+  } else if (type === 3) {
+    const [tagRes, accountsRes] = await Promise.all([
+      getEnableTagList(formData.bookId, formData.billType),
+      getEnableAccountList(props.groupId)
+    ]);
+    tagOptions.value = tagRes.data;
+    accountOptions.value = accountsRes.data.filter(item => item.canTransferOut);
+    toAccountOptions.value = accountsRes.data.filter(
+      item => item.canTransferIn
+    );
+    formData.tagIdList = [];
+    formData.categoryAmountPair = [];
+    formData.payeeId = null;
+  }
+}
+
+function handleBookOrBillTypeChange() {
+  formData.categoryAmountPair = [{ categoryId: null, amount: null }];
+  formData.payeeId = null;
+  formData.tagIdList = [];
+  formData.amount = null;
+  handleCategoryPayeeTagRefresh();
+}
+
+async function handleCategoryPayeeTagRefresh() {
   const [categoryRes, payeeRes, tagRes] = await Promise.all([
     getEnableCategoryList(formData.bookId, formData.billType),
     getEnablePayeeList(formData.bookId, formData.billType),
@@ -369,32 +416,16 @@ async function handleBookOrBillTypeChange() {
   categoryOptions.value = categoryRes.data;
   payeeOptions.value = payeeRes.data;
   tagOptions.value = tagRes.data;
-  formData.categoryAmountPair = [formData.categoryAmountPair[0]];
-  formData.categoryAmountPair[0].categoryId = null;
-  formData.categoryAmountPair[0].amount = null;
-  formData.payeeId = null;
-  formData.tagIds = [];
-}
-
-async function handleBillTypeChange(type: number) {
-  if (type === 3) {
-    const tagRes = await getEnableTagList(formData.bookId, formData.billType);
-    tagOptions.value = tagRes.data;
-    formData.tagIds = [];
-  } else {
-    await handleBookOrBillTypeChange();
-    formData.toAccountId = null;
-  }
 }
 
 function handleOpened() {
   if (props.row) {
     Object.assign(formData, props.row);
-    handleBookOrBillTypeChange();
+    handleCategoryPayeeTagRefresh();
   } else {
     formRef.value?.resetFields();
     formData.bookId = props.bookId;
-    handleBookOrBillTypeChange();
+    handleCategoryPayeeTagRefresh();
   }
 }
 
