@@ -66,89 +66,44 @@ export function modifyBookApi(command: ModifyBookCommand) {
   });
 }
 
-export function removeBookApi(groupId: number, bookId: number) {
+export function removeBookApi(bookId: number) {
   return http.request<ResponseData<any>>(
     "delete",
-    `/fortune/book/base/${groupId}/${bookId}/remove`
+    `/fortune/book/base/${bookId}/remove`
   );
 }
 
-export function enableBookApi(groupId: number, bookId: number) {
+export function enableBookApi(bookId: number) {
   return http.request<ResponseData<any>>(
     "patch",
-    `/fortune/book/base/${groupId}/${bookId}/enable`
+    `/fortune/book/base/${bookId}/enable`
   );
 }
 
-export function disableBookApi(groupId: number, bookId: number) {
+export function disableBookApi(bookId: number) {
   return http.request<ResponseData<any>>(
     "patch",
-    `/fortune/book/base/${groupId}/${bookId}/disable`
+    `/fortune/book/base/${bookId}/disable`
   );
 }
 
-export function bookMove2RecycleBinApi(groupId: number, bookId: number) {
+export function bookMove2RecycleBinApi(bookId: number) {
   return http.request<ResponseData<any>>(
     "patch",
-    `/fortune/book/base/${groupId}/${bookId}/moveToRecycleBin`
+    `/fortune/book/base/${bookId}/moveToRecycleBin`
   );
 }
 
-export interface CategoryVo {
-  categoryId?: number;
-  categoryName?: string;
-  categoryType?: number;
-  bookId?: number;
-  parentId?: number;
-  sort?: number;
-  remark?: string;
-  enable?: boolean;
-  recycleBin?: boolean;
-  children?: CategoryVo;
+export function bookPutBackApi(bookId: number) {
+  return http.request<ResponseData<any>>(
+    "patch",
+    `/fortune/book/base/${bookId}/putBack`
+  );
 }
 
-export interface PayeeVo {
-  payeeId?: number;
-  payeeName?: string;
-  bookId?: number;
-  sort?: number;
-  remark?: string;
-  enable?: boolean;
-  recycleBin?: boolean;
+export function bookSetDefaultBookApi(bookId: number) {
+  return http.request<ResponseData<any>>(
+    "patch",
+    `/fortune/book/base/${bookId}/setDefaultBook`
+  );
 }
-
-export interface TagVo {
-  tagId?: number;
-  tagName?: string;
-  bookId?: number;
-  parentId?: number;
-  sort?: number;
-  remark?: string;
-  enable?: boolean;
-  recycleBin?: boolean;
-  children?: CategoryVo;
-}
-
-// 分类
-export const getEnableCategoryList = (bookId: number, billType: number) => {
-  return http.request<ResponseData<Array<CategoryVo>>>(
-    "get",
-    `/fortune/book/config/category/${bookId}/${billType}/getEnableList`
-  );
-};
-
-//交易对象
-export const getEnablePayeeList = (bookId: number, billType: number) => {
-  return http.request<ResponseData<Array<PayeeVo>>>(
-    "get",
-    `/fortune/book/config/payee/${bookId}/${billType}/getEnableList`
-  );
-};
-
-//标签
-export const getEnableTagList = (bookId: number, billType: number) => {
-  return http.request<ResponseData<Array<TagVo>>>(
-    "get",
-    `/fortune/book/config/tag/${bookId}/${billType}/getEnableList`
-  );
-};

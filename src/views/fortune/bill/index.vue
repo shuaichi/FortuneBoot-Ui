@@ -37,21 +37,6 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="交易类型：" prop="billType">
-        <el-select
-          v-model="searchFormParams.billType"
-          placeholder="请选择类型"
-          class="!w-[180px]"
-          clearable
-        >
-          <el-option
-            v-for="item in billTypeOptions"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
-      </el-form-item>
       <el-form-item label="账户：" prop="accountId">
         <el-select
           v-model="searchFormParams.accountId"
@@ -64,6 +49,29 @@
             :key="item.accountId"
             :label="item.accountName"
             :value="item.accountId"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="标题" prop="title">
+        <el-input
+          v-model.trim="searchFormParams.title"
+          placeholder="请输入标题"
+          class="!w-[180px]"
+          clearable
+        />
+      </el-form-item>
+      <el-form-item label="交易类型：" prop="billType">
+        <el-select
+          v-model="searchFormParams.billType"
+          placeholder="请选择类型"
+          class="!w-[180px]"
+          clearable
+        >
+          <el-option
+            v-for="item in billTypeOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
           />
         </el-select>
       </el-form-item>
