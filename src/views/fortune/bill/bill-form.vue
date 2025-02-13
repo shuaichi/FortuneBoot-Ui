@@ -242,15 +242,13 @@ import { ElMessage, FormRules } from "element-plus";
 import VDialog from "@/components/VDialog/VDialog.vue";
 import ReCol from "@/components/ReCol";
 import { addBillApi, modifyBillApi } from "@/api/fortune/bill";
-import {
-  getEnableBookList,
-  getEnableCategoryList,
-  getEnablePayeeList,
-  getEnableTagList
-} from "@/api/fortune/book";
+import { getEnableBookList } from "@/api/fortune/book";
 import { getEnableAccountList } from "@/api/fortune/account";
 import { getEnableGroupList } from "@/api/fortune/group";
 import { message } from "@/utils/message";
+import { getEnableCategoryList } from "@/api/fortune/category";
+import { getEnablePayeeList } from "@/api/fortune/payee";
+import { getEnableTagList } from "@/api/fortune/tag";
 
 const props = defineProps<{
   type: "add" | "edit";
@@ -421,6 +419,7 @@ async function handleCategoryPayeeTagRefresh() {
 function handleOpened() {
   if (props.row) {
     Object.assign(formData, props.row);
+    formData.tagIdList = props.row.tagList.map(item => item.tagId);
     handleCategoryPayeeTagRefresh();
   } else {
     formRef.value?.resetFields();

@@ -124,7 +124,7 @@ export function useHook() {
           onClick={() => handleIncludeClick(row)}
           class="cursor-pointer"
         >
-          {row.include ? "统计中" : "不统计"}
+          {row.include ? "已统计" : "不统计"}
         </el-tag>
       )
     },
