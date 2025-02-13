@@ -1,4 +1,3 @@
-<!-- bill-form.vue -->
 <template>
   <v-dialog
     show-full-screen

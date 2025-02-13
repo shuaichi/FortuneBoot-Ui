@@ -65,91 +65,91 @@ export function modifyAccountApi(param: ModifyAccountCommand) {
 }
 
 export function canExpenseApi(groupId: number, accountId: number) {
-  return http.request<ResponseData<PageDTO<AccountVo>>>(
+  return http.request<ResponseData<any>>(
     "patch",
     `/fortune/account/${groupId}/${accountId}/canExpense`
   );
 }
 
 export function cannotExpenseApi(groupId: number, accountId: number) {
-  return http.request<ResponseData<PageDTO<AccountVo>>>(
+  return http.request<ResponseData<any>>(
     "patch",
     `/fortune/account/${groupId}/${accountId}/cannotExpense`
   );
 }
 
 export function canIncomeApi(groupId: number, accountId: number) {
-  return http.request<ResponseData<PageDTO<AccountVo>>>(
+  return http.request<ResponseData<any>>(
     "patch",
     `/fortune/account/${groupId}/${accountId}/canIncome`
   );
 }
 
 export function cannotIncomeApi(groupId: number, accountId: number) {
-  return http.request<ResponseData<PageDTO<AccountVo>>>(
+  return http.request<ResponseData<any>>(
     "patch",
     `/fortune/account/${groupId}/${accountId}/cannotIncome`
   );
 }
 
 export function canTransferOutApi(groupId: number, accountId: number) {
-  return http.request<ResponseData<PageDTO<AccountVo>>>(
+  return http.request<ResponseData<any>>(
     "patch",
     `/fortune/account/${groupId}/${accountId}/canTransferOut`
   );
 }
 
 export function cannotTransferOutApi(groupId: number, accountId: number) {
-  return http.request<ResponseData<PageDTO<AccountVo>>>(
+  return http.request<ResponseData<any>>(
     "patch",
     `/fortune/account/${groupId}/${accountId}/cannotTransferOut`
   );
 }
 
 export function canTransferInApi(groupId: number, accountId: number) {
-  return http.request<ResponseData<PageDTO<AccountVo>>>(
+  return http.request<ResponseData<any>>(
     "patch",
     `/fortune/account/${groupId}/${accountId}/canTransferIn`
   );
 }
 
 export function cannotTransferInApi(groupId: number, accountId: number) {
-  return http.request<ResponseData<PageDTO<AccountVo>>>(
+  return http.request<ResponseData<any>>(
     "patch",
     `/fortune/account/${groupId}/${accountId}/cannotTransferIn`
   );
 }
 
 export function includeAccountApi(groupId: number, accountId: number) {
-  return http.request<ResponseData<PageDTO<AccountVo>>>(
+  return http.request<ResponseData<any>>(
     "patch",
     `/fortune/account/${groupId}/${accountId}/includeAccount`
   );
 }
 
 export function excludeAccountApi(groupId: number, accountId: number) {
-  return http.request<ResponseData<PageDTO<AccountVo>>>(
+  return http.request<ResponseData<any>>(
     "patch",
     `/fortune/account/${groupId}/${accountId}/excludeAccount`
   );
 }
 
 export function enableAccountApi(groupId: number, accountId: number) {
-  return http.request<ResponseData<PageDTO<AccountVo>>>(
+  return http.request<ResponseData<any>>(
     "patch",
     `/fortune/account/${groupId}/${accountId}/enable`
   );
 }
 
 export function disableAccountApi(groupId: number, accountId: number) {
-  return http.request<ResponseData<PageDTO<AccountVo>>>(
+  return http.request<ResponseData<any>>(
     "patch",
     `/fortune/account/${groupId}/${accountId}/disable`
   );
 }
 
 export function move2RecycleBinApi(groupId: number, accountId: number) {
-  return http.request<ResponseData<PageDTO<AccountVo>>>(
+  return http.request<ResponseData<any>>(
     "patch",
     `/fortune/account/${groupId}/${accountId}/moveToRecycleBin`
   );

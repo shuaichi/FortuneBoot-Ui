@@ -11,7 +11,7 @@
         <el-select
           v-model="searchFormParams.groupId"
           placeholder="请选择账本"
-          class="!w-[180px]"
+          class="!w-[200px]"
           filterable
         >
           <el-option
@@ -26,7 +26,7 @@
         <el-select
           v-model="searchFormParams.bookId"
           placeholder="请选择账本"
-          class="!w-[180px]"
+          class="!w-[200px]"
           filterable
         >
           <el-option
@@ -41,7 +41,7 @@
         <el-select
           v-model="searchFormParams.accountId"
           placeholder="请选择账户"
-          class="!w-[180px]"
+          class="!w-[200px]"
           filterable
         >
           <el-option
@@ -56,7 +56,7 @@
         <el-input
           v-model.trim="searchFormParams.title"
           placeholder="请输入标题"
-          class="!w-[180px]"
+          class="!w-[200px]"
           clearable
         />
       </el-form-item>
@@ -64,7 +64,7 @@
         <el-select
           v-model="searchFormParams.billType"
           placeholder="请选择类型"
-          class="!w-[180px]"
+          class="!w-[200px]"
           clearable
         >
           <el-option
@@ -80,6 +80,7 @@
           v-model="searchFormParams.tradeTimeRange"
           type="daterange"
           range-separator="-"
+          class="!w-[300px]"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
           value-format="YYYY-MM-DD"

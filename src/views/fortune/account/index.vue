@@ -123,8 +123,6 @@
 </template>
 
 <script setup lang="ts">
-// 类似账本index的逻辑，使用account-hook.tsx中的方法
-
 import { useHook } from "./utils/hook";
 import PureTable from "@pureadmin/table";
 import { onMounted, ref } from "vue";

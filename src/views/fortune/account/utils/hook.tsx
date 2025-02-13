@@ -223,7 +223,6 @@ export function useHook() {
   async function onSearch(barRef?: any) {
     try {
       loading.value = true;
-      console.log("onSearch");
       hideColumn(barRef);
       searchFormParams.recycleBin = false;
       const { data } = await getFortuneAccountPage({

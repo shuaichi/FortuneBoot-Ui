@@ -54,6 +54,13 @@ export function getEnableBookList(groupId: number) {
   );
 }
 
+export function getBookById(bookId: number) {
+  return http.request<ResponseData<BookVo>>(
+    "get",
+    `/fortune/book/base/${bookId}/getBookById`
+  );
+}
+
 export function addBookApi(command: AddBookCommand) {
   return http.request<ResponseData<any>>("post", "/fortune/book/base/add", {
     data: command
