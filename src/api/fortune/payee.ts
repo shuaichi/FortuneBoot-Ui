@@ -36,10 +36,10 @@ export interface ModifyPayeeCommand extends AddPayeeCommand {
   bookId?: number;
 }
 
-export const getPayeeListApi = (params: PayeeQuery) => {
-  return http.request<ResponseData<Array<PayeeVo>>>(
+export const getPayeePageApi = (params: PayeeQuery) => {
+  return http.request<ResponseData<PageDTO<PayeeVo>>>(
     "get",
-    `/fortune/payee/getList`,
+    `/fortune/payee/getPage`,
     {
       params
     }
@@ -105,5 +105,19 @@ export const payeeDisableApi = (bookId: number, payeeId: number) => {
   return http.request<ResponseData<any>>(
     "patch",
     `/fortune/payee/${bookId}/${payeeId}/disable`
+  );
+};
+
+export const movePayee2RecycleBinApi = (bookId: number, payeeId: number) => {
+  return http.request<ResponseData<any>>(
+    "patch",
+    `/fortune/payee/${bookId}/${payeeId}/moveToRecycleBin`
+  );
+};
+
+export const movePayeePutBackApi = (bookId: number, payeeId: number) => {
+  return http.request<ResponseData<any>>(
+    "patch",
+    `/fortune/payee/${bookId}/${payeeId}/putBack`
   );
 };

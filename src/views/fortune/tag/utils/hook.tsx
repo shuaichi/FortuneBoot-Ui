@@ -3,26 +3,28 @@ import { reactive, ref } from "vue";
 import { message } from "@/utils/message";
 import type { PaginationProps } from "@pureadmin/table";
 import { ElMessageBox } from "element-plus";
-import {
-  getPayeePageApi,
-  movePayee2RecycleBinApi,
-  payeeCanExpenseApi,
-  payeeCanIncomeApi,
-  payeeCannotExpenseApi,
-  payeeCannotIncomeApi,
-  payeeDisableApi,
-  payeeEnableApi,
-  PayeeQuery,
-  PayeeVo
-} from "@/api/fortune/payee";
 import { getBookById } from "@/api/fortune/book";
+import {
+  getTagPageApi,
+  moveTag2RecycleBinApi,
+  tagCanExpenseApi,
+  tagCanIncomeApi,
+  tagCannotExpenseApi,
+  tagCannotIncomeApi,
+  tagCannotTransferApi,
+  tagCanTransferApi,
+  tagDisableApi,
+  tagEnableApi,
+  TagQuery,
+  TagVo
+} from "@/api/fortune/tag";
 
 const { tagStyle } = usePublicHooks();
 export function useHook() {
   const loading = ref(true);
   const title = ref<string>(null);
   const dataList = ref([]);
-  const searchFormParams = reactive<PayeeQuery>({});
+  const searchFormParams = reactive<TagQuery>({});
 
   const pagination = reactive<PaginationProps>({
     total: 0,
@@ -34,15 +36,16 @@ export function useHook() {
   function resetForm() {
     searchFormParams.canIncome = null;
     searchFormParams.canExpense = null;
+    searchFormParams.canTransfer = null;
     searchFormParams.enable = null;
-    searchFormParams.payeeName = null;
+    searchFormParams.tagName = null;
     onSearch();
   }
 
   async function onSearch() {
     try {
       const [data, book] = await Promise.all([
-        getPayeePageApi(searchFormParams),
+        getTagPageApi(searchFormParams),
         getBookById(searchFormParams.bookId)
       ]);
       dataList.value = data.data.rows;
@@ -59,16 +62,17 @@ export function useHook() {
     pagination.pageSize = pageSize;
     await onSearch();
   }
+
   async function handleCurrentChange(currentPage: number) {
     pagination.currentPage = currentPage;
     await onSearch();
   }
 
-  async function handleCanExpenseClick(row: PayeeVo) {
+  async function handleCanExpenseClick(row: TagVo) {
     try {
       const action = row.canExpense ? "不可支出" : "可支出";
       await ElMessageBox.confirm(
-        `确认${action}【${row.payeeName}】吗？`,
+        `确认${action}【${row.tagName}】吗？`,
         `${action}确认`,
         {
           confirmButtonText: "确定",
@@ -77,9 +81,9 @@ export function useHook() {
         }
       );
       if (row.canExpense) {
-        await payeeCannotExpenseApi(row.bookId, row.payeeId);
+        await tagCannotExpenseApi(row.bookId, row.tagId);
       } else {
-        await payeeCanExpenseApi(row.bookId, row.payeeId);
+        await tagCanExpenseApi(row.bookId, row.tagId);
       }
       message(`${action}成功`, { type: "success" });
       await onSearch();
@@ -88,11 +92,11 @@ export function useHook() {
     }
   }
 
-  async function handleCanIncomeClick(row: PayeeVo) {
+  async function handleCanIncomeClick(row: TagVo) {
     try {
       const action = row.canIncome ? "不可收入" : "可收入";
       await ElMessageBox.confirm(
-        `确认${action}【${row.payeeName}】吗？`,
+        `确认${action}【${row.tagName}】吗？`,
         `${action}确认`,
         {
           confirmButtonText: "确定",
@@ -101,9 +105,9 @@ export function useHook() {
         }
       );
       if (row.canIncome) {
-        await payeeCannotIncomeApi(row.bookId, row.payeeId);
+        await tagCannotIncomeApi(row.bookId, row.tagId);
       } else {
-        await payeeCanIncomeApi(row.bookId, row.payeeId);
+        await tagCanIncomeApi(row.bookId, row.tagId);
       }
       message(`${action}成功`, { type: "success" });
       await onSearch();
@@ -112,11 +116,35 @@ export function useHook() {
     }
   }
 
-  async function handleStatusClick(row: PayeeVo) {
+  async function handleCanTransferClick(row: TagVo) {
+    try {
+      const action = row.canTransfer ? "不可转账" : "可转账";
+      await ElMessageBox.confirm(
+        `确认${action}【${row.tagName}】吗？`,
+        `${action}确认`,
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        }
+      );
+      if (row.canTransfer) {
+        await tagCannotTransferApi(row.bookId, row.tagId);
+      } else {
+        await tagCanTransferApi(row.bookId, row.tagId);
+      }
+      message(`${action}成功`, { type: "success" });
+      await onSearch();
+    } catch (error) {
+      console.log("操作取消");
+    }
+  }
+
+  async function handleStatusClick(row: TagVo) {
     try {
       const action = row.enable ? "停用" : "启用";
       await ElMessageBox.confirm(
-        `确认${action}【${row.payeeName}】吗？`,
+        `确认${action}【${row.tagName}】吗？`,
         `${action}确认`,
         {
           confirmButtonText: "确定",
@@ -125,9 +153,9 @@ export function useHook() {
         }
       );
       if (row.enable) {
-        await payeeDisableApi(row.bookId, row.payeeId);
+        await tagDisableApi(row.bookId, row.tagId);
       } else {
-        await payeeEnableApi(row.bookId, row.payeeId);
+        await tagEnableApi(row.bookId, row.tagId);
       }
       message(`${action}成功`, { type: "success" });
       await onSearch();
@@ -136,11 +164,11 @@ export function useHook() {
     }
   }
 
-  async function handleMove2RecycleBin(row: PayeeVo) {
+  async function handleMove2RecycleBin(row: TagVo) {
     try {
       loading.value = true;
-      await movePayee2RecycleBinApi(row.bookId, row.payeeId);
-      message(`已将【${row.payeeName}】移入回收站`, { type: "success" });
+      await moveTag2RecycleBinApi(row.bookId, row.tagId);
+      message(`已将【${row.tagName}】移入回收站`, { type: "success" });
       await onSearch();
     } catch (e) {
       message(e.message || "移入回收站失败", { type: "error" });
@@ -151,13 +179,13 @@ export function useHook() {
 
   const columns: TableColumnList = [
     {
-      label: "名称",
-      prop: "payeeName",
+      label: "标签名称",
+      prop: "tagName",
       minWidth: 200,
       align: "left"
     },
     {
-      label: "可支出",
+      label: "支出状态",
       prop: "canExpense",
       width: 200,
       cellRenderer: ({ row, props }) => (
@@ -172,7 +200,7 @@ export function useHook() {
       )
     },
     {
-      label: "可收入",
+      label: "收入状态",
       prop: "canIncome",
       width: 200,
       cellRenderer: ({ row, props }) => (
@@ -187,7 +215,22 @@ export function useHook() {
       )
     },
     {
-      label: "是否启用",
+      label: "转账状态",
+      prop: "canTransfer",
+      width: 200,
+      cellRenderer: ({ row, props }) => (
+        <el-tag
+          size={props.size}
+          style={tagStyle.value(row.canTransfer ? 1 : 0)}
+          onClick={() => handleCanTransferClick(row)}
+          class="cursor-pointer"
+        >
+          {row.canTransfer ? "可转账" : "不可转账"}
+        </el-tag>
+      )
+    },
+    {
+      label: "启用状态",
       prop: "enable",
       width: 200,
       cellRenderer: ({ row, props }) => (

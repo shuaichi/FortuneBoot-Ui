@@ -2,7 +2,7 @@
   <v-dialog
     show-full-screen
     :fixed-body-height="false"
-    :title="type === 'add' ? '新增交易对象' : '修改交易对象'"
+    :title="type === 'add' ? '新增标签' : '修改标签'"
     v-model="visible"
     width="640px"
     :loading="loading"
@@ -13,23 +13,28 @@
     <el-form :model="formData" label-width="120px" :rules="rules" ref="formRef">
       <el-row :gutter="30">
         <re-col :value="24">
-          <el-form-item prop="payeeName" label="名称">
-            <el-input v-model="formData.payeeName" placeholder="请输入名称" />
+          <el-form-item prop="tagName" label="标签名称">
+            <el-input v-model="formData.tagName" placeholder="请输入名称" />
           </el-form-item>
         </re-col>
       </el-row>
       <el-row :gutter="30">
-        <re-col :value="8">
+        <re-col :value="7">
           <el-form-item prop="canExpense" label="可支出">
             <el-switch v-model="formData.canExpense" :style="switchStyle" />
           </el-form-item>
         </re-col>
-        <re-col :value="8">
+        <re-col :value="7">
           <el-form-item prop="canIncome" label="可收入">
             <el-switch v-model="formData.canIncome" :style="switchStyle" />
           </el-form-item>
         </re-col>
         <re-col :value="7">
+          <el-form-item prop="canTransfer" label="可转账">
+            <el-switch v-model="formData.canTransfer" :style="switchStyle" />
+          </el-form-item>
+        </re-col>
+        <re-col :value="6">
           <el-form-item prop="enable" label="启用状态">
             <el-switch v-model="formData.enable" :style="switchStyle" />
           </el-form-item>
@@ -68,25 +73,26 @@ import VDialog from "@/components/VDialog/VDialog.vue";
 import ReCol from "@/components/ReCol";
 import { usePublicHooks } from "@/views/system/hooks";
 import { computed, reactive, ref } from "vue";
-import {
-  addPayeeApi,
-  modifyPayeeApi,
-  AddPayeeCommand,
-  ModifyPayeeCommand,
-  PayeeVo
-} from "@/api/fortune/payee";
 import { ElMessage, FormRules } from "element-plus";
+import {
+  addTagApi,
+  AddTagCommand,
+  modifyTagApi,
+  ModifyTagCommand,
+  TagVo
+} from "@/api/fortune/tag";
 
 const props = defineProps<{
   type: "add" | "edit";
   modelValue: boolean;
-  row?: PayeeVo;
+  row?: TagVo;
   bookId?: number;
 }>();
 
-const formData = reactive<AddPayeeCommand | ModifyPayeeCommand>({
+const formData = reactive<AddTagCommand | ModifyTagCommand>({
   canExpense: true,
   canIncome: true,
+  canTransfer: true,
   enable: true
 });
 
@@ -119,9 +125,9 @@ async function handleConfirm() {
   try {
     loading.value = true;
     if (props.type === "add") {
-      await addPayeeApi(formData);
+      await addTagApi(formData);
     } else {
-      await modifyPayeeApi(formData);
+      await modifyTagApi(formData);
     }
     ElMessage.success("操作成功");
     visible.value = false;
