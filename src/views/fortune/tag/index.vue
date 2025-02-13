@@ -2,7 +2,7 @@
   <div class="main">
     <el-page-header @back="$router.back()">
       <template #content>
-        <span class="text-large font-600 mr-3"> {{ title }} - 交易对象 </span>
+        <span class="text-large font-600 mr-3"> {{ title }} - 标签 </span>
       </template>
     </el-page-header>
     <el-form
@@ -11,9 +11,9 @@
       :model="searchFormParams"
       class="search-form bg-bg_color w-[99/100] pl-8 pt-[12px]"
     >
-      <el-form-item label="名称：" prop="payeeName">
+      <el-form-item label="名称：" prop="tagName">
         <el-input
-          v-model="searchFormParams.payeeName"
+          v-model="searchFormParams.tagName"
           placeholder="请输入名称"
           clearable
           class="!w-[200px]"
@@ -49,6 +49,21 @@
           />
         </el-select>
       </el-form-item>
+      <el-form-item label="转账状态：" prop="canTransfer">
+        <el-select
+          v-model="searchFormParams.canTransfer"
+          placeholder="请选择转账状态"
+          class="!w-[200px]"
+          filterable
+        >
+          <el-option
+            v-for="item in canTransferOptions"
+            :key="item.label"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item label="启用状态：" prop="enable">
         <el-select
           v-model="searchFormParams.enable"
@@ -78,14 +93,14 @@
         </el-button>
       </el-form-item>
     </el-form>
-    <PureTableBar title="交易对象列表" :columns="columns" @refresh="onSearch">
+    <PureTableBar title="标签列表" :columns="columns" @refresh="onSearch">
       <template #buttons>
         <el-button
           type="primary"
           :icon="useRenderIcon(AddFill)"
           @click="openDialog('add')"
         >
-          新增交易对象
+          新增标签
         </el-button>
       </template>
       <template v-slot="{ size, dynamicColumns }">
@@ -130,7 +145,7 @@
         </pure-table>
       </template>
     </PureTableBar>
-    <payee-form
+    <tag-form
       v-model="modalVisible"
       :type="opType"
       :row="currentRow"
@@ -140,22 +155,21 @@
     />
   </div>
 </template>
-
 <script setup lang="ts">
-import { useHook } from "./utils/hook";
-import PureTableBar from "@/components/RePureTableBar/src/bar";
-import PureTable from "@pureadmin/table";
-import PayeeForm from "@/views/fortune/payee/payee-form.vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-import AddFill from "@iconify-icons/ri/add-circle-line";
-import { onMounted, ref } from "vue";
-import { PayeeVo } from "@/api/fortune/payee";
-import { useRoute } from "vue-router";
 import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
+import AddFill from "@iconify-icons/ri/add-circle-line";
+import PureTable from "@pureadmin/table";
+import PureTableBar from "@/components/RePureTableBar/src/bar";
+import TagForm from "@/views/fortune/tag/tag-form.vue";
+import { onMounted, ref } from "vue";
+import { useHook } from "./utils/hook";
+import { useRoute } from "vue-router";
+import { TagVo } from "@/api/fortune/tag";
 
 const opType = ref<"add" | "edit">("add");
-const currentRow = ref<PayeeVo>();
+const currentRow = ref<TagVo>();
 const modalVisible = ref(false);
 const bookId = ref<number>();
 
@@ -187,6 +201,13 @@ const canIncomeOptions = ref<
   { label: "不可收入", value: false }
 ]);
 
+const canTransferOptions = ref<
+  [{ label?: string; value?: boolean }, { label?: string; value?: boolean }]
+>([
+  { label: "可转账", value: true },
+  { label: "不可转账", value: false }
+]);
+
 const enableOptions = ref<
   [{ label?: string; value?: boolean }, { label?: string; value?: boolean }]
 >([
@@ -196,7 +217,7 @@ const enableOptions = ref<
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
-  name: "FortuneBookPayee"
+  name: "FortuneBookTag"
 });
 
 onMounted(async () => {
@@ -206,7 +227,7 @@ onMounted(async () => {
   await onSearch();
 });
 
-function openDialog(type: "add" | "edit", row?: PayeeVo) {
+function openDialog(type: "add" | "edit", row?: TagVo) {
   opType.value = type;
   currentRow.value = row;
   modalVisible.value = true;

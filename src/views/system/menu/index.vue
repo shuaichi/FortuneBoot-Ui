@@ -9,6 +9,7 @@ import EditPen from "@iconify-icons/ep/edit-pen";
 import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
 import AddFill from "@iconify-icons/ri/add-circle-line";
+import PureTable from "@pureadmin/table";
 
 defineOptions({
   name: "SystemMenu"
