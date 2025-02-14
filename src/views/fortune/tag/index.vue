@@ -111,6 +111,7 @@
           table-layout="auto"
           :loading="loading"
           :size="size"
+          row-key="tagId"
           adaptive
           :data="dataList"
           :columns="dynamicColumns"

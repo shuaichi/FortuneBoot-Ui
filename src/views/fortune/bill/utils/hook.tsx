@@ -18,7 +18,7 @@ export function useHook() {
   const { tagStyle } = usePublicHooks();
   const loading = ref(false);
   const dataList = ref<BillVo[]>([]);
-  const searchFormParams = reactive<BillQuery>({});
+  const searchForm = reactive<BillQuery>({});
   const pagination = reactive({
     total: 0,
     pageSize: 10,
@@ -145,15 +145,12 @@ export function useHook() {
     try {
       loading.value = true;
       const params = {
-        ...searchFormParams,
-        pageSize: pagination.pageSize,
-        pageNum: pagination.currentPage,
-        tradeTimeStartTime: searchFormParams.tradeTimeRange?.[0],
-        tradeTimeEndTime: searchFormParams.tradeTimeRange?.[1]
+        ...searchForm,
+        tradeTimeStartTime: searchForm.tradeTimeRange?.[0],
+        tradeTimeEndTime: searchForm.tradeTimeRange?.[1]
       };
 
       const { data } = await getBillPage(params);
-      console.log(data.rows[5]);
       dataList.value = data.rows.map(item => ({
         ...item,
         tradeTime: formatDateTime(item.tradeTime),
@@ -236,26 +233,28 @@ export function useHook() {
     }
   }
 
-  function handleSizeChange(val: number) {
-    pagination.pageSize = val;
+  function handleSizeChange(pageSize: number) {
+    pagination.pageSize = pageSize;
+    searchForm.pageSize = pageSize;
     onSearch();
   }
 
-  function handleCurrentChange(val: number) {
-    pagination.currentPage = val;
+  function handleCurrentChange(currentPage: number) {
+    pagination.currentPage = currentPage;
+    searchForm.pageNum = currentPage;
     onSearch();
   }
 
   async function resetForm() {
-    searchFormParams.tradeTimeRange = [null, null];
-    searchFormParams.bookId = null;
-    searchFormParams.accountId = null;
-    searchFormParams.billType = null;
+    searchForm.tradeTimeRange = [null, null];
+    searchForm.bookId = null;
+    searchForm.accountId = null;
+    searchForm.billType = null;
     await onSearch();
   }
 
   return {
-    searchFormParams,
+    searchFormParams: searchForm,
     dataList,
     columns,
     loading,

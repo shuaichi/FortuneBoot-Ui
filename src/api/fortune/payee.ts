@@ -12,7 +12,7 @@ export interface PayeeVo {
   recycleBin?: boolean;
 }
 
-export interface PayeeQuery {
+export interface PayeeQuery extends BasePageQuery {
   bookId?: number;
   payeeId?: number;
   recycleBin?: boolean;

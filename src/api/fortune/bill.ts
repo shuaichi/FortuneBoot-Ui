@@ -9,7 +9,7 @@ export interface ModifyBillCommand extends AddBillCommand {
   billId?: number;
 }
 
-export interface BillQuery extends BaseQuery {
+export interface BillQuery extends BasePageQuery {
   groupId?: number;
   bookId?: number;
   bookType?: number;
