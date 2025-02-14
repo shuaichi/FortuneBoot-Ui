@@ -257,7 +257,13 @@ const rules: FormRules = {
   groupId: [{ required: true, message: "所属分组不能为空" }],
   accountName: [{ required: true, message: "账户名称不能为空" }],
   accountType: [{ required: true, message: "账户名称不能为空" }],
-  currencyCode: [{ required: true, message: "币种不能为空" }]
+  currencyCode: [{ required: true, message: "币种不能为空" }],
+  canExpense: [{ required: true, message: "支出状态不能为空" }],
+  canIncome: [{ required: true, message: "收入状态不能为空" }],
+  canTransferOut: [{ required: true, message: "转出状态不能为空" }],
+  canTransferIn: [{ required: true, message: "转入状态不能为空" }],
+  include: [{ required: true, message: "计入净资产状态不能为空" }],
+  enable: [{ required: true, message: "启用状态不能为空" }]
 };
 
 onMounted(async () => {

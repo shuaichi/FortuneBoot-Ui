@@ -157,7 +157,7 @@ export function useHook() {
       align: "left"
     },
     {
-      label: "可支出",
+      label: "支出状态",
       prop: "canExpense",
       width: 200,
       cellRenderer: ({ row, props }) => (
@@ -172,7 +172,7 @@ export function useHook() {
       )
     },
     {
-      label: "可收入",
+      label: "收入状态",
       prop: "canIncome",
       width: 200,
       cellRenderer: ({ row, props }) => (
@@ -187,7 +187,7 @@ export function useHook() {
       )
     },
     {
-      label: "是否启用",
+      label: "启用状态",
       prop: "enable",
       width: 200,
       cellRenderer: ({ row, props }) => (

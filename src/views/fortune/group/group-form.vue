@@ -62,7 +62,7 @@
         <re-col :value="12" v-if="props.type !== 'add'">
           <el-form-item prop="defaultBookId" label="默认账本" required>
             <el-select
-              v-model="formData.defaultBookId"
+              v-model="(formData as ModifyGroupCommand).defaultBookId"
               placeholder="请选择默认账本"
               style="width: 100%"
             >
@@ -76,7 +76,7 @@
           </el-form-item>
         </re-col>
         <re-col :value="12" :xs="24" :sm="24">
-          <el-form-item label="是否启用">
+          <el-form-item label="启用状态">
             <el-switch
               v-model="formData.enable"
               inline-prompt
@@ -158,13 +158,8 @@ const visible = computed({
   }
 });
 const formData = reactive<AddGroupCommand | ModifyGroupCommand>({
-  groupId: null,
-  groupName: "",
   defaultCurrency: "CNY",
-  bookTemplate: null,
-  enable: true,
-  defaultBookId: null,
-  remark: ""
+  defaultBookId: null
 });
 
 function handleOpened() {
