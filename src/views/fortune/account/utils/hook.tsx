@@ -27,7 +27,7 @@ export function useHook() {
   const { tagStyle } = usePublicHooks();
   const loading = ref(false);
   const dataList = ref<AccountVo[]>([]);
-  const searchFormParams = reactive<AccountQuery>({});
+  const searchForm = reactive<AccountQuery>({});
   const pagination = reactive({
     total: 0,
     pageSize: 10,
@@ -224,12 +224,8 @@ export function useHook() {
     try {
       loading.value = true;
       hideColumn(barRef);
-      searchFormParams.recycleBin = false;
-      const { data } = await getFortuneAccountPage({
-        ...searchFormParams,
-        pageSize: pagination.pageSize,
-        pageNum: pagination.currentPage
-      });
+      searchForm.recycleBin = false;
+      const { data } = await getFortuneAccountPage(searchForm);
       dataList.value = data.rows;
       pagination.total = data.total;
     } catch (e) {
@@ -240,7 +236,7 @@ export function useHook() {
   }
 
   function hideColumn(barRef?: any) {
-    const type = searchFormParams.accountType;
+    const type = searchForm.accountType;
     barRef?.handleCheckColumnListChange(type === 4, "利率");
     barRef?.handleCheckColumnListChange(type === 4 || type === 2, "额度");
     barRef?.handleCheckColumnListChange(type === 2, "账单日");
@@ -406,27 +402,29 @@ export function useHook() {
   }
 
   async function resetForm() {
-    searchFormParams.accountName = null;
+    searchForm.accountName = null;
     const res = await getEnableGroupList();
     if (res.data.length === 0) {
       message("请先启用或创建分组");
     }
-    searchFormParams.groupId = res.data[0].groupId;
+    searchForm.groupId = res.data[0].groupId;
     await onSearch();
   }
 
-  function handleSizeChange(val: number) {
-    pagination.pageSize = val;
+  function handleSizeChange(pageSize: number) {
+    pagination.pageSize = pageSize;
+    searchForm.pageSize = pageSize;
     onSearch();
   }
 
-  function handleCurrentChange(val: number) {
-    pagination.currentPage = val;
+  function handleCurrentChange(currentPage: number) {
+    pagination.currentPage = currentPage;
+    searchForm.pageNum = currentPage;
     onSearch();
   }
 
   return {
-    searchFormParams,
+    searchFormParams: searchForm,
     loading,
     columns,
     dataList,

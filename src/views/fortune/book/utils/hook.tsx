@@ -16,7 +16,7 @@ export function useHook() {
   const { tagStyle } = usePublicHooks();
   const loading = ref(true);
   const dataList = ref<BookVo[]>([]);
-  const searchFormParams = reactive<BookQuery>({});
+  const searchForm = reactive<BookQuery>({});
   const pagination = reactive({
     total: 0,
     pageSize: 10,
@@ -99,19 +99,15 @@ export function useHook() {
     if (res.data.length === 0) {
       message("请先启用或创建分组");
     }
-    searchFormParams.groupId = res.data[0].groupId;
+    searchForm.recycleBin = false;
+    searchForm.groupId = res.data[0].groupId;
     await onSearch();
   });
 
   async function onSearch() {
     try {
       loading.value = true;
-      const { data } = await getFortuneBookPage({
-        ...searchFormParams,
-        recycleBin: false,
-        pageSize: pagination.pageSize,
-        pageNum: pagination.currentPage
-      });
+      const { data } = await getFortuneBookPage(searchForm);
       const group = await getEnableGroupList();
       if (group.data.length === 0) {
         message("请先启用或创建分组");
@@ -168,29 +164,31 @@ export function useHook() {
     }
   }
 
-  function handleSizeChange(val: number) {
-    pagination.pageSize = val;
+  function handleSizeChange(pageSize: number) {
+    pagination.pageSize = pageSize;
+    searchForm.pageSize = pageSize;
     onSearch();
   }
 
-  function handleCurrentChange(val: number) {
-    pagination.currentPage = val;
+  function handleCurrentChange(currentPage: number) {
+    pagination.currentPage = currentPage;
+    searchForm.pageNum = currentPage;
     onSearch();
   }
 
   async function resetForm() {
-    searchFormParams.bookName = null;
-    searchFormParams.enable = null;
+    searchForm.bookName = null;
+    searchForm.enable = null;
     const res = await getEnableGroupList();
     if (res.data.length === 0) {
       message("请先启用或创建分组");
     }
-    searchFormParams.groupId = res.data[0].groupId;
+    searchForm.groupId = res.data[0].groupId;
     await onSearch();
   }
 
   return {
-    searchFormParams,
+    searchFormParams: searchForm,
     resetForm,
     loading,
     columns,

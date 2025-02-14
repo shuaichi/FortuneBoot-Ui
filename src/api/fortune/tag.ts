@@ -1,6 +1,7 @@
 import { http } from "@/utils/http";
+import { Tree } from "@/utils/tree";
 
-export interface TagVo {
+export interface TagVo extends Tree {
   tagId?: number;
   tagName?: string;
   bookId?: number;
@@ -12,10 +13,9 @@ export interface TagVo {
   sort?: number;
   remark?: string;
   recycleBin?: boolean;
-  children?: TagVo;
 }
 
-export interface TagQuery {
+export interface TagQuery extends BasePageQuery {
   bookId?: number;
   tagId?: number;
   recycleBin?: boolean;
@@ -29,6 +29,7 @@ export interface TagQuery {
 export interface AddTagCommand {
   tagName?: string;
   bookId?: number;
+  parentId?: number;
   canExpense?: boolean;
   canIncome?: boolean;
   canTransfer?: boolean;

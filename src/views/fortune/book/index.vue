@@ -85,17 +85,35 @@
           @page-current-change="handleCurrentChange"
         >
           <template #operation="{ row }">
-            <el-button link type="primary" @click="openDialog('edit', row)">
-              编辑
-            </el-button>
-            <el-popconfirm
-              :title="`确认将【${row.bookName}】账本移入回收站？`"
-              @confirm="handleRecycleBin(row)"
-            >
-              <template #reference>
-                <el-button link type="danger">回收站</el-button>
-              </template>
-            </el-popconfirm>
+            <div class="flex items-center justify-center gap-8px w-full">
+              <el-button link type="primary" @click="openDialog('edit', row)">
+                编辑
+              </el-button>
+              <el-popconfirm
+                :title="`确认将【${row.bookName}】账本移入回收站？`"
+                @confirm="handleRecycleBin(row)"
+              >
+                <template #reference>
+                  <el-button link type="danger">回收站</el-button>
+                </template>
+              </el-popconfirm>
+              <el-dropdown>
+                <el-button link type="primary">账本配置</el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item @click="openCategory(row)">
+                      分类
+                    </el-dropdown-item>
+                    <el-dropdown-item @click="openTag(row)">
+                      标签
+                    </el-dropdown-item>
+                    <el-dropdown-item @click="openPayee(row)">
+                      交易对象
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
           </template>
         </pure-table>
       </template>
@@ -123,6 +141,7 @@ import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
 import { getEnableGroupList } from "@/api/fortune/group";
 import { message } from "@/utils/message";
+import { useRouter } from "vue-router";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -151,6 +170,7 @@ const opType = ref<"add" | "edit">("add");
 const currentRow = ref<BookVo>();
 const modalVisible = ref(false);
 const groupOptions = ref([]);
+const router = useRouter();
 
 onMounted(async () => {
   const groupRes = await getEnableGroupList();
@@ -164,5 +184,32 @@ function openDialog(type: "add" | "edit", row?: BookVo) {
   opType.value = type;
   currentRow.value = row;
   modalVisible.value = true;
+}
+
+function openCategory(row?: BookVo) {
+  router.push({
+    path: "/fortune/category/index",
+    query: {
+      bookId: row.bookId
+    }
+  });
+}
+
+function openTag(row?: BookVo) {
+  router.push({
+    path: "/fortune/tag/index",
+    query: {
+      bookId: row.bookId
+    }
+  });
+}
+
+function openPayee(row?: BookVo) {
+  router.push({
+    path: "/fortune/payee/index",
+    query: {
+      bookId: row.bookId
+    }
+  });
 }
 </script>

@@ -121,6 +121,7 @@
                 "
                 v-model="item.categoryId"
                 :data="categoryOptions"
+                check-strictly
                 placeholder="请选择分类"
                 style="width: 100%"
                 :props="categoryTreeProps"
@@ -178,6 +179,7 @@
               :data="tagOptions"
               placeholder="请选择标签"
               style="width: 100%"
+              check-strictly
               multiple
               :props="tagTreeProps"
             />

@@ -13,6 +13,21 @@
     <el-form :model="formData" label-width="120px" :rules="rules" ref="formRef">
       <el-row :gutter="30">
         <re-col :value="24">
+          <el-form-item prop="parentId" label="父级标签">
+            <el-tree-select
+              v-model="formData.parentId"
+              check-strictly
+              :disabled="props.type !== 'add'"
+              :data="tagOptions"
+              placeholder="请选择父级标签"
+              style="width: 100%"
+              :props="tagTreeProps"
+            />
+          </el-form-item>
+        </re-col>
+      </el-row>
+      <el-row :gutter="30">
+        <re-col :value="24">
           <el-form-item prop="tagName" label="标签名称">
             <el-input v-model="formData.tagName" placeholder="请输入名称" />
           </el-form-item>
@@ -77,6 +92,7 @@ import { ElMessage, FormRules } from "element-plus";
 import {
   addTagApi,
   AddTagCommand,
+  getTagPageApi,
   modifyTagApi,
   ModifyTagCommand,
   TagVo
@@ -95,30 +111,43 @@ const formData = reactive<AddTagCommand | ModifyTagCommand>({
   canTransfer: true,
   enable: true
 });
-
 const loading = ref(false);
 const formRef = ref();
+const tagOptions = ref([]);
 const { switchStyle } = usePublicHooks();
 const emits = defineEmits(["update:modelValue", "success"]);
 const visible = computed({
   get: () => props.modelValue,
   set: v => emits("update:modelValue", v)
 });
-
+const tagTreeProps = {
+  label: "tagName",
+  value: "tagId",
+  children: "children"
+};
 const rules: FormRules = {
-  payeeName: [{ required: true, message: "所属名称不能为空" }],
+  tagName: [{ required: true, message: "标签名称不能为空" }],
   canExpense: [{ required: true, message: "支出状态不能为空" }],
   canIncome: [{ required: true, message: "收入状态不能为空" }],
   canTransfer: [{ required: true, message: "转账状态不能为空" }],
   enable: [{ required: true, message: "启用状态不能为空" }]
 };
 
-function handleOpened() {
+async function handleOpened() {
   if (props.row) {
     Object.assign(formData, props.row);
   } else {
     formRef.value?.resetFields();
     formData.bookId = props.bookId;
+  }
+  if (props.type !== "add" && formData.parentId === -1) {
+    tagOptions.value = [{ tagName: "根节点", tagId: -1 }];
+  } else {
+    const tagRes = await getTagPageApi({
+      bookId: formData.bookId,
+      recycleBin: false
+    });
+    tagOptions.value = tagRes.data.rows;
   }
 }
 
@@ -126,6 +155,7 @@ async function handleConfirm() {
   try {
     loading.value = true;
     if (props.type === "add") {
+      formData.parentId = formData.parentId ? formData.parentId : -1;
       await addTagApi(formData);
     } else {
       await modifyTagApi(formData);

@@ -24,7 +24,7 @@ export function useHook() {
   const loading = ref(true);
   const title = ref<string>(null);
   const dataList = ref([]);
-  const searchFormParams = reactive<TagQuery>({});
+  const searchForm = reactive<TagQuery>({});
 
   const pagination = reactive<PaginationProps>({
     total: 0,
@@ -34,19 +34,19 @@ export function useHook() {
   });
 
   function resetForm() {
-    searchFormParams.canIncome = null;
-    searchFormParams.canExpense = null;
-    searchFormParams.canTransfer = null;
-    searchFormParams.enable = null;
-    searchFormParams.tagName = null;
+    searchForm.canIncome = null;
+    searchForm.canExpense = null;
+    searchForm.canTransfer = null;
+    searchForm.enable = null;
+    searchForm.tagName = null;
     onSearch();
   }
 
   async function onSearch() {
     try {
       const [data, book] = await Promise.all([
-        getTagPageApi(searchFormParams),
-        getBookById(searchFormParams.bookId)
+        getTagPageApi(searchForm),
+        getBookById(searchForm.bookId)
       ]);
       dataList.value = data.data.rows;
       title.value = book.data.bookName;
@@ -60,11 +60,13 @@ export function useHook() {
 
   async function handleSizeChange(pageSize: number) {
     pagination.pageSize = pageSize;
+    searchForm.pageSize = pageSize;
     await onSearch();
   }
 
   async function handleCurrentChange(currentPage: number) {
     pagination.currentPage = currentPage;
+    searchForm.pageNum = currentPage;
     await onSearch();
   }
 
@@ -263,7 +265,7 @@ export function useHook() {
   ];
 
   return {
-    searchFormParams,
+    searchFormParams: searchForm,
     loading,
     title,
     columns,

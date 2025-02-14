@@ -28,18 +28,13 @@ export function useHook() {
 
   async function onSearch() {
     loading.value = true;
-    const { data } = await getFortuneGroupPage({
-      ...form,
-      pageSize: pagination.pageSize,
-      pageNum: pagination.currentPage
-    });
-    console.log("group list", data);
+    const { data } = await getFortuneGroupPage(searchForm);
     dataList.value = data.rows;
     pagination.total = data.total;
     loading.value = false;
   }
 
-  const form = reactive<GroupQuery>({});
+  const searchForm = reactive<GroupQuery>({});
   const pagination = reactive<PaginationProps>({
     total: 0,
     pageSize: 10,
@@ -50,7 +45,6 @@ export function useHook() {
   async function handleRemoveGroupApi(row: GroupVo) {
     try {
       loading.value = true;
-      //TODO 删除API调用
       await removeGroupApi(row.groupId);
       message(`您删除了分组名称为${row.groupName}的这条数据`, { type: "info" });
       await onSearch();
@@ -63,10 +57,12 @@ export function useHook() {
   }
   async function handleSizeChange(pageSize: number) {
     pagination.pageSize = pageSize;
+    searchForm.pageSize = pageSize;
     await onSearch();
   }
   async function handleCurrentChange(currentPage: number) {
     pagination.currentPage = currentPage;
+    searchForm.pageNum = currentPage;
     await onSearch();
   }
   // 添加状态切换处理函数
@@ -80,7 +76,7 @@ export function useHook() {
       } else {
         await disableGroup(currentRow.value.groupId);
       }
-      message(`状态修改成功`, { type: "success" });
+      message(`启用状态修改成功`, { type: "success" });
       onSearch();
     } catch (e) {
       console.error(e);
