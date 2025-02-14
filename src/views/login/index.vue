@@ -12,14 +12,14 @@ import Motion from "./utils/motion";
 import { useRouter } from "vue-router";
 import { message } from "@/utils/message";
 import { loginRules } from "./utils/rule";
-import phone from "./components/phone.vue";
+// import phone from "./components/phone.vue";
 import TypeIt from "@/components/ReTypeit";
-import qrCode from "./components/qrCode.vue";
+// import qrCode from "./components/qrCode.vue";
 import register from "./components/register.vue";
 import resetPassword from "./components/resetPassword.vue";
 import { useNav } from "@/layout/hooks/useNav";
 import type { FormInstance } from "element-plus";
-import { operates, thirdParty } from "./utils/enums";
+import { operates } from "./utils/enums";
 import { useLayout } from "@/layout/hooks/useLayout";
 import { rsaEncrypt } from "@/utils/crypt";
 import { getTopMenu, initRouter } from "@/router/utils";
@@ -283,7 +283,7 @@ onBeforeUnmount(() => {
               </el-form-item>
             </Motion>
           </el-form>
-
+          <!--
           <Motion v-if="currentPage === 0" :delay="350">
             <el-form-item>
               <el-divider>
@@ -303,11 +303,11 @@ onBeforeUnmount(() => {
                 </span>
               </div>
             </el-form-item>
-          </Motion>
+          </Motion>-->
           <!-- 手机号登录 -->
-          <phone v-if="currentPage === 1" v-model:current-page="currentPage" />
+          <!--          <phone v-if="currentPage === 1" v-model:current-page="currentPage" />-->
           <!-- 二维码登录 -->
-          <qrCode v-if="currentPage === 2" v-model:current-page="currentPage" />
+          <!--          <qrCode v-if="currentPage === 2" v-model:current-page="currentPage" />-->
           <!-- 注册 -->
           <register
             v-if="currentPage === 3"
@@ -324,7 +324,7 @@ onBeforeUnmount(() => {
     <!--  底部  -->
     <div class="flex items-center justify-center h-full">
       <div class="flex flex-col items-center justify-center mb-3">
-        <span>Copyright © 2024-2024 FortuneBoot All Rights Reserved. </span>
+        <span>Copyright © 2025-2025 FortuneBoot All Rights Reserved. </span>
         <el-link href="" rel="external nofollow" target="_blank" type="primary"
           >暂无
         </el-link>
