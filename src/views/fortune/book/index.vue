@@ -102,10 +102,10 @@
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item @click="openCategory(row)">
-                      分类
+                      分类管理
                     </el-dropdown-item>
                     <el-dropdown-item @click="openTag(row)">
-                      标签
+                      标签管理
                     </el-dropdown-item>
                     <el-dropdown-item @click="openPayee(row)">
                       交易对象

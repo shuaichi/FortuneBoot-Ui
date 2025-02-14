@@ -224,7 +224,6 @@ export function useHook() {
     try {
       loading.value = true;
       hideColumn(barRef);
-      searchForm.recycleBin = false;
       const { data } = await getFortuneAccountPage(searchForm);
       dataList.value = data.rows;
       pagination.total = data.total;
@@ -424,7 +423,7 @@ export function useHook() {
   }
 
   return {
-    searchFormParams: searchForm,
+    searchForm,
     loading,
     columns,
     dataList,

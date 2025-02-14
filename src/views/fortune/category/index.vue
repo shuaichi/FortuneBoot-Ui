@@ -2,82 +2,40 @@
   <div class="main">
     <el-page-header @back="$router.back()">
       <template #content>
-        <span class="text-large font-600 mr-3"> {{ title }} - 标签 </span>
+        <span class="text-large font-600 mr-3">
+          {{ title }} -
+          {{ searchForm.categoryType === 1 ? "支出" : "收入" }}分类
+        </span>
       </template>
     </el-page-header>
+    <div class="full-width-container">
+      <el-radio-group
+        v-model="searchForm.categoryType"
+        size="large"
+        class="full-width-group"
+        @change="onSearch()"
+      >
+        <el-radio-button :label="1" class="quarter-width"
+          >支 出 分 类</el-radio-button
+        >
+        <el-radio-button :label="2" class="quarter-width"
+          >收 入 分 类</el-radio-button
+        >
+      </el-radio-group>
+    </div>
     <el-form
       ref="formRef"
       :inline="true"
       :model="searchForm"
       class="search-form bg-bg_color w-[99/100] pl-8 pt-[12px]"
     >
-      <el-form-item label="名称：" prop="tagName">
+      <el-form-item label="名称：" prop="categoryName">
         <el-input
-          v-model="searchForm.tagName"
+          v-model="searchForm.categoryName"
           placeholder="请输入名称"
           clearable
           class="!w-[200px]"
         />
-      </el-form-item>
-      <el-form-item label="支出状态：" prop="canExpense">
-        <el-select
-          v-model="searchForm.canExpense"
-          placeholder="请选择支出状态"
-          class="!w-[200px]"
-          filterable
-        >
-          <el-option
-            v-for="item in canExpenseOptions"
-            :key="item.label"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="收入状态：" prop="canIncome">
-        <el-select
-          v-model="searchForm.canIncome"
-          placeholder="请选择收入状态"
-          class="!w-[200px]"
-          filterable
-        >
-          <el-option
-            v-for="item in canIncomeOptions"
-            :key="item.label"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="转账状态：" prop="canTransfer">
-        <el-select
-          v-model="searchForm.canTransfer"
-          placeholder="请选择转账状态"
-          class="!w-[200px]"
-          filterable
-        >
-          <el-option
-            v-for="item in canTransferOptions"
-            :key="item.label"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="启用状态：" prop="enable">
-        <el-select
-          v-model="searchForm.enable"
-          placeholder="请选择是否可收入"
-          class="!w-[200px]"
-          filterable
-        >
-          <el-option
-            v-for="item in enableOptions"
-            :key="item.label"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button
@@ -93,14 +51,14 @@
         </el-button>
       </el-form-item>
     </el-form>
-    <PureTableBar title="标签列表" :columns="columns" @refresh="onSearch">
+    <PureTableBar title="分类列表" :columns="columns" @refresh="onSearch">
       <template #buttons>
         <el-button
           type="primary"
           :icon="useRenderIcon(AddFill)"
           @click="openDialog('add')"
         >
-          新增标签
+          新增{{ searchForm.categoryType === 1 ? "支出" : "收入" }}分类
         </el-button>
       </template>
       <template v-slot="{ size, dynamicColumns }">
@@ -111,7 +69,7 @@
           table-layout="auto"
           :loading="loading"
           :size="size"
-          row-key="tagId"
+          row-key="categoryId"
           adaptive
           :data="dataList"
           :columns="dynamicColumns"
@@ -135,7 +93,7 @@
               编辑
             </el-button>
             <el-popconfirm
-              :title="`确认将【${row.payeeName}】移入回收站？`"
+              :title="`确认将【${row.categoryName}】移入回收站？`"
               @confirm="handleMove2RecycleBin(row)"
             >
               <template #reference>
@@ -146,31 +104,24 @@
         </pure-table>
       </template>
     </PureTableBar>
-    <tag-form
-      v-model="modalVisible"
-      :type="opType"
-      :row="currentRow"
-      :bookId="bookId"
-      v-if="modalVisible"
-      @success="onSearch"
-    />
   </div>
 </template>
+
 <script setup lang="ts">
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
 import AddFill from "@iconify-icons/ri/add-circle-line";
-import PureTable from "@pureadmin/table";
 import PureTableBar from "@/components/RePureTableBar/src/bar";
-import TagForm from "@/views/fortune/tag/tag-form.vue";
+import PureTable from "@pureadmin/table";
 import { onMounted, ref } from "vue";
+import { CategoryVo } from "@/api/fortune/category";
 import { useHook } from "./utils/hook";
 import { useRoute } from "vue-router";
 import { TagVo } from "@/api/fortune/tag";
 
 const opType = ref<"add" | "edit">("add");
-const currentRow = ref<TagVo>();
+const currentRow = ref<CategoryVo>();
 const modalVisible = ref(false);
 const bookId = ref<number>();
 
@@ -188,43 +139,16 @@ const {
   handleCurrentChange
 } = useHook();
 
-const canExpenseOptions = ref<
-  [{ label?: string; value?: boolean }, { label?: string; value?: boolean }]
->([
-  { label: "可支出", value: true },
-  { label: "不可支出", value: false }
-]);
-
-const canIncomeOptions = ref<
-  [{ label?: string; value?: boolean }, { label?: string; value?: boolean }]
->([
-  { label: "可收入", value: true },
-  { label: "不可收入", value: false }
-]);
-
-const canTransferOptions = ref<
-  [{ label?: string; value?: boolean }, { label?: string; value?: boolean }]
->([
-  { label: "可转账", value: true },
-  { label: "不可转账", value: false }
-]);
-
-const enableOptions = ref<
-  [{ label?: string; value?: boolean }, { label?: string; value?: boolean }]
->([
-  { label: "启用", value: true },
-  { label: "停用", value: false }
-]);
-
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
-  name: "FortuneBookTag"
+  name: "FortuneBookCategory"
 });
 
 onMounted(async () => {
   const route = useRoute();
   searchForm.bookId = Number(route.query.bookId);
   searchForm.recycleBin = false;
+  searchForm.categoryType = 1;
   await onSearch();
 });
 
@@ -235,3 +159,23 @@ function openDialog(type: "add" | "edit", row?: TagVo) {
   bookId.value = searchForm.bookId;
 }
 </script>
+
+<style scoped>
+/* 深度选择器覆盖 element 样式 */
+:deep(.full-width-group) {
+  display: flex;
+  width: 100%;
+}
+
+:deep(.quarter-width) {
+  flex: 1; /* 等分剩余空间 */
+
+  /* 调整内部按钮宽度 */
+
+  .el-radio-button__inner {
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
+}
+</style>

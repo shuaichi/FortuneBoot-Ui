@@ -8,12 +8,12 @@
     <el-form
       ref="formRef"
       :inline="true"
-      :model="searchFormParams"
+      :model="searchForm"
       class="search-form bg-bg_color w-[99/100] pl-8 pt-[12px]"
     >
       <el-form-item label="名称：" prop="payeeName">
         <el-input
-          v-model="searchFormParams.payeeName"
+          v-model="searchForm.payeeName"
           placeholder="请输入名称"
           clearable
           class="!w-[200px]"
@@ -21,7 +21,7 @@
       </el-form-item>
       <el-form-item label="支出状态：" prop="canExpense">
         <el-select
-          v-model="searchFormParams.canExpense"
+          v-model="searchForm.canExpense"
           placeholder="请选择支出状态"
           class="!w-[200px]"
           filterable
@@ -36,7 +36,7 @@
       </el-form-item>
       <el-form-item label="收入状态：" prop="canIncome">
         <el-select
-          v-model="searchFormParams.canIncome"
+          v-model="searchForm.canIncome"
           placeholder="请选择收入状态"
           class="!w-[200px]"
           filterable
@@ -51,7 +51,7 @@
       </el-form-item>
       <el-form-item label="启用状态：" prop="enable">
         <el-select
-          v-model="searchFormParams.enable"
+          v-model="searchForm.enable"
           placeholder="请选择是否可收入"
           class="!w-[200px]"
           filterable
@@ -119,7 +119,7 @@
               编辑
             </el-button>
             <el-popconfirm
-              :title="`确认将【${row.payeeName}】账户移入回收站？`"
+              :title="`确认将【${row.payeeName}】移入回收站？`"
               @confirm="handleMove2RecycleBin(row)"
             >
               <template #reference>
@@ -162,7 +162,7 @@ const bookId = ref<number>();
 const {
   loading,
   title,
-  searchFormParams,
+  searchForm,
   pagination,
   dataList,
   columns,
@@ -201,8 +201,8 @@ defineOptions({
 
 onMounted(async () => {
   const route = useRoute();
-  searchFormParams.bookId = Number(route.query.bookId);
-  searchFormParams.recycleBin = false;
+  searchForm.bookId = Number(route.query.bookId);
+  searchForm.recycleBin = false;
   await onSearch();
 });
 
@@ -210,6 +210,6 @@ function openDialog(type: "add" | "edit", row?: PayeeVo) {
   opType.value = type;
   currentRow.value = row;
   modalVisible.value = true;
-  bookId.value = searchFormParams.bookId;
+  bookId.value = searchForm.bookId;
 }
 </script>
