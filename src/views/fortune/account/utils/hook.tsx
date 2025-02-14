@@ -118,7 +118,7 @@ export function useHook() {
       hide: true
     },
     {
-      label: "可支出",
+      label: "支出状态",
       prop: "canExpense",
       width: 100,
       cellRenderer: ({ row, props }) => (
@@ -133,7 +133,7 @@ export function useHook() {
       )
     },
     {
-      label: "可收入",
+      label: "收入状态",
       prop: "canIncome",
       width: 100,
       cellRenderer: ({ row, props }) => (
@@ -148,7 +148,7 @@ export function useHook() {
       )
     },
     {
-      label: "可转出",
+      label: "转出状态",
       prop: "canTransferOut",
       width: 100,
       cellRenderer: ({ row, props }) => (
@@ -163,7 +163,7 @@ export function useHook() {
       )
     },
     {
-      label: "可转入",
+      label: "转入状态",
       prop: "canTransferIn",
       width: 100,
       cellRenderer: ({ row, props }) => (
@@ -193,7 +193,7 @@ export function useHook() {
       )
     },
     {
-      label: "是否启用",
+      label: "启用状态",
       prop: "enable",
       width: 100,
       cellRenderer: ({ row, props }) => (

@@ -19,10 +19,10 @@
           class="!w-[200px]"
         />
       </el-form-item>
-      <el-form-item label="可支出：" prop="canExpense">
+      <el-form-item label="支出状态：" prop="canExpense">
         <el-select
           v-model="searchFormParams.canExpense"
-          placeholder="请选择是否可支出"
+          placeholder="请选择支出状态"
           class="!w-[200px]"
           filterable
         >
@@ -34,10 +34,10 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="可收入：" prop="canIncome">
+      <el-form-item label="收入状态：" prop="canIncome">
         <el-select
           v-model="searchFormParams.canIncome"
-          placeholder="请选择是否可收入"
+          placeholder="请选择收入状态"
           class="!w-[200px]"
           filterable
         >

@@ -6,25 +6,25 @@ export interface GroupQuery extends BasePageQuery {
 }
 
 export interface GroupVo {
-  groupId: number;
-  groupName: string;
-  defaultCurrency: string;
-  enable: boolean;
-  defaultBookId: number;
-  remark: string;
+  groupId?: number;
+  groupName?: string;
+  defaultCurrency?: string;
+  enable?: boolean;
+  defaultBookId?: number;
+  remark?: string;
 }
 
 export interface AddGroupCommand {
-  groupName: string;
-  defaultCurrency: string;
-  bookTemplate: number;
-  enable: boolean;
-  remark: string;
+  groupName?: string;
+  defaultCurrency?: string;
+  bookTemplate?: number;
+  enable?: boolean;
+  remark?: string;
 }
 
 export interface ModifyGroupCommand extends AddGroupCommand {
-  groupId: number;
-  defaultBookId: number;
+  groupId?: number;
+  defaultBookId?: number;
 }
 
 export function getFortuneGroupPage(params: GroupQuery) {

@@ -20,17 +20,17 @@
       </el-row>
       <el-row :gutter="30">
         <re-col :value="7">
-          <el-form-item prop="canExpense" label="可支出">
+          <el-form-item prop="canExpense" label="支出状态">
             <el-switch v-model="formData.canExpense" :style="switchStyle" />
           </el-form-item>
         </re-col>
         <re-col :value="7">
-          <el-form-item prop="canIncome" label="可收入">
+          <el-form-item prop="canIncome" label="收入状态">
             <el-switch v-model="formData.canIncome" :style="switchStyle" />
           </el-form-item>
         </re-col>
         <re-col :value="7">
-          <el-form-item prop="canTransfer" label="可转账">
+          <el-form-item prop="canTransfer" label="转账状态">
             <el-switch v-model="formData.canTransfer" :style="switchStyle" />
           </el-form-item>
         </re-col>
@@ -107,8 +107,9 @@ const visible = computed({
 
 const rules: FormRules = {
   payeeName: [{ required: true, message: "所属名称不能为空" }],
-  canExpense: [{ required: true, message: "能否支出不能为空" }],
-  canIncome: [{ required: true, message: "能否收入不能为空" }],
+  canExpense: [{ required: true, message: "支出状态不能为空" }],
+  canIncome: [{ required: true, message: "收入状态不能为空" }],
+  canTransfer: [{ required: true, message: "转账状态不能为空" }],
   enable: [{ required: true, message: "启用状态不能为空" }]
 };
 

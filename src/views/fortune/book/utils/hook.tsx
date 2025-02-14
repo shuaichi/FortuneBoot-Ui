@@ -133,7 +133,7 @@ export function useHook() {
   async function handleRecycleBin(row: BookVo) {
     try {
       loading.value = true;
-      await bookMove2RecycleBinApi(row.groupId, row.bookId);
+      await bookMove2RecycleBinApi(row.bookId);
       message(`已删除【${row.bookName}】账本`, { type: "success" });
       await onSearch();
     } catch (e) {
@@ -157,9 +157,9 @@ export function useHook() {
       );
 
       if (row.enable) {
-        await disableBookApi(row.groupId, row.bookId);
+        await disableBookApi(row.bookId);
       } else {
-        await enableBookApi(row.groupId, row.bookId);
+        await enableBookApi(row.bookId);
       }
       message(`${action}成功`, { type: "success" });
       await onSearch();

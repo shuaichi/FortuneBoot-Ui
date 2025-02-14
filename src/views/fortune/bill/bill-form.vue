@@ -202,7 +202,7 @@
       </el-row>
       <el-row :gutter="30">
         <re-col :value="12">
-          <el-form-item prop="confirm" label="是否确认">
+          <el-form-item prop="confirm" label="确认状态">
             <el-switch
               v-model="formData.confirm"
               active-text="已确认"
@@ -212,7 +212,7 @@
           </el-form-item>
         </re-col>
         <re-col :value="12">
-          <el-form-item prop="include" label="是否统计">
+          <el-form-item prop="include" label="统计状态">
             <el-switch
               v-model="formData.include"
               active-text="统计"

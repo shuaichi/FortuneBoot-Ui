@@ -91,7 +91,7 @@
           </el-form-item>
         </re-col>
         <re-col :value="12" :xs="24" :sm="24">
-          <el-form-item label="是否启用">
+          <el-form-item label="启用状态">
             <el-switch
               v-model="formData.enable"
               inline-prompt
