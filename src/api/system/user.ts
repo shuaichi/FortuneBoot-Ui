@@ -57,7 +57,7 @@ export interface UserRequest {
  */
 export interface UserProfileRequest {
   email?: string;
-  nickName?: string;
+  nickname?: string;
   phoneNumber?: string;
   sex?: number;
   userId?: number;

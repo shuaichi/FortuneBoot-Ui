@@ -85,7 +85,9 @@ class PureHttp {
           "/refreshToken",
           "/login",
           "/captchaImage",
-          "/getConfig"
+          "/getConfig",
+          "/getAllowRegisterRoles",
+          "/register"
         ];
         return whiteList.some(v => config.url.endsWith(v))
           ? config

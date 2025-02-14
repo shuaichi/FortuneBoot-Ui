@@ -25,6 +25,21 @@ export type LoginByPasswordDTO = {
   captchaCodeKey: string;
 };
 
+export type RegisterDTO = {
+  /** 用户名 */
+  username?: string;
+  /**  密码 */
+  password?: string;
+  /**  昵称 */
+  nickname?: string;
+  /**  角色 */
+  roleId?: number;
+  /**  电话 */
+  phone?: string;
+  verifyCode?: string;
+  repeatPassword?: string;
+};
+
 /**
  * 后端token实现
  */
@@ -41,6 +56,11 @@ export type CurrentLoginUserDTO = {
   permissions: Set<string>;
 };
 
+export interface RoleVo {
+  roleId?: number;
+  roleName?: string;
+}
+
 /**
  * 当前User
  */
@@ -52,7 +72,7 @@ export interface CurrentUserInfoDTO {
   email?: string;
   loginDate?: Date;
   loginIp?: string;
-  nickName?: string;
+  nickname?: string;
   phoneNumber?: string;
   postId?: number;
   postName?: string;
@@ -88,6 +108,17 @@ export const getCaptchaCode = () => {
 /** 登录接口 */
 export const loginByPassword = (data: LoginByPasswordDTO) => {
   return http.request<ResponseData<TokenDTO>>("post", "/login", { data });
+};
+
+export const getAllowRegisterRoles = () => {
+  return http.request<ResponseData<Array<RoleVo>>>(
+    "get",
+    "/getAllowRegisterRoles"
+  );
+};
+
+export const register = (data: RegisterDTO) => {
+  return http.request<ResponseData<any>>("post", "/register", { data: data });
 };
 
 /** 获取当前登录用户接口 */
