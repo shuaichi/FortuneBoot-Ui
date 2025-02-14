@@ -222,7 +222,7 @@ export function useHook() {
   ];
 
   return {
-    searchFormParams: searchForm,
+    searchForm,
     loading,
     title,
     columns,
