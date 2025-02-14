@@ -80,14 +80,14 @@ export function modifyGroupApi(params: ModifyGroupCommand) {
 export function enableGroup(groupId: number) {
   return http.request<ResponseData<any>>(
     "patch",
-    `/fortune/group/${groupId}/enable/`
+    `/fortune/group/${groupId}/enable`
   );
 }
 
 export function disableGroup(groupId: number) {
   return http.request<ResponseData<any>>(
     "patch",
-    `/fortune/group/${groupId}/disable/`
+    `/fortune/group/${groupId}/disable`
   );
 }
 

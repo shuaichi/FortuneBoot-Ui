@@ -1,80 +1,3 @@
-<script setup lang="ts">
-import { ref, reactive } from "vue";
-import Motion from "../utils/motion";
-import { message } from "@/utils/message";
-import { updateRules } from "../utils/rule";
-import type { FormInstance } from "element-plus";
-import { useVerifyCode } from "../utils/verifyCode";
-import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-import Lock from "@iconify-icons/ri/lock-fill";
-import Iphone from "@iconify-icons/ep/iphone";
-import User from "@iconify-icons/ri/user-3-fill";
-
-defineProps({
-  currentPage: {
-    type: Number,
-    default: 3
-  }
-});
-
-const $pageEmit = defineEmits(["update:currentPage"]);
-
-const checked = ref(false);
-const loading = ref(false);
-const ruleForm = reactive({
-  username: "",
-  phone: "",
-  verifyCode: "",
-  password: "",
-  repeatPassword: ""
-});
-const ruleFormRef = ref<FormInstance>();
-const { isDisabled, text } = useVerifyCode();
-const repeatPasswordRule = [
-  {
-    validator: (rule, value, callback) => {
-      if (value === "") {
-        callback(new Error("请输入确认密码"));
-      } else if (ruleForm.password !== value) {
-        callback(new Error("两次密码不一致"));
-      } else {
-        callback();
-      }
-    },
-    trigger: "blur"
-  }
-];
-
-const onUpdate = async (formEl: FormInstance | undefined) => {
-  loading.value = true;
-  if (!formEl) return;
-  await formEl.validate((valid, fields) => {
-    if (valid) {
-      if (checked.value) {
-        // 模拟请求，需根据实际开发进行修改
-        setTimeout(() => {
-          message("注册成功", {
-            type: "success"
-          });
-          loading.value = false;
-        }, 2000);
-      } else {
-        loading.value = false;
-        message("请勾选隐私政策", { type: "warning" });
-      }
-    } else {
-      loading.value = false;
-      return fields;
-    }
-  });
-};
-
-function onBack() {
-  useVerifyCode().end();
-  $pageEmit("update:currentPage", 0);
-}
-</script>
-
 <template>
   <el-form
     ref="ruleFormRef"
@@ -82,6 +5,54 @@ function onBack() {
     :rules="updateRules"
     size="large"
   >
+    <Motion>
+      <el-form-item
+        :rules="[
+          {
+            required: true,
+            message: '请输入昵称',
+            trigger: 'blur'
+          }
+        ]"
+        prop="nickname"
+      >
+        <el-input
+          clearable
+          v-model="ruleForm.nickname"
+          placeholder="昵称"
+          :prefix-icon="useRenderIcon(nickname)"
+        />
+      </el-form-item>
+    </Motion>
+    <Motion>
+      <el-form-item
+        :rules="[
+          {
+            required: true,
+            message: '请选择角色',
+            trigger: 'blur'
+          }
+        ]"
+        prop="roleId"
+      >
+        <el-select
+          clearable
+          v-model="ruleForm.roleId"
+          placeholder="角色"
+          style="width: 100%"
+        >
+          <template #prefix>
+            <role />
+          </template>
+          <el-option
+            v-for="item in roleOptions"
+            :key="item.roleId"
+            :label="item.roleName"
+            :value="item.roleId"
+          />
+        </el-select>
+      </el-form-item>
+    </Motion>
     <Motion>
       <el-form-item
         :rules="[
@@ -102,7 +73,7 @@ function onBack() {
       </el-form-item>
     </Motion>
 
-    <Motion :delay="100">
+    <!--<Motion :delay="100">
       <el-form-item prop="phone">
         <el-input
           clearable
@@ -131,7 +102,7 @@ function onBack() {
           </el-button>
         </div>
       </el-form-item>
-    </Motion>
+    </Motion>-->
 
     <Motion :delay="200">
       <el-form-item prop="password">
@@ -187,3 +158,90 @@ function onBack() {
     </Motion>
   </el-form>
 </template>
+<script setup lang="ts">
+import { ref, reactive, onMounted } from "vue";
+import Motion from "../utils/motion";
+import { message } from "@/utils/message";
+import { updateRules } from "../utils/rule";
+import type { FormInstance } from "element-plus";
+import { useVerifyCode } from "../utils/verifyCode";
+import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+import Lock from "@iconify-icons/ri/lock-fill";
+// import Iphone from "@iconify-icons/ep/iphone";
+import User from "@iconify-icons/ri/user-3-fill";
+import nickname from "@/assets/svg/nickname.svg";
+import role from "@/assets/svg/role.svg";
+import {
+  getAllowRegisterRoles,
+  register,
+  RegisterDTO,
+  RoleVo
+} from "@/api/common/login";
+
+defineProps({
+  currentPage: {
+    type: Number,
+    default: 3
+  }
+});
+
+const $pageEmit = defineEmits(["update:currentPage"]);
+const checked = ref(false);
+const loading = ref(false);
+const ruleForm = reactive<RegisterDTO>({});
+const ruleFormRef = ref<FormInstance>();
+// const { isDisabled, text } = useVerifyCode();
+const roleOptions = ref<Array<RoleVo>>();
+const repeatPasswordRule = [
+  {
+    validator: (rule, value, callback) => {
+      if (value === "") {
+        callback(new Error("请输入确认密码"));
+      } else if (ruleForm.password !== value) {
+        callback(new Error("两次密码不一致"));
+      } else {
+        callback();
+      }
+    },
+    trigger: "blur"
+  }
+];
+
+onMounted(async () => {
+  const roles = await getAllowRegisterRoles();
+  roleOptions.value = roles.data;
+});
+
+const onUpdate = async (formEl: FormInstance | undefined) => {
+  loading.value = true;
+  if (!formEl) {
+    return;
+  }
+  await formEl.validate(async (valid, fields) => {
+    if (valid) {
+      if (checked.value) {
+        // 模拟请求，需根据实际开发进行修改
+        console.log(ruleForm);
+        await register(ruleForm);
+        setTimeout(() => {
+          message("注册成功", {
+            type: "success"
+          });
+          loading.value = false;
+        }, 1000);
+      } else {
+        loading.value = false;
+        message("请勾选隐私政策", { type: "warning" });
+      }
+    } else {
+      loading.value = false;
+      return fields;
+    }
+  });
+};
+
+function onBack() {
+  useVerifyCode().end();
+  $pageEmit("update:currentPage", 0);
+}
+</script>
