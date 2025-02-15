@@ -59,6 +59,7 @@
             <el-select
               v-model="formData.currencyCode"
               placeholder="请选择"
+              filterable
               style="width: 100%"
             >
               <el-option

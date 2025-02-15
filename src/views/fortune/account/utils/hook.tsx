@@ -72,9 +72,44 @@ export function useHook() {
         const formattedAmount = balance
           .toString()
           .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        return currencyCode === "CNY"
-          ? `￥${formattedAmount}`
-          : `$${formattedAmount}`;
+        // 货币符号映射
+        const currencySymbols = {
+          // 人民币
+          CNY: "￥",
+          // 美元
+          USD: "$",
+          // 欧元
+          EUR: "€",
+          // 英镑
+          GBP: "£",
+          // 日元
+          JPY: "¥",
+          // 澳元
+          AUD: "A$",
+          // 加元
+          CAD: "C$",
+          // 印度卢比
+          INR: "₹",
+          // 港币
+          HKD: "HK$",
+          // 新西兰元
+          NZD: "NZ$",
+          // 瑞典克朗
+          SEK: "Kr",
+          // 韩币
+          KRW: "₩",
+          // 新加坡元
+          SGD: "S$",
+          // 卢布
+          RUB: "₽",
+          // 南非兰特
+          ZAR: "R",
+          //泰铢
+          THB: "฿"
+        };
+        // 默认使用美元符号
+        const symbol = currencySymbols[currencyCode] || "$";
+        return `${symbol}${formattedAmount}`;
       }
     },
     {
@@ -88,9 +123,44 @@ export function useHook() {
         const formattedAmount = creditLimit
           .toString()
           .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        return currencyCode === "CNY"
-          ? `￥${formattedAmount}`
-          : `$${formattedAmount}`;
+        // 货币符号映射
+        const currencySymbols = {
+          // 人民币
+          CNY: "￥",
+          // 美元
+          USD: "$",
+          // 欧元
+          EUR: "€",
+          // 英镑
+          GBP: "£",
+          // 日元
+          JPY: "¥",
+          // 澳元
+          AUD: "A$",
+          // 加元
+          CAD: "C$",
+          // 印度卢比
+          INR: "₹",
+          // 港币
+          HKD: "HK$",
+          // 新西兰元
+          NZD: "NZ$",
+          // 瑞典克朗
+          SEK: "Kr",
+          // 韩币
+          KRW: "₩",
+          // 新加坡元
+          SGD: "S$",
+          // 卢布
+          RUB: "₽",
+          // 南非兰特
+          ZAR: "R",
+          //泰铢
+          THB: "฿"
+        };
+        // 默认使用美元符号
+        const symbol = currencySymbols[currencyCode] || "$";
+        return `${symbol}${formattedAmount}`;
       },
       hide: true
     },
