@@ -41,6 +41,7 @@ import Lock from "@iconify-icons/ri/lock-fill";
 import User from "@iconify-icons/ri/user-3-fill";
 import * as CommonAPI from "@/api/common/login";
 import { useUserStoreHook } from "@/store/modules/user";
+import { getApiVersion } from "@/api/common/login";
 
 defineOptions({
   name: "Login"
@@ -57,6 +58,7 @@ const isRememberMe = ref(false);
 const ruleFormRef = ref<FormInstance>();
 // 判断登录页面显示哪个组件（0：登录（默认）、1：手机登录、2：二维码登录、3：注册、4：忘记密码）
 const currentPage = ref(0);
+const apiVersion = ref<string>(null);
 
 const { initStorage } = useLayout();
 initStorage();
@@ -144,8 +146,10 @@ onBeforeMount(async () => {
   }
 });
 
-onMounted(() => {
+onMounted(async () => {
   window.document.addEventListener("keypress", onkeypress);
+  const version = await getApiVersion();
+  apiVersion.value = version.data;
 });
 
 onBeforeUnmount(() => {
@@ -325,10 +329,17 @@ onBeforeUnmount(() => {
     <div class="flex items-center justify-center h-full">
       <div class="flex flex-col items-center justify-center mb-3">
         <span>Copyright © 2025-2025 FortuneBoot All Rights Reserved. </span>
-        <el-link href="" rel="external nofollow" target="_blank" type="primary"
-          >暂无
-        </el-link>
-        <!-- href="https://beian.miit.gov.cn" 闽ICP备2022018106号-2 -->
+        <span>
+          <el-link
+            href=""
+            rel="external nofollow"
+            target="_blank"
+            type="primary"
+            >暂无
+          </el-link>
+          <!-- href="https://beian.miit.gov.cn" 闽ICP备2022018106号-2 -->
+          | version： 0.0.1 | api-version： {{ apiVersion }}
+        </span>
       </div>
     </div>
   </div>
