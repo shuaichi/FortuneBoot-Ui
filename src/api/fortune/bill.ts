@@ -57,23 +57,23 @@ export const modifyBillApi = (data: Partial<AddBillCommand>) => {
 };
 
 // 删除账单
-export const deleteBillApi = (billId: number) => {
-  return http.request("delete", `/fortune/bill/${billId}/remove`);
+export const deleteBillApi = (bookId: number, billId: number) => {
+  return http.request("delete", `/fortune/bill/${bookId}/${billId}/remove`);
 };
 
 // 状态操作接口
-export const confirmBillApi = (billId: number) => {
-  return http.request("patch", `/fortune/bill/${billId}/confirm`);
+export const confirmBillApi = (bookId: number, billId: number) => {
+  return http.request("patch", `/fortune/bill/${bookId}/${billId}/confirm`);
 };
 
-export const unConfirmBillApi = (billId: number) => {
-  return http.request("patch", `/fortune/bill/${billId}/unConfirm`);
+export const unConfirmBillApi = (bookId: number, billId: number) => {
+  return http.request("patch", `/fortune/bill/${bookId}/${billId}/unConfirm`);
 };
 
-export const includeBillApi = (billId: number) => {
-  return http.request("patch", `/fortune/bill/${billId}/include`);
+export const includeBillApi = (bookId: number, billId: number) => {
+  return http.request("patch", `/fortune/bill/${bookId}/${billId}/include`);
 };
 
-export const excludeBillApi = (billId: number) => {
-  return http.request("patch", `/fortune/bill/${billId}/exclude`);
+export const excludeBillApi = (bookId: number, billId: number) => {
+  return http.request("patch", `/fortune/bill/${bookId}/${billId}/exclude`);
 };
