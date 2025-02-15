@@ -95,6 +95,10 @@ export type DictionaryData = {
   cssTag: string;
 };
 
+export const getApiVersion = () => {
+  return http.request<ResponseData<string>>("get", "/getApiVersion");
+};
+
 /** 获取系统配置接口 */
 export const getConfig = () => {
   return http.request<ResponseData<ConfigDTO>>("get", "/getConfig");
