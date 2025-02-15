@@ -5,7 +5,7 @@
         <el-button
           type="primary"
           :icon="useRenderIcon(AddFill)"
-          @click="openDialog('add')"
+          @click="openUploadDialog('add')"
         >
           新增分组
         </el-button>
@@ -36,7 +36,7 @@
               link
               type="primary"
               :size="size"
-              @click="openDialog('upload', row)"
+              @click="openUploadDialog('upload', row)"
             >
               编辑
             </el-button>
@@ -50,15 +50,45 @@
                 </el-button>
               </template>
             </el-popconfirm>
+            <el-button
+              class="reset-margin"
+              link
+              type="primary"
+              :size="size"
+              @click="openInviteDialog(row)"
+            >
+              邀请
+            </el-button>
+            <el-button
+              class="reset-margin"
+              link
+              type="primary"
+              :size="size"
+              @click="openUserDialog(row)"
+            >
+              用户列表
+            </el-button>
           </template>
         </pure-table>
       </template>
     </PureTableBar>
     <group-form
-      v-model="modalVisible"
+      v-model="uploadVisible"
       :type="opType"
       :row="opRow"
-      v-if="modalVisible"
+      v-if="uploadVisible"
+      @success="onSearch"
+    />
+    <group-invite
+      v-model="inviteVisible"
+      v-if="inviteVisible"
+      :group-id="opRow.groupId"
+      @success="onSearch"
+    />
+    <group-user
+      v-model="userVisible"
+      v-if="userVisible"
+      :group-id="opRow.groupId"
       @success="onSearch"
     />
   </div>
@@ -75,16 +105,20 @@ import { ElMessage } from "element-plus";
 import { GroupVo } from "@/api/fortune/group";
 import GroupForm from "@/views/fortune/group/group-form.vue";
 import PureTable from "@pureadmin/table";
+import GroupInvite from "@/views/fortune/group/group-invite.vue";
+import GroupUser from "@/views/fortune/group/group-user.vue";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
   name: "FortuneGroup"
 });
 
-//const tableRef = ref();
 const opType = ref<"add" | "upload">("add");
 const opRow = ref<GroupVo>();
-const modalVisible = ref(false);
+const uploadVisible = ref<boolean>(false);
+const inviteVisible = ref<boolean>(false);
+const userVisible = ref<boolean>(false);
+
 const {
   loading,
   columns,
@@ -96,18 +130,23 @@ const {
   handleCurrentChange
 } = useHook();
 
-async function openDialog(type: "add" | "upload", row?: GroupVo) {
-  // debugger;
+async function openUploadDialog(type: "add" | "upload", row?: GroupVo) {
   try {
     opType.value = type;
     opRow.value = row;
-    modalVisible.value = true;
-    /*    if (row) {
-
-        }*/
+    uploadVisible.value = true;
   } catch (e) {
     console.error(e);
     ElMessage.error((e as Error)?.message || "加载菜单失败");
   }
+}
+function openInviteDialog(row?: GroupVo) {
+  opRow.value = row;
+  inviteVisible.value = true;
+}
+
+function openUserDialog(row?: GroupVo) {
+  opRow.value = row;
+  userVisible.value = true;
 }
 </script>

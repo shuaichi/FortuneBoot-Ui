@@ -163,10 +163,8 @@ const formData = reactive<AddGroupCommand | ModifyGroupCommand>({
 });
 
 function handleOpened() {
-  console.log("opened", props.row);
   if (props.row) {
     Object.assign(formData, props.row);
-    //formData.menuIds = props.row.selectedMenuList;
   } else {
     //formRef.value?.resetFields();
   }

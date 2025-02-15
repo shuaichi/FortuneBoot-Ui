@@ -27,6 +27,29 @@ export interface ModifyGroupCommand extends AddGroupCommand {
   defaultBookId?: number;
 }
 
+export interface InviteUserCommand {
+  groupId?: number;
+  roleType?: number;
+  username?: string;
+}
+
+export interface RolesBefore {
+  [key: number]: string;
+}
+
+export interface RoleType {
+  value: number;
+  desc: string;
+}
+
+export interface GroupUserVo {
+  userGroupRelationId?: number;
+  groupId?: number;
+  username?: string;
+  nickname?: string;
+  roleTpeDesc?: string;
+}
+
 export function getFortuneGroupPage(params: GroupQuery) {
   return http.request<ResponseData<PageDTO<GroupVo>>>(
     "get",
@@ -102,5 +125,32 @@ export function removeGroupApi(groupId: number) {
   return http.request<ResponseData<any>>(
     "patch",
     `/fortune/group/${groupId}/remove`
+  );
+}
+
+export function getRoleTypes() {
+  return http.request<ResponseData<RolesBefore>>(
+    "get",
+    "/fortune/group/getRoleTypes"
+  );
+}
+
+export function inviteUserApi(params: InviteUserCommand) {
+  return http.request<ResponseData<any>>("post", "/fortune/group/inviteUser", {
+    data: params
+  });
+}
+
+export function getGroupUserApi(groupId: number) {
+  return http.request<ResponseData<Array<GroupUserVo>>>(
+    "get",
+    `/fortune/group/${groupId}/getGroupUser`
+  );
+}
+
+export function removeGroupUserApi(groupUserId: number) {
+  return http.request<ResponseData<Array<GroupUserVo>>>(
+    "delete",
+    `/fortune/group/${groupUserId}/removeGroupUser`
   );
 }
