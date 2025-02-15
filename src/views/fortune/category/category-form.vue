@@ -140,8 +140,26 @@ async function handleOpened() {
       categoryType: formData.categoryType,
       recycleBin: false
     });
-    categoryOptions.value = categoryRes.data;
+    categoryOptions.value = trimTreeToTwoLevels(categoryRes.data);
   }
+}
+
+function trimTreeToTwoLevels(nodes: Array<CategoryVo>) {
+  return nodes.map(node => {
+    // 复制当前节点的其他属性
+    const newNode = { ...node };
+    // 如果当前节点有子节点，则只保留它们的直接子节点，并清空更深层次的子节点
+    if (newNode.children && newNode.children.length > 0) {
+      newNode.children = newNode.children.map(childNode => {
+        // 复制子节点的其他属性
+        const trimmedChildNode = { ...childNode };
+        // 清空子节点的子节点
+        trimmedChildNode.children = [];
+        return trimmedChildNode;
+      });
+    }
+    return newNode;
+  });
 }
 
 async function handleConfirm() {
