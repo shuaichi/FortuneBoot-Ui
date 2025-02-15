@@ -214,7 +214,7 @@ export function useHook() {
   async function handleDelete(row) {
     try {
       loading.value = true;
-      await deleteBillApi(row.billId);
+      await deleteBillApi(row.bookId, row.billId);
       message(`已删除【${row.title}】账单`, { type: "success" });
       await onSearch();
     } catch (e) {
@@ -234,9 +234,9 @@ export function useHook() {
       );
 
       if (row.confirm) {
-        await unConfirmBillApi(row.billId);
+        await unConfirmBillApi(row.bookId, row.billId);
       } else {
-        await confirmBillApi(row.billId);
+        await confirmBillApi(row.bookId, row.billId);
       }
 
       message(`${action}成功`);
@@ -256,9 +256,9 @@ export function useHook() {
       );
 
       if (row.include) {
-        await excludeBillApi(row.billId);
+        await excludeBillApi(row.bookId, row.billId);
       } else {
-        await includeBillApi(row.billId);
+        await includeBillApi(row.bookId, row.billId);
       }
 
       message(`${action}成功`);
