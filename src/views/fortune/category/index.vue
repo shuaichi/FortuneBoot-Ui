@@ -104,6 +104,15 @@
         </pure-table>
       </template>
     </PureTableBar>
+    <category-form
+      :category-type="searchForm.categoryType"
+      v-model="modalVisible"
+      :type="opType"
+      :row="currentRow"
+      :bookId="bookId"
+      v-if="modalVisible"
+      @success="onSearch"
+    />
   </div>
 </template>
 
@@ -119,6 +128,7 @@ import { CategoryVo } from "@/api/fortune/category";
 import { useHook } from "./utils/hook";
 import { useRoute } from "vue-router";
 import { TagVo } from "@/api/fortune/tag";
+import CategoryForm from "@/views/fortune/category/category-form.vue";
 
 const opType = ref<"add" | "edit">("add");
 const currentRow = ref<CategoryVo>();
