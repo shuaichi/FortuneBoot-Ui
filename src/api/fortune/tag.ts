@@ -50,6 +50,16 @@ export const getEnableTagList = (bookId: number, billType: number) => {
   );
 };
 
+export const getTagListApi = (params: TagQuery) => {
+  return http.request<ResponseData<Array<TagVo>>>(
+    "get",
+    `/fortune/tag/getList`,
+    {
+      params
+    }
+  );
+};
+
 export const getTagPageApi = (params: TagQuery) => {
   return http.request<ResponseData<PageDTO<TagVo>>>(
     "get",
