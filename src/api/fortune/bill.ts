@@ -1,8 +1,24 @@
 import { http } from "@/utils/http";
 
 export interface AddBillCommand {
-  bookId: number;
-  tradeTime: string;
+  bookId?: number;
+  title?: string;
+  tradeTime?: Date;
+  accountId?: number;
+  amount?: number;
+  tagIdList?: Array<number>;
+  payeeId?: number;
+  billType?: number;
+  toAccountId?: number;
+  confirm: boolean;
+  include: boolean;
+  categoryAmountPair?: Array<CategoryAmountPairVo>;
+  remark?: string;
+}
+
+export interface CategoryAmountPairVo {
+  categoryId?: number;
+  amount?: number;
 }
 
 export interface ModifyBillCommand extends AddBillCommand {
@@ -30,7 +46,10 @@ export interface BillQuery extends BasePageQuery {
   remark?: string;
 }
 
-export interface BillVo extends ModifyBillCommand {
+export interface BillVo {
+  billId: number;
+  bookId: number;
+  tradeTime: string;
   categoryAmountPair?: [{ categoryName: string; amount: number }];
   tagList?: [{ tagName: string }];
   currencyCode?: string;

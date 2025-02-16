@@ -15,6 +15,7 @@
         <re-col :value="12">
           <el-form-item prop="bookId" label="所属账本">
             <el-select
+              filterable
               v-model="formData.bookId"
               placeholder="请选择账本"
               style="width: 100%"
@@ -32,6 +33,7 @@
         <re-col :value="12">
           <el-form-item prop="billType" label="交易类型">
             <el-select
+              filterable
               v-model="formData.billType"
               placeholder="请选择类型"
               style="width: 100%"
@@ -74,6 +76,7 @@
             :label="formData.billType === 3 ? '转出账户' : '账户'"
           >
             <el-select
+              filterable
               v-model="formData.accountId"
               placeholder="请选择账户"
               style="width: 100%"
@@ -122,6 +125,7 @@
                 v-model="item.categoryId"
                 :data="categoryOptions"
                 check-strictly
+                filterable
                 placeholder="请选择分类"
                 style="width: 100%"
                 :props="categoryTreeProps"
@@ -159,6 +163,7 @@
         <re-col :value="12" v-if="formData.billType === 3">
           <el-form-item prop="toAccountId" label="转入账户">
             <el-select
+              filterable
               v-model="formData.toAccountId"
               placeholder="请选择转入账户"
               style="width: 100%"
@@ -180,6 +185,7 @@
               placeholder="请选择标签"
               style="width: 100%"
               check-strictly
+              filterable
               multiple
               :props="tagTreeProps"
             />
@@ -188,6 +194,7 @@
         <re-col :value="12" v-if="formData.billType !== 3">
           <el-form-item prop="payeeId" label="交易对象">
             <el-select
+              filterable
               v-model="formData.payeeId"
               placeholder="请选择交易对象"
               style="width: 100%"
@@ -242,7 +249,12 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
 import VDialog from "@/components/VDialog/VDialog.vue";
 import ReCol from "@/components/ReCol";
-import { addBillApi, modifyBillApi } from "@/api/fortune/bill";
+import {
+  addBillApi,
+  AddBillCommand,
+  modifyBillApi,
+  ModifyBillCommand
+} from "@/api/fortune/bill";
 import { getEnableBookList } from "@/api/fortune/book";
 import { getEnableAccountList } from "@/api/fortune/account";
 import { getEnableGroupList } from "@/api/fortune/group";
@@ -282,21 +294,11 @@ const categoryTreeProps = {
   value: "categoryId",
   children: "children"
 };
-const formData = reactive({
-  billId: null,
-  bookId: null,
-  title: "",
-  tradeTime: null,
-  accountId: null,
-  amount: null,
-  tagIdList: [],
-  payeeId: null,
+const formData = reactive<AddBillCommand | ModifyBillCommand>({
   billType: 1,
-  toAccountId: null,
   confirm: true,
   include: true,
-  categoryAmountPair: [{ categoryId: null, amount: null }],
-  remark: ""
+  categoryAmountPair: [{ categoryId: null, amount: null }]
 });
 
 const rules: FormRules = {
@@ -304,7 +306,7 @@ const rules: FormRules = {
   billType: [{ required: true, message: "请选择交易类型" }],
   title: [{ required: true, message: "请输入标题" }],
   tradeTime: [{ required: true, message: "请选择交易时间" }],
-  accountId: [{ required: true, message: "请选择账户" }],
+  accountId: [{ required: formData.billType === 3, message: "请选择账户" }],
   // 动态规则：categoryAmountPair 校验
   categoryAmountPair: [
     {
@@ -420,7 +422,9 @@ async function handleCategoryPayeeTagRefresh() {
 function handleOpened() {
   if (props.row) {
     Object.assign(formData, props.row);
-    formData.tagIdList = props.row.tagList.map(item => item.tagId);
+    formData.tagIdList = props.row.tagList
+      ? props.row.tagList.map(item => item.tagId)
+      : [];
     handleCategoryPayeeTagRefresh();
   } else {
     formRef.value?.resetFields();
