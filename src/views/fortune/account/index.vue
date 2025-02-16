@@ -1,5 +1,4 @@
 <template>
-  <!-- 新增的父容器 -->
   <div class="full-width-container">
     <el-radio-group
       v-model="searchForm.accountType"

@@ -70,6 +70,16 @@ export const getTagPageApi = (params: TagQuery) => {
   );
 };
 
+export const getTagListPageApi = (params: TagQuery) => {
+  return http.request<ResponseData<PageDTO<TagVo>>>(
+    "get",
+    `/fortune/tag/getListPage`,
+    {
+      params
+    }
+  );
+};
+
 export const addTagApi = (params: TagQuery) => {
   return http.request<ResponseData<any>>("post", `/fortune/tag/add`, {
     data: params
@@ -145,9 +155,16 @@ export const moveTag2RecycleBinApi = (bookId: number, tagId: number) => {
   );
 };
 
-export const moveTagPutBackApi = (bookId: number, tagId: number) => {
+export const tagPutBackApi = (bookId: number, tagId: number) => {
   return http.request<ResponseData<any>>(
     "patch",
     `/fortune/tag/${bookId}/${tagId}/putBack`
+  );
+};
+
+export const tagRemoveApi = (bookId: number, tagId: number) => {
+  return http.request<ResponseData<any>>(
+    "delete",
+    `/fortune/tag/${bookId}/${tagId}/remove`
   );
 };

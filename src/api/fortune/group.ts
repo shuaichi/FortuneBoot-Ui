@@ -121,6 +121,13 @@ export function getEnableGroupList() {
   );
 }
 
+export function getDefaultGroupId() {
+  return http.request<ResponseData<number>>(
+    "get",
+    "/fortune/group/getDefaultGroupId"
+  );
+}
+
 export function removeGroupApi(groupId: number) {
   return http.request<ResponseData<any>>(
     "patch",

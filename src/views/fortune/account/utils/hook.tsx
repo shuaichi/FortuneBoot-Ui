@@ -8,7 +8,7 @@ import {
   getFortuneAccountPage,
   enableAccountApi,
   disableAccountApi,
-  move2RecycleBinApi,
+  moveAccount2RecycleBinApi,
   canIncomeApi,
   cannotIncomeApi,
   cannotTransferOutApi,
@@ -294,9 +294,9 @@ export function useHook() {
     try {
       loading.value = true;
       hideColumn(barRef);
-      const { data } = await getFortuneAccountPage(searchForm);
-      dataList.value = data.rows;
-      pagination.total = data.total;
+      const data = await getFortuneAccountPage(searchForm);
+      dataList.value = data.data.rows;
+      pagination.total = data.data.total;
     } catch (e) {
       message(e.message || "查询失败", { type: "error" });
     } finally {
@@ -460,7 +460,7 @@ export function useHook() {
   async function handleMove2RecycleBin(row: AccountVo) {
     try {
       loading.value = true;
-      await move2RecycleBinApi(row.groupId, row.accountId);
+      await moveAccount2RecycleBinApi(row.groupId, row.accountId);
       message(`已将【${row.accountName}】账户移入回收站`, { type: "success" });
       await onSearch();
     } catch (e) {

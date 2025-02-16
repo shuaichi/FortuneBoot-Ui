@@ -115,9 +115,16 @@ export const movePayee2RecycleBinApi = (bookId: number, payeeId: number) => {
   );
 };
 
-export const movePayeePutBackApi = (bookId: number, payeeId: number) => {
+export const payeePutBackApi = (bookId: number, payeeId: number) => {
   return http.request<ResponseData<any>>(
     "patch",
     `/fortune/payee/${bookId}/${payeeId}/putBack`
+  );
+};
+
+export const payeeRemoveApi = (bookId: number, payeeId: number) => {
+  return http.request<ResponseData<any>>(
+    "delete",
+    `/fortune/payee/${bookId}/${payeeId}/remove`
   );
 };

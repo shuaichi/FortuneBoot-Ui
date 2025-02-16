@@ -148,9 +148,23 @@ export function disableAccountApi(groupId: number, accountId: number) {
   );
 }
 
-export function move2RecycleBinApi(groupId: number, accountId: number) {
+export function moveAccount2RecycleBinApi(groupId: number, accountId: number) {
   return http.request<ResponseData<any>>(
     "patch",
     `/fortune/account/${groupId}/${accountId}/moveToRecycleBin`
+  );
+}
+
+export function accountPutBackApi(groupId: number, accountId: number) {
+  return http.request<ResponseData<any>>(
+    "patch",
+    `/fortune/account/${groupId}/${accountId}/putBack`
+  );
+}
+
+export function accountRemoveApi(groupId: number, accountId: number) {
+  return http.request<ResponseData<any>>(
+    "patch",
+    `/fortune/account/${groupId}/${accountId}/remove`
   );
 }
