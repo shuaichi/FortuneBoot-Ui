@@ -54,6 +54,16 @@ export const getCategoryListApi = (params: CategoryQuery) => {
   );
 };
 
+export const getCategoryListPageApi = (params: CategoryQuery) => {
+  return http.request<ResponseData<PageDTO<CategoryVo>>>(
+    "get",
+    "/fortune/category/getListPage",
+    {
+      params
+    }
+  );
+};
+
 export const getEnableCategoryList = (bookId: number, billType: number) => {
   return http.request<ResponseData<Array<CategoryVo>>>(
     "get",
@@ -93,5 +103,19 @@ export const moveCategory2RecycleBinApi = (
   return http.request<ResponseData<any>>(
     "patch",
     `/fortune/category/${bookId}/${categoryId}/moveToRecycleBin`
+  );
+};
+
+export const categoryPutBackApi = (bookId: number, categoryId: number) => {
+  return http.request<ResponseData<any>>(
+    "patch",
+    `/fortune/category/${bookId}/${categoryId}/putBack`
+  );
+};
+
+export const categoryRemoveApi = (bookId: number, categoryId: number) => {
+  return http.request<ResponseData<any>>(
+    "delete",
+    `/fortune/category/${bookId}/${categoryId}/remove`
   );
 };

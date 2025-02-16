@@ -130,7 +130,7 @@ export function useHook() {
     try {
       loading.value = true;
       await bookMove2RecycleBinApi(row.bookId);
-      message(`已删除【${row.bookName}】账本`, { type: "success" });
+      message(`已将【${row.bookName}】账本移入回收站`, { type: "success" });
       await onSearch();
     } catch (e) {
       message(e.message || "删除失败", { type: "error" });
