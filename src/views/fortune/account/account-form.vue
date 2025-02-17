@@ -153,34 +153,36 @@
         </re-col>
       </el-row>
       <el-row :gutter="30">
-        <re-col :value="4">
-          <el-form-item prop="canExpense" label="可支出">
+        <re-col :value="8">
+          <el-form-item prop="canExpense" label="支出状态">
             <el-switch v-model="formData.canExpense" :style="switchStyle" />
           </el-form-item>
         </re-col>
-        <re-col :value="4">
-          <el-form-item prop="canIncome" label="可收入">
+        <re-col :value="8">
+          <el-form-item prop="canIncome" label="收入状态">
             <el-switch v-model="formData.canIncome" :style="switchStyle" />
           </el-form-item>
         </re-col>
-        <re-col :value="4">
-          <el-form-item prop="canTransferOut" label="可转出">
+        <re-col :value="8">
+          <el-form-item prop="enable" label="启用状态">
+            <el-switch v-model="formData.enable" :style="switchStyle" />
+          </el-form-item>
+        </re-col>
+      </el-row>
+      <el-row>
+        <re-col :value="8">
+          <el-form-item prop="canTransferOut" label="转出状态">
             <el-switch v-model="formData.canTransferOut" :style="switchStyle" />
           </el-form-item>
         </re-col>
-        <re-col :value="4">
-          <el-form-item prop="canTransferIn" label="可转入">
+        <re-col :value="8">
+          <el-form-item prop="canTransferIn" label="转入状态">
             <el-switch v-model="formData.canTransferIn" :style="switchStyle" />
           </el-form-item>
         </re-col>
-        <re-col :value="3">
+        <re-col :value="8">
           <el-form-item prop="include" label="计入总资产">
             <el-switch v-model="formData.include" :style="switchStyle" />
-          </el-form-item>
-        </re-col>
-        <re-col :value="3">
-          <el-form-item prop="enable" label="启用状态">
-            <el-switch v-model="formData.enable" :style="switchStyle" />
           </el-form-item>
         </re-col>
       </el-row>
