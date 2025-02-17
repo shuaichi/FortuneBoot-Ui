@@ -23,12 +23,12 @@
 
 ## ⚡ 平台简介 ⚡
 
-- 本仓库是 FortuneBoot 好记记账的配套前端项目
-- 前端是基于优秀的开源项目[AgileBoot](https://github.com/valarchie/AgileBoot-Front-End)与[Pure-Admin](https://github.com/pure-admin/vue-pure-admin)开发而成。在此感谢 AgileBoot 和 Pure-Admin 作者
-- 本仓库前端技术栈 [Vue3](https://v3.cn.vuejs.org) + [Element Plus](https://element-plus.org/zh-CN) + [Vite](https://cn.vitejs.dev) 版本
-- 配套后端代码仓库地址[FortuneBoot](TODO 待配置)
-- 规范请参照该文档 [前端规范](https://gitee.com/MinJieLiu/web-standard#/MinJieLiu/web-standard)
-- 记账逻辑参考了[moneynote](https://github.com/getmoneynote/moneynote-pc)项目，不是基于它的代码，而是基于它的逻辑重写。
+- 本仓库是 FortuneBoot 好记记账的配套前端项目。
+- 前端是基于优秀的开源项目[AgileBoot](https://github.com/valarchie/AgileBoot-Front-End)与[Pure-Admin](https://github.com/pure-admin/vue-pure-admin)开发而成。在此感谢 AgileBoot 和 Pure-Admin 作者。
+- 本仓库前端技术栈 [Vue3](https://v3.cn.vuejs.org) + [Element Plus](https://element-plus.org/zh-CN) + [Vite](https://cn.vitejs.dev) 版本。
+- 配套后端代码仓库地址[FortuneBoot](TODO 待配置)。
+- 规范请参照该文档 [前端规范](https://gitee.com/MinJieLiu/web-standard#/MinJieLiu/web-standard)。
+- 记账逻辑参考了[moneynote](https://github.com/getmoneynote/moneynote-pc)项目，不是基于它的代码，而是基于它的逻辑重写，在此感谢 moneynote 作者。
 
 #### AgileBoot 维护者
 
