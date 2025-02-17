@@ -57,50 +57,12 @@ defineExpose({ getFormRuleRef });
         </el-form-item>
       </re-col>
       <re-col :value="12">
-        <el-form-item label="手机号码" prop="phoneNumber">
-          <el-input
-            v-model="newFormInline.phoneNumber"
-            clearable
-            placeholder="请输入手机号码"
-          />
-        </el-form-item>
-      </re-col>
-
-      <re-col :value="12">
-        <el-form-item label="邮箱" prop="email">
-          <el-input
-            v-model="newFormInline.email"
-            clearable
-            placeholder="请输入邮箱"
-          />
-        </el-form-item>
-      </re-col>
-
-      <re-col :value="12">
         <el-form-item label="昵称" prop="nickname">
           <el-input
             v-model="newFormInline.nickname"
             clearable
             placeholder="请输入昵称"
           />
-        </el-form-item>
-      </re-col>
-
-      <re-col :value="12">
-        <el-form-item label="性别" prop="sex">
-          <el-select
-            class="w-full"
-            v-model="newFormInline.sex"
-            placeholder="请选择性别"
-            clearable
-          >
-            <el-option
-              v-for="dict in useUserStoreHook().dictionaryList['sysUser.sex']"
-              :key="dict.value"
-              :label="dict.label"
-              :value="dict.value"
-            />
-          </el-select>
         </el-form-item>
       </re-col>
       <re-col :value="12">
@@ -121,7 +83,50 @@ defineExpose({ getFormRuleRef });
           </el-select>
         </el-form-item>
       </re-col>
-
+      <re-col :value="12" v-if="newFormInline.password !== undefined">
+        <el-form-item label="密码" prop="password">
+          <el-input
+            v-model="newFormInline.password"
+            clearable
+            placeholder="请输入密码"
+          />
+        </el-form-item>
+      </re-col>
+      <re-col :value="12">
+        <el-form-item label="手机号码" prop="phoneNumber">
+          <el-input
+            v-model="newFormInline.phoneNumber"
+            clearable
+            placeholder="请输入手机号码"
+          />
+        </el-form-item>
+      </re-col>
+      <re-col :value="12">
+        <el-form-item label="邮箱" prop="email">
+          <el-input
+            v-model="newFormInline.email"
+            clearable
+            placeholder="请输入邮箱"
+          />
+        </el-form-item>
+      </re-col>
+      <re-col :value="12">
+        <el-form-item label="性别" prop="sex">
+          <el-select
+            class="w-full"
+            v-model="newFormInline.sex"
+            placeholder="请选择性别"
+            clearable
+          >
+            <el-option
+              v-for="dict in useUserStoreHook().dictionaryList['sysUser.sex']"
+              :key="dict.value"
+              :label="dict.label"
+              :value="dict.value"
+            />
+          </el-select>
+        </el-form-item>
+      </re-col>
       <re-col :value="12" :xs="24" :sm="24">
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="newFormInline.status">
@@ -132,16 +137,6 @@ defineExpose({ getFormRuleRef });
               >{{ item.label }}
             </el-radio>
           </el-radio-group>
-        </el-form-item>
-      </re-col>
-
-      <re-col :value="12" v-if="newFormInline.password !== undefined">
-        <el-form-item label="密码" prop="password">
-          <el-input
-            v-model="newFormInline.password"
-            clearable
-            placeholder="请输入密码"
-          />
         </el-form-item>
       </re-col>
       <re-col :value="24">
