@@ -13,7 +13,7 @@ import {
   excludeBillApi
 } from "@/api/fortune/bill";
 import dayjs from "dayjs";
-import { BillStatisticsVo, getBillStatistics } from "@/api/fortune/book";
+import { BillStatisticsVo, getBillStatistics } from "@/api/fortune/include";
 
 export function useHook() {
   const { tagStyle } = usePublicHooks();
