@@ -13,6 +13,7 @@ import {
   excludeBillApi
 } from "@/api/fortune/bill";
 import dayjs from "dayjs";
+import { BillStatisticsVo, getBillStatistics } from "@/api/fortune/book";
 
 export function useHook() {
   const { tagStyle } = usePublicHooks();
@@ -25,7 +26,7 @@ export function useHook() {
     currentPage: 1,
     background: true
   });
-
+  const billStatistics = ref<BillStatisticsVo>();
   const billTypeOptions = [
     { value: 1, label: "支出" },
     { value: 2, label: "收入" },
@@ -200,6 +201,8 @@ export function useHook() {
         payeeName: item.payeeName ? item.payeeName : "-"
       }));
       pagination.total = data.total;
+      const statisticsRes = await getBillStatistics(params.bookId);
+      billStatistics.value = statisticsRes.data;
     } catch (e) {
       message(e.message || "查询失败", { type: "error" });
     } finally {
@@ -295,6 +298,7 @@ export function useHook() {
     loading,
     pagination,
     billTypeOptions,
+    billStatistics,
     onSearch,
     handleDelete,
     handleSizeChange,

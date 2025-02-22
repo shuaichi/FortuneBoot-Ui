@@ -30,6 +30,12 @@ export interface BookQuery extends BasePageQuery {
   recycleBin?: boolean;
 }
 
+export interface BillStatisticsVo {
+  income: number;
+  expense: number;
+  surplus: number;
+}
+
 export function getBookByGroupId(groupId: number) {
   return http.request<ResponseData<BookVo>>(
     "get",
@@ -112,5 +118,12 @@ export function bookSetDefaultBookApi(bookId: number) {
   return http.request<ResponseData<any>>(
     "patch",
     `/fortune/book/base/${bookId}/setDefaultBook`
+  );
+}
+
+export function getBillStatistics(bookId: number) {
+  return http.request<ResponseData<BillStatisticsVo>>(
+    "get",
+    `/fortune/book/base/${bookId}/getBillStatistics`
   );
 }
