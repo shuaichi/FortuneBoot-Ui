@@ -177,7 +177,7 @@ import { message } from "@/utils/message";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
-  name: "FortuneGroup"
+  name: "FortuneBill"
 });
 
 const opType = ref<"add" | "edit">("add");
