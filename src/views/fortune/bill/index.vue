@@ -101,7 +101,7 @@
       </el-form-item>
     </el-form>
 
-    <PureTableBar title="账单管理" :columns="columns" @refresh="onSearch">
+    <PureTableBar :title="tableTitle" :columns="columns" @refresh="onSearch">
       <template #buttons>
         <el-button
           type="primary"
@@ -161,7 +161,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import { PureTableBar } from "@/components/RePureTableBar";
@@ -170,9 +170,9 @@ import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
 import BillForm from "./bill-form.vue";
 import { useHook } from "./utils/hook";
-import { getEnableBookList } from "@/api/fortune/book";
-import { getEnableAccountList } from "@/api/fortune/account";
-import { getEnableGroupList } from "@/api/fortune/group";
+import { BookVo, getEnableBookList } from "@/api/fortune/book";
+import { AccountVo, getEnableAccountList } from "@/api/fortune/account";
+import { getEnableGroupList, GroupVo } from "@/api/fortune/group";
 import { message } from "@/utils/message";
 
 /** 组件name最好和菜单表中的router_name一致 */
@@ -185,11 +185,10 @@ const currentRow = ref();
 const modalVisible = ref(false);
 const groupIdProp = ref();
 const bookIdProp = ref();
-const groupOptions = ref([]);
-const bookOptions = ref([]);
-const accountOptions = ref([]);
+const groupOptions = ref<Array<GroupVo>>();
+const bookOptions = ref<Array<BookVo>>();
+const accountOptions = ref<Array<AccountVo>>();
 const formRef = ref();
-
 const {
   searchFormParams,
   dataList,
@@ -197,6 +196,7 @@ const {
   loading,
   pagination,
   billTypeOptions,
+  billStatistics,
   onSearch,
   handleDelete,
   resetForm,
@@ -221,6 +221,14 @@ onMounted(async () => {
   await onSearch();
 });
 
+const tableTitle = computed(() => {
+  const statistics = billStatistics.value;
+  // eslint-disable-next-line no-irregular-whitespace
+  return `账单管理　|　总收入：${statistics?.income ?? 0}元　|　总支出：${
+    statistics?.expense ?? 0
+    // eslint-disable-next-line no-irregular-whitespace
+  }元　|　总结余：${statistics?.surplus ?? 0}元`;
+});
 function openDialog(type: "add" | "edit", row?: any) {
   opType.value = type;
   groupIdProp.value = searchFormParams.groupId;
