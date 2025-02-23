@@ -6,15 +6,9 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, onUnmounted, nextTick } from "vue";
+import { ref, onBeforeUnmount, onUnmounted, nextTick, watch } from "vue";
 import * as echarts from "echarts";
 import { getTotalAssets } from "@/api/fortune/include";
-import {
-  getDefaultGroupId,
-  getEnableGroupList,
-  GroupVo
-} from "@/api/fortune/group";
-import { message } from "@/utils/message";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -25,27 +19,14 @@ const chartRef = ref(null);
 const loading = ref(true);
 const error = ref(null);
 let chartInstance = null;
-const groupOptions = ref<Array<GroupVo>>();
-const defaultGroup = ref<number>();
-const groupId = ref<number>();
-
-onMounted(async () => {
-  const [groupRes, defaultGroupId] = await Promise.all([
-    getEnableGroupList(),
-    getDefaultGroupId()
-  ]);
-  groupOptions.value = groupRes.data;
-  if (groupRes.data.length === 0) {
-    message("请先启用或创建分组");
-    return;
+const props = defineProps<{ groupId: number }>();
+watch(
+  () => props.groupId,
+  async () => {
+    await fetchData();
+    window.addEventListener("resize", () => chartInstance?.resize());
   }
-  defaultGroup.value = defaultGroupId.data
-    ? defaultGroupId.data
-    : groupOptions.value[0].groupId;
-  groupId.value = defaultGroup.value;
-  fetchData();
-  window.addEventListener("resize", () => chartInstance?.resize());
-});
+);
 
 onUnmounted(() => chartInstance?.dispose());
 onBeforeUnmount(() => {
@@ -97,7 +78,7 @@ const initChart = () => {
 };
 const fetchData = async () => {
   try {
-    const res = await getTotalAssets(groupId.value);
+    const res = await getTotalAssets(props.groupId);
     loading.value = false;
     // 计算总值（确保数据结构中包含value字段）
     const totalValue = res.data.reduce(
