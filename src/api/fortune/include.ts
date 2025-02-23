@@ -12,17 +12,15 @@ export interface PieVo {
   value: number;
 }
 
+export interface LineVo {
+  name: string;
+  value: number;
+}
+
 export function getBillStatistics(bookId: number) {
   return http.request<ResponseData<BillStatisticsVo>>(
     "get",
     `/fortune/include/${bookId}/getBillStatistics`
-  );
-}
-
-export function getIncomeInclude(bookId: number) {
-  return http.request<ResponseData<BillStatisticsVo>>(
-    "get",
-    `/fortune/include/${bookId}/getIncomeInclude`
   );
 }
 
@@ -37,5 +35,19 @@ export function getTotalLiabilities(groupId: number) {
   return http.request<ResponseData<Array<PieVo>>>(
     "get",
     `/fortune/include/${groupId}/getTotalLiabilities`
+  );
+}
+
+export function getIncomeTrends(bookId: number) {
+  return http.request<ResponseData<LineVo>>(
+    "get",
+    `/fortune/include/${bookId}/getIncomeTrends`
+  );
+}
+
+export function getExpenseTrends(bookId: number) {
+  return http.request<ResponseData<LineVo>>(
+    "get",
+    `/fortune/include/${bookId}/getExpenseTrends`
   );
 }

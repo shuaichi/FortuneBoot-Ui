@@ -83,6 +83,9 @@ dependencies:
   vue:
     specifier: ^3.3.4
     version: 3.3.4
+  vue-echarts:
+    specifier: ^7.0.3
+    version: 7.0.3(echarts@5.4.2)(vue@3.3.4)
   vue-router:
     specifier: ^4.2.2
     version: 4.2.2(vue@3.3.4)
@@ -9273,6 +9276,24 @@ packages:
       fsevents: 2.3.2
     dev: true
 
+  /vue-demi@0.13.11(vue@3.3.4):
+    resolution:
+      {
+        integrity: sha512-IR8HoEEGM65YY3ZJYAjMlKygDQn25D5ajNFNoKh9RSDMQtlzCxtfQjdQgv9jjK+m3377SsJXY8ysq8kLCZL25A==
+      }
+    engines: { node: ">=12" }
+    hasBin: true
+    requiresBuild: true
+    peerDependencies:
+      "@vue/composition-api": ^1.0.0-rc.1
+      vue: ^3.0.0-0 || ^2.6.0
+    peerDependenciesMeta:
+      "@vue/composition-api":
+        optional: true
+    dependencies:
+      vue: 3.3.4
+    dev: false
+
   /vue-demi@0.14.5(vue@3.3.4):
     resolution:
       {
@@ -9289,6 +9310,26 @@ packages:
         optional: true
     dependencies:
       vue: 3.3.4
+    dev: false
+
+  /vue-echarts@7.0.3(echarts@5.4.2)(vue@3.3.4):
+    resolution:
+      {
+        integrity: sha512-/jSxNwOsw5+dYAUcwSfkLwKPuzTQ0Cepz1LxCOpj2QcHrrmUa/Ql0eQqMmc1rTPQVrh2JQ29n2dhq75ZcHvRDw==
+      }
+    peerDependencies:
+      "@vue/runtime-core": ^3.0.0
+      echarts: ^5.5.1
+      vue: ^2.7.0 || ^3.1.1
+    peerDependenciesMeta:
+      "@vue/runtime-core":
+        optional: true
+    dependencies:
+      echarts: 5.4.2
+      vue: 3.3.4
+      vue-demi: 0.13.11(vue@3.3.4)
+    transitivePeerDependencies:
+      - "@vue/composition-api"
     dev: false
 
   /vue-eslint-parser@9.3.1(eslint@8.43.0):
