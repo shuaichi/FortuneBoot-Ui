@@ -4,8 +4,8 @@
   </div>
 </template>
 
-<script setup>
-import { computed, onMounted, ref } from "vue";
+<script setup lang="ts">
+import { computed, ref, watch } from "vue";
 import { use } from "echarts/core";
 import { LineChart } from "echarts/charts";
 import {
@@ -17,9 +17,11 @@ import {
 } from "echarts/components";
 import { SVGRenderer } from "echarts/renderers";
 import VChart from "vue-echarts";
-import { getDefaultGroupId, getEnableGroupList } from "@/api/fortune/group";
-import { message } from "@/utils/message";
-import { getExpenseTrends } from "@/api/fortune/include";
+import {
+  getExpenseTrends,
+  getIncomeTrends,
+  LineVo
+} from "@/api/fortune/include";
 
 use([
   SVGRenderer,
@@ -31,28 +33,30 @@ use([
   DatasetComponent
 ]);
 
-const chartData = ref([]);
-const defaultGroup = ref([]);
-const groupId = ref([]);
-const groupOptions = ref([]);
-onMounted(async () => {
-  const [groupRes, defaultGroupId] = await Promise.all([
-    getEnableGroupList(),
-    getDefaultGroupId()
-  ]);
-  groupOptions.value = groupRes.data;
-  if (groupRes.data.length === 0) {
-    message("请先启用或创建分组");
-    return;
-  }
-  defaultGroup.value = defaultGroupId.data
-    ? defaultGroupId.data
-    : groupOptions.value[0].groupId;
-  groupId.value = defaultGroup.value;
-  const expenseRes = await getExpenseTrends(1);
-  chartData.value = expenseRes.data;
-});
+const chartData = ref<Array<LineVo>>([]);
+const props = defineProps<{ bookId: number }>();
 
+watch(
+  () => props.bookId,
+  async () => {
+    const expenseRes = await getExpenseTrends(props.bookId);
+    chartData.value = expenseRes.data;
+  }
+);
+watch(
+  () => props.timeGranularity,
+  async () => {
+    const expenseRes = await getIncomeTrends(props.bookId);
+    chartData.value = expenseRes.data;
+  }
+);
+watch(
+  () => props.timePoint,
+  async () => {
+    const expenseRes = await getIncomeTrends(props.bookId);
+    chartData.value = expenseRes.data;
+  }
+);
 // 处理原始数据格式
 const processedData = computed(() => {
   return chartData.value.map(item => ({

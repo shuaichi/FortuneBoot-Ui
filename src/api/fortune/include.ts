@@ -17,6 +17,20 @@ export interface LineVo {
   value: number;
 }
 
+export interface BaseQuery {
+  groupId?: number;
+  bookId?: number;
+}
+
+export interface IncomeQuery extends BaseQuery {
+  timeGranularity?: number;
+  timePoint?: Date;
+}
+export interface ExpenseQuery extends BaseQuery {
+  timeGranularity?: number;
+  timePoint?: Date;
+}
+
 export function getBillStatistics(bookId: number) {
   return http.request<ResponseData<BillStatisticsVo>>(
     "get",
@@ -46,7 +60,7 @@ export function getIncomeTrends(bookId: number) {
 }
 
 export function getExpenseTrends(bookId: number) {
-  return http.request<ResponseData<LineVo>>(
+  return http.request<ResponseData<Array<LineVo>>>(
     "get",
     `/fortune/include/${bookId}/getExpenseTrends`
   );
