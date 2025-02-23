@@ -15,6 +15,7 @@ import {
   GroupVo
 } from "@/api/fortune/group";
 import { message } from "@/utils/message";
+
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
   name: "TotalAssetsPie"
@@ -134,8 +135,7 @@ const fetchData = async () => {
       ],
       series: [
         {
-          data: data,
-          color: generateColors(data.length)
+          data: data
         }
       ]
     });
@@ -143,21 +143,6 @@ const fetchData = async () => {
     error.value = "加载失败";
     loading.value = false;
   }
-};
-// 在<script setup> 中替换原有的colorPalette定义
-const generateColors = (count: number) => {
-  const colors: string[] = [];
-  // 黄金分割色相分布（避免相邻色相似）
-  const goldenRatio = 0.618033988749895;
-
-  for (let i = 0; i < count; i++) {
-    const hue = (i * goldenRatio * 360) % 360; // 色相均匀分布
-    colors.push(
-      // 使用固定饱和度和亮度保证颜色一致性
-      `hsl(${hue.toFixed(2)}, 70%, 50%)`
-    );
-  }
-  return colors;
 };
 
 const handleResize = () => {
@@ -173,12 +158,12 @@ const formatNumber = (num: number) => {
 .chart-container {
   position: relative;
   width: 100%;
-  height: 600px;
+  height: 100%;
 }
 
 .pie-chart {
   width: 100%;
-  height: 100%;
+  height: 400px;
 }
 
 .loading,
