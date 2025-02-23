@@ -95,7 +95,6 @@
           <el-form-item prop="balance" label="余额">
             <el-input-number
               v-model="formData.balance"
-              :min="0"
               :precision="2"
               style="width: 100%"
             />
