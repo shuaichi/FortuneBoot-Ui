@@ -32,3 +32,10 @@ export function getTotalAssets(groupId: number) {
     `/fortune/include/${groupId}/getTotalAssets`
   );
 }
+
+export function getTotalLiabilities(groupId: number) {
+  return http.request<ResponseData<Array<PieVo>>>(
+    "get",
+    `/fortune/include/${groupId}/getTotalLiabilities`
+  );
+}
