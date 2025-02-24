@@ -32,7 +32,6 @@
           <el-select
             v-model="searchForm.groupId"
             placeholder="请选择分组"
-            class="!w-[180px]"
             filterable
           >
             <el-option
@@ -48,7 +47,6 @@
             v-model="searchForm.accountName"
             placeholder="请输入账本名称"
             clearable
-            class="!w-[200px]"
           />
         </el-form-item>
         <el-form-item prop="currencyCode" label="币种：">
@@ -66,10 +64,10 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item prop="include" label="计入净资产：">
+        <el-form-item prop="include" label="统计状态：">
           <el-select
             v-model="searchForm.include"
-            placeholder="请选择是否计入净资产"
+            placeholder="请选择统计状态"
             clearable
             filterable
           >

@@ -108,7 +108,7 @@ export function useHook() {
           THB: "฿"
         };
         // 默认使用美元符号
-        const symbol = currencySymbols[currencyCode] || "$";
+        const symbol = currencySymbols[currencyCode] || currencyCode;
         return `${symbol}${formattedAmount}`;
       }
     },
@@ -159,7 +159,7 @@ export function useHook() {
           THB: "฿"
         };
         // 默认使用美元符号
-        const symbol = currencySymbols[currencyCode] || "$";
+        const symbol = currencySymbols[currencyCode] || currencyCode;
         return `${symbol}${formattedAmount}`;
       },
       hide: true

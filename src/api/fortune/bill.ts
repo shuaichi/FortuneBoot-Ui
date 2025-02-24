@@ -27,12 +27,10 @@ export interface ModifyBillCommand extends AddBillCommand {
 
 export interface BillQuery extends BasePageQuery {
   groupId?: number;
-  bookId?: number;
-  bookType?: number;
   accountId?: number;
+  bookId?: number;
   billType?: number;
   title?: string;
-  tradeTimeRange?: [Date, Date];
   tradeTimeStartTime?: Date;
   tradeTimeEndTime?: Date;
   amountMin?: number;
@@ -42,6 +40,8 @@ export interface BillQuery extends BasePageQuery {
   payeeId?: number;
   confirm?: boolean;
   include?: boolean;
+  bookType?: number;
+  tradeTimeRange?: [Date, Date];
   fileInclude?: boolean;
   remark?: string;
 }
