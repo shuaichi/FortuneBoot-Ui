@@ -33,6 +33,13 @@ export interface AccountQuery extends BasePageQuery {
   accountName?: string;
   accountType?: number;
   recycleBin?: boolean;
+  currencyCode?: string;
+  include?: boolean;
+  canExpense?: boolean;
+  canIncome?: boolean;
+  canTransferOut?: boolean;
+  canTransferIn?: boolean;
+  enable?: boolean;
 }
 
 export function getFortuneAccountPage(params: AccountQuery) {

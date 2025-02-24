@@ -20,7 +20,7 @@ import {
   includeAccountApi,
   excludeAccountApi
 } from "@/api/fortune/account";
-import { getEnableGroupList } from "@/api/fortune/group";
+import { getDefaultGroupId } from "@/api/fortune/group";
 import dayjs from "dayjs";
 
 export function useHook() {
@@ -471,12 +471,18 @@ export function useHook() {
   }
 
   async function resetForm() {
+    searchForm.pageSize = 10;
+    searchForm.pageNum = 1;
     searchForm.accountName = null;
-    const res = await getEnableGroupList();
-    if (res.data.length === 0) {
-      message("请先启用或创建分组");
-    }
-    searchForm.groupId = res.data[0].groupId;
+    searchForm.currencyCode = null;
+    searchForm.include = null;
+    searchForm.canExpense = null;
+    searchForm.canIncome = null;
+    searchForm.canTransferOut = null;
+    searchForm.canTransferIn = null;
+    searchForm.enable = null;
+    const defaultGroup = await getDefaultGroupId();
+    searchForm.groupId = defaultGroup.data;
     await onSearch();
   }
 
