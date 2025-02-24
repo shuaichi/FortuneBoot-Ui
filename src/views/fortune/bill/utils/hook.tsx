@@ -99,7 +99,7 @@ export function useHook() {
           THB: "฿"
         };
         // 默认使用美元符号
-        const symbol = currencySymbols[currencyCode] || "$";
+        const symbol = currencySymbols[currencyCode] || currencyCode;
         return `${symbol}${formattedAmount}`;
       }
     },
@@ -285,14 +285,22 @@ export function useHook() {
 
   async function resetForm() {
     searchForm.tradeTimeRange = [null, null];
-    searchForm.bookId = null;
     searchForm.accountId = null;
     searchForm.billType = null;
+    searchForm.title = null;
+    searchForm.amountMin = null;
+    searchForm.amountMax = null;
+    searchForm.categoryIds = [];
+    searchForm.tagIds = [];
+    searchForm.payeeId = null;
+    searchForm.confirm = null;
+    searchForm.include = null;
+    searchForm.remark = null;
     await onSearch();
   }
 
   return {
-    searchFormParams: searchForm,
+    searchForm,
     dataList,
     columns,
     loading,

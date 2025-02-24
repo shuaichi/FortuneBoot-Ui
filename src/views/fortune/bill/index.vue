@@ -4,14 +4,13 @@
     <el-form
       ref="formRef"
       :inline="true"
-      :model="searchFormParams"
+      :model="searchForm"
       class="search-form bg-bg_color w-[99/100] pl-8 pt-[12px]"
     >
       <el-form-item label="分组：" prop="groupId">
         <el-select
-          v-model="searchFormParams.groupId"
+          v-model="searchForm.groupId"
           placeholder="请选择账本"
-          class="!w-[200px]"
           filterable
         >
           <el-option
@@ -24,9 +23,8 @@
       </el-form-item>
       <el-form-item label="账本：" prop="bookId">
         <el-select
-          v-model="searchFormParams.bookId"
+          v-model="searchForm.bookId"
           placeholder="请选择账本"
-          class="!w-[200px]"
           filterable
         >
           <el-option
@@ -39,9 +37,8 @@
       </el-form-item>
       <el-form-item label="账户：" prop="accountId">
         <el-select
-          v-model="searchFormParams.accountId"
+          v-model="searchForm.accountId"
           placeholder="请选择账户"
-          class="!w-[200px]"
           filterable
         >
           <el-option
@@ -54,17 +51,15 @@
       </el-form-item>
       <el-form-item label="标题" prop="title">
         <el-input
-          v-model.trim="searchFormParams.title"
+          v-model.trim="searchForm.title"
           placeholder="请输入标题"
-          class="!w-[200px]"
           clearable
         />
       </el-form-item>
       <el-form-item label="交易类型：" prop="billType">
         <el-select
-          v-model="searchFormParams.billType"
+          v-model="searchForm.billType"
           placeholder="请选择类型"
-          class="!w-[200px]"
           clearable
         >
           <el-option
@@ -77,13 +72,67 @@
       </el-form-item>
       <el-form-item label="交易时间：">
         <el-date-picker
-          v-model="searchFormParams.tradeTimeRange"
+          v-model="searchForm.tradeTimeRange"
           type="daterange"
           range-separator="-"
           class="!w-[300px]"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
           value-format="YYYY-MM-DD"
+        />
+      </el-form-item>
+      <el-form-item prop="amountMin" label="金额">
+        <el-input-number
+          v-model="searchForm.amountMin"
+          :precision="2"
+          :controls="false"
+          style="width: 100%"
+        />
+      </el-form-item>
+      <el-form-item prop="amountMax" label="-">
+        <el-input-number
+          v-model="searchForm.amountMax"
+          :precision="2"
+          :controls="false"
+          style="width: 100%"
+        />
+      </el-form-item>
+      <el-form-item prop="confirm" label="确认状态：">
+        <el-select
+          v-model="searchForm.confirm"
+          placeholder="请选择确认状态"
+          clearable
+          filterable
+        >
+          <el-option
+            v-for="item in trueFalseOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item prop="include" label="统计状态：">
+        <el-select
+          v-model="searchForm.include"
+          placeholder="请选择统计状态"
+          clearable
+          filterable
+        >
+          <el-option
+            v-for="item in trueFalseOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="备注：" prop="remark">
+        <el-input
+          v-model="searchForm.remark"
+          placeholder="请输入备注"
+          clearable
+          class="!w-[200px]"
         />
       </el-form-item>
       <el-form-item>
@@ -95,7 +144,7 @@
         >
           搜索
         </el-button>
-        <el-button :icon="useRenderIcon(Refresh)" @click="resetForm()">
+        <el-button :icon="useRenderIcon(Refresh)" @click="resetForm">
           重置
         </el-button>
       </el-form-item>
@@ -172,7 +221,11 @@ import BillForm from "./bill-form.vue";
 import { useHook } from "./utils/hook";
 import { BookVo, getEnableBookList } from "@/api/fortune/book";
 import { AccountVo, getEnableAccountList } from "@/api/fortune/account";
-import { getEnableGroupList, GroupVo } from "@/api/fortune/group";
+import {
+  getDefaultGroupId,
+  getEnableGroupList,
+  GroupVo
+} from "@/api/fortune/group";
 import { message } from "@/utils/message";
 
 /** 组件name最好和菜单表中的router_name一致 */
@@ -189,8 +242,18 @@ const groupOptions = ref<Array<GroupVo>>();
 const bookOptions = ref<Array<BookVo>>();
 const accountOptions = ref<Array<AccountVo>>();
 const formRef = ref();
+const trueFalseOptions = ref([
+  {
+    value: 1,
+    label: "是"
+  },
+  {
+    value: 0,
+    label: "否"
+  }
+]);
 const {
-  searchFormParams,
+  searchForm,
   dataList,
   columns,
   loading,
@@ -210,13 +273,14 @@ onMounted(async () => {
     message("请先启用或创建分组");
   }
   groupOptions.value = groupRes.data;
-  searchFormParams.groupId = groupRes.data[0].groupId;
+  const defaultGroup = await getDefaultGroupId();
+  searchForm.groupId = defaultGroup.data;
   const [booksRes, accountsRes] = await Promise.all([
-    getEnableBookList(searchFormParams.groupId),
-    getEnableAccountList(searchFormParams.groupId)
+    getEnableBookList(searchForm.groupId),
+    getEnableAccountList(searchForm.groupId)
   ]);
   bookOptions.value = booksRes.data;
-  searchFormParams.bookId = booksRes.data[0].bookId;
+  searchForm.bookId = booksRes.data[0].bookId;
   accountOptions.value = accountsRes.data;
   await onSearch();
 });
@@ -231,8 +295,8 @@ const tableTitle = computed(() => {
 });
 function openDialog(type: "add" | "edit", row?: any) {
   opType.value = type;
-  groupIdProp.value = searchFormParams.groupId;
-  bookIdProp.value = searchFormParams.bookId;
+  groupIdProp.value = searchForm.groupId;
+  bookIdProp.value = searchForm.bookId;
   currentRow.value = row;
   modalVisible.value = true;
 }

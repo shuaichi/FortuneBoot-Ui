@@ -153,7 +153,6 @@
           <el-form-item prop="amount" label="金额" required>
             <el-input-number
               v-model="formData.amount"
-              :min="0"
               :precision="2"
               :controls="false"
               style="width: 100%"
