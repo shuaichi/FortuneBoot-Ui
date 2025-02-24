@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import { use } from "echarts/core";
 import { LineChart } from "echarts/charts";
 import {
@@ -18,10 +18,12 @@ import {
 import { SVGRenderer } from "echarts/renderers";
 import VChart from "vue-echarts";
 import {
+  ExpenseTrendsQuery,
   getExpenseTrends,
-  getIncomeTrends,
   LineVo
 } from "@/api/fortune/include";
+import { message } from "@/utils/message";
+import moment from "moment/moment";
 
 use([
   SVGRenderer,
@@ -34,29 +36,46 @@ use([
 ]);
 
 const chartData = ref<Array<LineVo>>([]);
-const props = defineProps<{ bookId: number }>();
+const props = defineProps<{
+  bookId: number;
+  timePoint: Date;
+  timeGranularity: number;
+}>();
 
+const expenseTrendsQuery = reactive<ExpenseTrendsQuery>({});
 watch(
   () => props.bookId,
-  async () => {
-    const expenseRes = await getExpenseTrends(props.bookId);
-    chartData.value = expenseRes.data;
+  () => {
+    onSearch();
   }
 );
 watch(
   () => props.timeGranularity,
-  async () => {
-    const expenseRes = await getIncomeTrends(props.bookId);
-    chartData.value = expenseRes.data;
+  () => {
+    onSearch();
   }
 );
 watch(
   () => props.timePoint,
-  async () => {
-    const expenseRes = await getIncomeTrends(props.bookId);
-    chartData.value = expenseRes.data;
+  () => {
+    onSearch();
   }
 );
+
+async function onSearch() {
+  expenseTrendsQuery.bookId = props.bookId;
+  expenseTrendsQuery.timePoint = moment(props.timePoint).format(
+    "yyyy-MM-DD HH:mm:ss"
+  );
+  expenseTrendsQuery.timeGranularity = props.timeGranularity;
+  try {
+    const expenseRes = await getExpenseTrends(expenseTrendsQuery);
+    chartData.value = expenseRes.data;
+  } catch (e) {
+    message(e.message || "查询失败", { type: "error" });
+  }
+}
+
 // 处理原始数据格式
 const processedData = computed(() => {
   return chartData.value.map(item => ({

@@ -22,19 +22,20 @@ export interface BaseQuery {
   bookId?: number;
 }
 
-export interface IncomeQuery extends BaseQuery {
+export interface IncomeTrendsQuery extends BaseQuery {
   timeGranularity?: number;
-  timePoint?: Date;
+  timePoint?: string;
 }
-export interface ExpenseQuery extends BaseQuery {
+
+export interface ExpenseTrendsQuery extends BaseQuery {
   timeGranularity?: number;
-  timePoint?: Date;
+  timePoint?: string;
 }
 
 export interface AssetsLiabilitiesVo {
-  totalAssets?: number;
-  totalLiabilities?: number;
-  netAssets?: number;
+  totalAssets: number;
+  totalLiabilities: number;
+  netAssets: number;
 }
 
 export function getBillStatistics(bookId: number) {
@@ -58,17 +59,19 @@ export function getTotalLiabilities(groupId: number) {
   );
 }
 
-export function getIncomeTrends(bookId: number) {
-  return http.request<ResponseData<LineVo>>(
+export function getIncomeTrends(params: IncomeTrendsQuery) {
+  return http.request<ResponseData<Array<LineVo>>>(
     "get",
-    `/fortune/include/${bookId}/getIncomeTrends`
+    `/fortune/include/getIncomeTrends`,
+    { params }
   );
 }
 
-export function getExpenseTrends(bookId: number) {
+export function getExpenseTrends(params: ExpenseTrendsQuery) {
   return http.request<ResponseData<Array<LineVo>>>(
     "get",
-    `/fortune/include/${bookId}/getExpenseTrends`
+    `/fortune/include/getExpenseTrends`,
+    { params }
   );
 }
 

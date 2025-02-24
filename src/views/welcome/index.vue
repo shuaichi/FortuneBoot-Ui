@@ -153,9 +153,9 @@ import { onMounted, reactive, ref, watch } from "vue";
 import {
   AssetsLiabilitiesVo,
   BaseQuery,
-  ExpenseQuery,
+  ExpenseTrendsQuery,
   getAssetsLiabilities,
-  IncomeQuery
+  IncomeTrendsQuery
 } from "@/api/fortune/include";
 import { getDefaultGroupId, getEnableGroupList } from "@/api/fortune/group";
 import { message } from "@/utils/message";
@@ -168,12 +168,16 @@ defineOptions({
 const searchForm = reactive<BaseQuery>({});
 const groupOptions = ref();
 const bookOptions = ref();
-const assetsLiabilities = ref<AssetsLiabilitiesVo>(0);
-const incomeSearchForm = reactive<IncomeQuery>({
+const assetsLiabilities = ref<AssetsLiabilitiesVo>({
+  totalAssets: 0,
+  totalLiabilities: 0,
+  netAssets: 0
+});
+const incomeSearchForm = reactive<IncomeTrendsQuery>({
   timeGranularity: 1,
   timePoint: new Date()
 });
-const expenseSearchForm = reactive<ExpenseQuery>({
+const expenseSearchForm = reactive<ExpenseTrendsQuery>({
   timeGranularity: 1,
   timePoint: new Date()
 });
