@@ -49,7 +49,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="标题" prop="title">
+      <el-form-item label="标题：" prop="title">
         <el-input
           v-model.trim="searchForm.title"
           placeholder="请输入标题"
@@ -81,7 +81,7 @@
           value-format="YYYY-MM-DD"
         />
       </el-form-item>
-      <el-form-item prop="amountMin" label="金额">
+      <el-form-item prop="amountMin" label="金额：">
         <el-input-number
           v-model="searchForm.amountMin"
           :precision="2"
