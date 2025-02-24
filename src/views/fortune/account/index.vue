@@ -8,17 +8,17 @@
         @change="onSearch(barRef)"
       >
         <el-radio-button :label="1" class="quarter-width"
-          >活 期</el-radio-button
-        >
+          >活 期
+        </el-radio-button>
         <el-radio-button :label="2" class="quarter-width"
-          >信 用</el-radio-button
-        >
+          >信 用
+        </el-radio-button>
         <el-radio-button :label="3" class="quarter-width"
-          >资 产</el-radio-button
-        >
+          >资 产
+        </el-radio-button>
         <el-radio-button :label="4" class="quarter-width"
-          >贷 款</el-radio-button
-        >
+          >贷 款
+        </el-radio-button>
       </el-radio-group>
     </div>
     <div>
@@ -50,6 +50,111 @@
             clearable
             class="!w-[200px]"
           />
+        </el-form-item>
+        <el-form-item prop="currencyCode" label="币种：">
+          <el-select
+            v-model="searchForm.currencyCode"
+            placeholder="请选择币种"
+            clearable
+            filterable
+          >
+            <el-option
+              v-for="item in currencyTemplateOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.label"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="include" label="计入净资产：">
+          <el-select
+            v-model="searchForm.include"
+            placeholder="请选择是否计入净资产"
+            clearable
+            filterable
+          >
+            <el-option
+              v-for="item in trueFalseOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="canExpense" label="支出状态：">
+          <el-select
+            v-model="searchForm.canExpense"
+            placeholder="请选择支出状态"
+            clearable
+            filterable
+          >
+            <el-option
+              v-for="item in trueFalseOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="canIncome" label="收入状态：">
+          <el-select
+            v-model="searchForm.canIncome"
+            placeholder="请选择收入状态"
+            clearable
+            filterable
+          >
+            <el-option
+              v-for="item in trueFalseOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="canTransferOut" label="转出状态：">
+          <el-select
+            v-model="searchForm.canTransferOut"
+            placeholder="请选择转出状态"
+            clearable
+            filterable
+          >
+            <el-option
+              v-for="item in trueFalseOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="canTransferIn" label="转入状态：">
+          <el-select
+            v-model="searchForm.canTransferIn"
+            placeholder="请选择转入状态"
+            clearable
+            filterable
+          >
+            <el-option
+              v-for="item in trueFalseOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="enable" label="启用状态：">
+          <el-select
+            v-model="searchForm.enable"
+            placeholder="请选择启用状态"
+            clearable
+            filterable
+          >
+            <el-option
+              v-for="item in trueFalseOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
         </el-form-item>
         <!-- 其他搜索条件 -->
         <el-form-item>
@@ -144,7 +249,7 @@ import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
 import AccountForm from "@/views/fortune/account/account-form.vue";
 import { AccountVo } from "@/api/fortune/account";
-import { getEnableGroupList } from "@/api/fortune/group";
+import { getCurrencyTemplate, getEnableGroupList } from "@/api/fortune/group";
 import { message } from "@/utils/message";
 
 /** 组件name最好和菜单表中的router_name一致 */
@@ -158,7 +263,17 @@ const modalVisible = ref(false);
 const groupOptions = ref([]);
 const formRef = ref();
 const barRef = ref();
-
+const currencyTemplateOptions = ref();
+const trueFalseOptions = ref([
+  {
+    value: 1,
+    label: "是"
+  },
+  {
+    value: 0,
+    label: "否"
+  }
+]);
 const {
   searchForm,
   dataList,
@@ -181,6 +296,8 @@ onMounted(async () => {
   searchForm.groupId = groupRes.data[0].groupId;
   searchForm.recycleBin = false;
   searchForm.accountType = 1;
+  const currency = await getCurrencyTemplate();
+  currencyTemplateOptions.value = currency.data;
   await onSearch();
 });
 
