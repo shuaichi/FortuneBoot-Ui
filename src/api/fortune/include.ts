@@ -31,6 +31,12 @@ export interface ExpenseQuery extends BaseQuery {
   timePoint?: Date;
 }
 
+export interface AssetsLiabilitiesVo {
+  totalAssets?: number;
+  totalLiabilities?: number;
+  netAssets?: number;
+}
+
 export function getBillStatistics(bookId: number) {
   return http.request<ResponseData<BillStatisticsVo>>(
     "get",
@@ -63,5 +69,12 @@ export function getExpenseTrends(bookId: number) {
   return http.request<ResponseData<Array<LineVo>>>(
     "get",
     `/fortune/include/${bookId}/getExpenseTrends`
+  );
+}
+
+export function getAssetsLiabilities(groupId: number) {
+  return http.request<ResponseData<AssetsLiabilitiesVo>>(
+    "get",
+    `/fortune/include/${groupId}/getFortuneAssetsLiabilities`
   );
 }

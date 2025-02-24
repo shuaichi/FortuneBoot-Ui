@@ -41,13 +41,13 @@
     </div>
     <div class="dashboard-header">
       <el-card style="max-width: 100%">
-        <p>总资产：{{}}</p>
+        <p>总资产：{{ assetsLiabilities.totalAssets }}</p>
       </el-card>
       <el-card style="max-width: 100%">
-        <p>总负债：{{}}</p>
+        <p>总负债：{{ assetsLiabilities.totalLiabilities }}</p>
       </el-card>
       <el-card style="max-width: 100%">
-        <p>净资产：{{}}</p>
+        <p>净资产：{{ assetsLiabilities.netAssets }}</p>
       </el-card>
     </div>
     <div class="dashboard-body">
@@ -150,7 +150,13 @@ import TotalAssetsPie from "./chart/TotalAssetsPie.vue";
 import ExpenseTrends from "./chart/ExpenseTrends.vue";
 import IncomeTrends from "@/views/welcome/chart/IncomeTrends.vue";
 import { onMounted, reactive, ref, watch } from "vue";
-import { BaseQuery, ExpenseQuery, IncomeQuery } from "@/api/fortune/include";
+import {
+  AssetsLiabilitiesVo,
+  BaseQuery,
+  ExpenseQuery,
+  getAssetsLiabilities,
+  IncomeQuery
+} from "@/api/fortune/include";
 import { getDefaultGroupId, getEnableGroupList } from "@/api/fortune/group";
 import { message } from "@/utils/message";
 import { getEnableBookList } from "@/api/fortune/book";
@@ -162,6 +168,7 @@ defineOptions({
 const searchForm = reactive<BaseQuery>({});
 const groupOptions = ref();
 const bookOptions = ref();
+const assetsLiabilities = ref<AssetsLiabilitiesVo>(0);
 const incomeSearchForm = reactive<IncomeQuery>({
   timeGranularity: 1,
   timePoint: new Date()
@@ -202,6 +209,9 @@ watch(
     }
     bookOptions.value = bookRes.data;
     searchForm.bookId = bookOptions.value[0].bookId;
+    // 计算资产负债
+    const res = await getAssetsLiabilities(searchForm.groupId);
+    assetsLiabilities.value = res.data;
   }
 );
 watch(
