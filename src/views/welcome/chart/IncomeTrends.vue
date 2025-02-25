@@ -88,7 +88,7 @@ const processedData = computed(() => {
 
 const chartOptions = computed(() => ({
   title: {
-    text: "支出趋势图",
+    text: "收入趋势图",
     left: "center"
   },
   tooltip: {

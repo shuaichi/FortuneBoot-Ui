@@ -143,7 +143,7 @@ const formatNumber = (num: number) => {
 
 .pie-chart {
   width: 100%;
-  height: 400px;
+  height: 100%;
 }
 
 .loading,
