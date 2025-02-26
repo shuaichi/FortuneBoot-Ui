@@ -75,27 +75,72 @@
           v-model="searchForm.tradeTimeRange"
           type="daterange"
           range-separator="-"
-          class="!w-[300px]"
+          class="!w-[200px]"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
           value-format="YYYY-MM-DD"
         />
       </el-form-item>
       <el-form-item prop="amountMin" label="金额：">
-        <el-input-number
-          v-model="searchForm.amountMin"
-          :precision="2"
-          :controls="false"
+        <div class="number-range-picker">
+          <el-input-number
+            v-model="searchForm.amountMin"
+            placeholder="最小值"
+            :precision="2"
+            :controls="false"
+            class="!w-[100px]"
+          />
+          <span class="range-separator">—</span>
+          <el-input-number
+            v-model="searchForm.amountMax"
+            placeholder="最大值"
+            :precision="2"
+            :controls="false"
+            class="!w-[100px]"
+          />
+        </div>
+      </el-form-item>
+      <el-form-item label="分类：" prop="categoryIds">
+        <el-tree-select
+          v-model="searchForm.categoryIds"
+          :data="categoryOptions"
+          check-strictly
+          filterable
+          multiple
+          placeholder="请选择分类"
           style="width: 100%"
+          :props="categoryTreeProps"
+          clearable
         />
       </el-form-item>
-      <el-form-item prop="amountMax" label="-">
-        <el-input-number
-          v-model="searchForm.amountMax"
-          :precision="2"
-          :controls="false"
+      <el-form-item prop="tagIds" label="标签：">
+        <el-tree-select
+          v-model="searchForm.tagIds"
+          :data="tagOptions"
+          placeholder="请选择标签"
           style="width: 100%"
+          check-strictly
+          filterable
+          multiple
+          :props="tagTreeProps"
+          clearable
         />
+      </el-form-item>
+      <el-form-item prop="payeeId" label="交易对象：">
+        <el-select
+          filterable
+          v-model="searchForm.payeeId"
+          placeholder="请选择交易对象"
+          style="width: 100%"
+          clearable
+        >
+          <el-option
+            v-for="item in payeeOptions"
+            :key="item.payeeId"
+            :label="item.payeeName"
+            :value="item.payeeId"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item prop="confirm" label="确认状态：">
         <el-select
@@ -227,6 +272,9 @@ import {
   GroupVo
 } from "@/api/fortune/group";
 import { message } from "@/utils/message";
+import { getEnableCategoryList } from "@/api/fortune/category";
+import { getEnablePayeeList } from "@/api/fortune/payee";
+import { getEnableTagList } from "@/api/fortune/tag";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -242,6 +290,9 @@ const groupOptions = ref<Array<GroupVo>>();
 const bookOptions = ref<Array<BookVo>>();
 const accountOptions = ref<Array<AccountVo>>();
 const formRef = ref();
+const categoryOptions = ref([]);
+const payeeOptions = ref([]);
+const tagOptions = ref([]);
 const trueFalseOptions = ref([
   {
     value: 1,
@@ -252,6 +303,16 @@ const trueFalseOptions = ref([
     label: "否"
   }
 ]);
+const tagTreeProps = {
+  label: "tagName",
+  value: "tagId",
+  children: "children"
+};
+const categoryTreeProps = {
+  label: "categoryName",
+  value: "categoryId",
+  children: "children"
+};
 const {
   searchForm,
   dataList,
@@ -283,6 +344,14 @@ onMounted(async () => {
   searchForm.bookId = booksRes.data[0].bookId;
   accountOptions.value = accountsRes.data;
   await onSearch();
+  const [categoryRes, payeeRes, tagRes] = await Promise.all([
+    getEnableCategoryList(searchForm.bookId, null),
+    getEnablePayeeList(searchForm.bookId, null),
+    getEnableTagList(searchForm.bookId, null)
+  ]);
+  categoryOptions.value = categoryRes.data;
+  payeeOptions.value = payeeRes.data;
+  tagOptions.value = tagRes.data;
 });
 
 const tableTitle = computed(() => {

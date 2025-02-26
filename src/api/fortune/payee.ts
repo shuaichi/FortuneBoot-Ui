@@ -50,7 +50,12 @@ export const getPayeePageApi = (params: PayeeQuery) => {
 export const getEnablePayeeList = (bookId: number, billType: number) => {
   return http.request<ResponseData<Array<PayeeVo>>>(
     "get",
-    `/fortune/payee/${bookId}/${billType}/getEnableList`
+    `/fortune/payee/${bookId}/getEnableList`,
+    {
+      params: {
+        billType: billType
+      }
+    }
   );
 };
 

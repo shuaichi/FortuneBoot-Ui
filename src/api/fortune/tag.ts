@@ -46,7 +46,12 @@ export interface ModifyTagCommand extends AddTagCommand {
 export const getEnableTagList = (bookId: number, billType: number) => {
   return http.request<ResponseData<Array<TagVo>>>(
     "get",
-    `/fortune/tag/${bookId}/${billType}/getEnableList`
+    `/fortune/tag/${bookId}/getEnableList`,
+    {
+      params: {
+        billType: billType
+      }
+    }
   );
 };
 

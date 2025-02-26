@@ -67,7 +67,12 @@ export const getCategoryListPageApi = (params: CategoryQuery) => {
 export const getEnableCategoryList = (bookId: number, billType: number) => {
   return http.request<ResponseData<Array<CategoryVo>>>(
     "get",
-    `/fortune/category/${bookId}/${billType}/getEnableList`
+    `/fortune/category/${bookId}/getEnableList`,
+    {
+      params: {
+        billType: billType
+      }
+    }
   );
 };
 
