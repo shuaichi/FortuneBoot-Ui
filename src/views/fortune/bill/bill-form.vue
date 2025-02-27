@@ -444,17 +444,16 @@ async function handleOpened() {
       ? props.row.tagList.map(item => item.tagId)
       : [];
     handleCategoryPayeeTagRefresh();
-    // TODO 开发下载功能
     const fileRes = await getFileByBillId(props.row.billId);
     fileList.value = fileRes.data.map(file => ({
       // 使用后端返回的fileId作为唯一标识
       uid: file.fileId,
       name: file.originalName,
       size: file.size,
-      blob: file.fileData,
-      // 预览地址
-      // url: file.fileUrl,
-      // 标记为已上传成功
+      url: URL.createObjectURL(handleFile2Blob(file)),
+      raw: new File([handleFile2Blob(file)], file.originalName, {
+        type: file.contentType
+      }),
       status: "success",
       fileType: file.contentType,
       // 标记为已存在的文件
@@ -467,14 +466,33 @@ async function handleOpened() {
   }
 }
 
+function handleFile2Blob(file: any) {
+  // 将 Base64 编码的图片数据转换为 Blob 对象
+  const byteCharacters = atob(file.fileData);
+  const byteArrays = [];
+  for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+    const slice = byteCharacters.slice(offset, offset + 512);
+    const byteNumbers = Array.from(slice, char => char.charCodeAt(0));
+    const byteArray = new Uint8Array(byteNumbers);
+    byteArrays.push(byteArray);
+  }
+  return new Blob(byteArrays, { type: file.contentType });
+}
+
 // 文件预览/下载处理
-const handleFilePreview = async file => {
-  if (file.isExisting) {
-    // 已有文件走下载接口
-    window.open(`/`, "_blank");
-  } else {
-    // 本地新上传的文件直接预览
+const handleFilePreview = async (file: any) => {
+  if (file.fileType?.startsWith("image/")) {
+    // 如果是图片，直接预览
     window.open(file.url, "_blank");
+  } else {
+    console.log(file);
+    // 如果是非图片文件，使用文件的实际 URL 进行下载
+    const a = document.createElement("a");
+    a.href = file.url;
+    a.download = file.name || file.url.split("/").pop();
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 };
 
@@ -491,27 +509,27 @@ function removeCategory(index: number) {
 
 // 计算显示列表（处理不同状态）
 const fileListDisplay = computed(() => {
-  console.log(fileList.value);
   return fileList.value.map(file => ({
     uid: file.uid,
     name: file.name,
-    url: file.raw.type?.startsWith("image/") ? file.url : getFileIcon(file),
+    url: file.url,
+    // url: file.fileType?.startsWith("image/") ? file.url : getFileIcon(file),
     status: file.status || "success"
   }));
 });
 
 // 文件类型图标映射
-const getFileIcon = file => {
-  const ext = file.name.split(".").pop()?.toLowerCase();
-  const icons = {
-    pdf: "/file-icons/pdf.png",
-    doc: "/file-icons/word.png",
-    xls: "/file-icons/excel.png",
-    txt: "/file-icons/pdf.png"
-    // TODO 其他类型获取图片
-  };
-  return icons[ext] || "/file-icons/default.png";
-};
+// const getFileIcon = file => {
+//   const ext = file.name.split(".").pop()?.toLowerCase();
+//   const icons = {
+//     pdf: "/file-icons/pdf.png",
+//     doc: "/file-icons/word.png",
+//     xls: "/file-icons/excel.png",
+//     txt: "/file-icons/pdf.png"
+//     // TODO 其他类型获取图片
+//   };
+//   return icons[ext] || "/file-icons/default.png";
+// };
 
 // 文件变化处理
 const handleFileChange = uploadFile => {
@@ -546,10 +564,10 @@ async function handleConfirm() {
       // 2. 处理文件列表（正确格式）
       fileList.value.forEach(file => {
         // 确保上传的是原始文件对象
+        console.log("file ===== ", file);
         formDataObj.append(`files`, file.raw);
       });
     }
-
     if (props.type === "add") {
       await addBillApi(formDataObj);
     } else {
