@@ -244,7 +244,7 @@
         <el-upload
           multiple
           :auto-upload="false"
-          list-type="picture-card"
+          list-type="picture"
           :on-change="handleFileChange"
           :on-remove="handleFileRemove"
           :file-list="fileListDisplay"
@@ -455,7 +455,7 @@ async function handleOpened() {
         type: file.contentType
       }),
       status: "success",
-      fileType: file.contentType,
+      type: file.contentType,
       // 标记为已存在的文件
       isExisting: true
     }));
@@ -481,7 +481,25 @@ function handleFile2Blob(file: any) {
 
 // 文件预览/下载处理
 const handleFilePreview = async (file: any) => {
-  if (file.fileType?.startsWith("image/")) {
+  const imageExtensions = [
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".tiff",
+    ".svg",
+    ".psd",
+    ".webp",
+    ".bmp",
+    ".ico",
+    ".heif",
+    ".heic",
+    ".raw",
+    ".nef",
+    ".cr2"
+  ];
+  const n = file.name.toLowerCase();
+  if (imageExtensions.some(ext => n.endsWith(ext))) {
     // 如果是图片，直接预览
     window.open(file.url, "_blank");
   } else {
