@@ -239,6 +239,22 @@
           placeholder="请输入备注"
         />
       </el-form-item>
+      <!-- 新增附件上传部分 -->
+      <el-form-item prop="fileList" label="附件">
+        <el-upload
+          multiple
+          :auto-upload="false"
+          list-type="picture-card"
+          :on-change="handleFileChange"
+          :on-remove="handleFileRemove"
+          :file-list="fileListDisplay"
+          :on-preview="handleFilePreview"
+        >
+          <el-icon>
+            <plus-icon />
+          </el-icon>
+        </el-upload>
+      </el-form-item>
     </el-form>
   </v-dialog>
 </template>
@@ -261,6 +277,8 @@ import { message } from "@/utils/message";
 import { getEnableCategoryList } from "@/api/fortune/category";
 import { getEnablePayeeList } from "@/api/fortune/payee";
 import { getEnableTagList } from "@/api/fortune/tag";
+import { Plus as PlusIcon } from "@element-plus/icons-vue";
+import { getFileByBillId } from "@/api/fortune/file";
 
 const props = defineProps<{
   type: "add" | "edit";
@@ -354,6 +372,7 @@ const toAccountOptions = ref([]);
 const categoryOptions = ref([]);
 const payeeOptions = ref([]);
 const tagOptions = ref([]);
+const fileList = ref([]);
 
 onMounted(async () => {
   const [groupRes, booksRes, accountsRes] = await Promise.all([
@@ -418,19 +437,46 @@ async function handleCategoryPayeeTagRefresh() {
   tagOptions.value = tagRes.data;
 }
 
-function handleOpened() {
+async function handleOpened() {
   if (props.row) {
     Object.assign(formData, props.row);
     formData.tagIdList = props.row.tagList
       ? props.row.tagList.map(item => item.tagId)
       : [];
     handleCategoryPayeeTagRefresh();
+    // TODO 开发下载功能
+    const fileRes = await getFileByBillId(props.row.billId);
+    fileList.value = fileRes.data.map(file => ({
+      // 使用后端返回的fileId作为唯一标识
+      uid: file.fileId,
+      name: file.originalName,
+      size: file.size,
+      blob: file.fileData,
+      // 预览地址
+      // url: file.fileUrl,
+      // 标记为已上传成功
+      status: "success",
+      fileType: file.contentType,
+      // 标记为已存在的文件
+      isExisting: true
+    }));
   } else {
     formRef.value?.resetFields();
     formData.bookId = props.bookId;
     handleCategoryPayeeTagRefresh();
   }
 }
+
+// 文件预览/下载处理
+const handleFilePreview = async file => {
+  if (file.isExisting) {
+    // 已有文件走下载接口
+    window.open(`/`, "_blank");
+  } else {
+    // 本地新上传的文件直接预览
+    window.open(file.url, "_blank");
+  }
+};
 
 function insertCategory(index: number) {
   formData.categoryAmountPair.splice(index + 1, 0, {
@@ -443,19 +489,71 @@ function removeCategory(index: number) {
   formData.categoryAmountPair.splice(index, 1);
 }
 
+// 计算显示列表（处理不同状态）
+const fileListDisplay = computed(() => {
+  console.log(fileList.value);
+  return fileList.value.map(file => ({
+    uid: file.uid,
+    name: file.name,
+    url: file.raw.type?.startsWith("image/") ? file.url : getFileIcon(file),
+    status: file.status || "success"
+  }));
+});
+
+// 文件类型图标映射
+const getFileIcon = file => {
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  const icons = {
+    pdf: "/file-icons/pdf.png",
+    doc: "/file-icons/word.png",
+    xls: "/file-icons/excel.png",
+    txt: "/file-icons/pdf.png"
+    // TODO 其他类型获取图片
+  };
+  return icons[ext] || "/file-icons/default.png";
+};
+
+// 文件变化处理
+const handleFileChange = uploadFile => {
+  fileList.value.push(uploadFile);
+};
+
+// 文件移除处理
+const handleFileRemove = file => {
+  const index = fileList.value.findIndex(f => f.uid === file.uid);
+  if (index !== -1) {
+    fileList.value.splice(index, 1);
+  }
+};
+
 async function handleConfirm() {
   try {
     await formRef.value.validate();
     loading.value = true;
-    const params = { ...formData };
     // 清理非转账类型的字段
-    if (params.billType !== 3) {
-      params.toAccountId = null;
+    if (formData.billType !== 3) {
+      formData.toAccountId = null;
     }
+    const formDataObj = new FormData();
+    formDataObj.append(
+      "data",
+      new Blob([JSON.stringify({ ...formData })], {
+        type: "application/json"
+      })
+    );
+    // 处理文件列表
+    if (fileList.value.length !== 0) {
+      // 2. 处理文件列表（正确格式）
+      fileList.value.forEach(file => {
+        // 确保上传的是原始文件对象
+        formDataObj.append(`files`, file.raw);
+      });
+    }
+
     if (props.type === "add") {
-      await addBillApi(params);
+      await addBillApi(formDataObj);
     } else {
-      await modifyBillApi(params);
+      await modifyBillApi(formDataObj);
     }
 
     ElMessage.success("操作成功");
@@ -470,3 +568,15 @@ async function handleConfirm() {
   }
 }
 </script>
+<style scoped>
+/* 自定义文件类型图标 */
+.el-upload-list__item-thumbnail {
+  object-fit: contain;
+  background: #f5f7fa;
+}
+
+/* 非图片文件显示类型图标 */
+.el-upload-list__item[data-filetype^="image/"] .el-upload-list__item-thumbnail {
+  background: transparent;
+}
+</style>

@@ -14,6 +14,7 @@ export interface AddBillCommand {
   include: boolean;
   categoryAmountPair?: Array<CategoryAmountPairVo>;
   remark?: string;
+  fileList?: FormData;
 }
 
 export interface CategoryAmountPairVo {
@@ -66,13 +67,23 @@ export const getBillPage = (params?: BillQuery) => {
 };
 
 // 新增账单
-export const addBillApi = (data: AddBillCommand) => {
-  return http.request("post", "/fortune/bill/add", { data });
+export const addBillApi = (data: FormData) => {
+  return http.request("post", "/fortune/bill/add", {
+    data,
+    headers: {
+      "Content-Type": "multipart/form-data" // 必须设置
+    }
+  });
 };
 
 // 修改账单
-export const modifyBillApi = (data: Partial<AddBillCommand>) => {
-  return http.request("put", "/fortune/bill/modify", { data });
+export const modifyBillApi = (data: Partial<FormData>) => {
+  return http.request("put", "/fortune/bill/modify", {
+    data,
+    headers: {
+      "Content-Type": "multipart/form-data" // 必须设置
+    }
+  });
 };
 
 // 删除账单
