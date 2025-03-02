@@ -247,7 +247,11 @@ import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
 import AccountForm from "@/views/fortune/account/account-form.vue";
 import { AccountVo } from "@/api/fortune/account";
-import { getCurrencyTemplate, getEnableGroupList } from "@/api/fortune/group";
+import {
+  getCurrencyTemplate,
+  getEnableGroupList,
+  GroupVo
+} from "@/api/fortune/group";
 import { message } from "@/utils/message";
 
 /** 组件name最好和菜单表中的router_name一致 */
@@ -258,7 +262,7 @@ defineOptions({
 const opType = ref<"add" | "edit">("add");
 const currentRow = ref<AccountVo>();
 const modalVisible = ref(false);
-const groupOptions = ref([]);
+const groupOptions = ref<Array<GroupVo>>();
 const formRef = ref();
 const barRef = ref();
 const currencyTemplateOptions = ref();

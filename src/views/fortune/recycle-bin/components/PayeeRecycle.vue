@@ -117,9 +117,13 @@ import {
   payeeRemoveApi,
   PayeeVo
 } from "@/api/fortune/payee";
-import { getDefaultGroupId, getEnableGroupList } from "@/api/fortune/group";
+import {
+  getDefaultGroupId,
+  getEnableGroupList,
+  GroupVo
+} from "@/api/fortune/group";
 import { message } from "@/utils/message";
-import { getEnableBookList } from "@/api/fortune/book";
+import { BookVo, getEnableBookList } from "@/api/fortune/book";
 
 const groupId = ref<number>();
 const defaultGroup = ref<number>();
@@ -127,8 +131,8 @@ const defaultBook = ref<number>();
 const searchForm = reactive<PayeeQuery>({
   recycleBin: true
 });
-const groupOptions = ref([]);
-const bookOptions = ref([]);
+const groupOptions = ref<Array<GroupVo>>();
+const bookOptions = ref<Array<BookVo>>();
 const loading = ref(false);
 const dataList = ref<PayeeVo[]>([]);
 
@@ -179,8 +183,10 @@ onMounted(async () => {
     return;
   }
   bookOptions.value = bookRes.data;
-  defaultBook.value = bookOptions.value[0].bookId;
-  searchForm.bookId = bookOptions.value[0].bookId;
+  defaultBook.value = groupOptions.value.find(
+    group => group.groupId === groupId.value
+  ).defaultBookId;
+  searchForm.bookId = defaultBook.value;
   await onSearch();
 });
 
@@ -193,7 +199,9 @@ watch(
       return;
     }
     bookOptions.value = bookRes.data;
-    searchForm.bookId = bookOptions.value[0].bookId;
+    searchForm.bookId = groupOptions.value.find(
+      group => group.groupId === groupId.value
+    ).defaultBookId;
     await onSearch();
   }
 );

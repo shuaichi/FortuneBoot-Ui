@@ -8,15 +8,17 @@ import {
   getFortuneBookPage,
   enableBookApi,
   disableBookApi,
-  bookMove2RecycleBinApi
+  bookMove2RecycleBinApi,
+  setDefaultBookApi
 } from "@/api/fortune/book";
-import { getEnableGroupList } from "@/api/fortune/group";
+import { getDefaultGroupId, getEnableGroupList } from "@/api/fortune/group";
 
 export function useHook() {
   const { tagStyle } = usePublicHooks();
   const loading = ref(true);
   const dataList = ref<BookVo[]>([]);
   const searchForm = reactive<BookQuery>({});
+  const defaultBookId = ref<number>();
   const pagination = reactive({
     total: 0,
     pageSize: 10,
@@ -90,19 +92,27 @@ export function useHook() {
       label: "操作",
       slot: "operation",
       fixed: "right",
-      width: 180
+      width: 220
     }
   ];
 
   onMounted(async () => {
-    const res = await getEnableGroupList();
-    if (res.data.length === 0) {
+    const [groupRes, defaultGroupRes] = await Promise.all([
+      getEnableGroupList(),
+      getDefaultGroupId()
+    ]);
+    if (groupRes.data.length === 0) {
       message("请先启用或创建分组");
     }
     searchForm.recycleBin = false;
-    searchForm.groupId = res.data[0].groupId;
+    searchForm.groupId = defaultGroupRes.data;
     await onSearch();
   });
+
+  async function setDefault(row: BookVo) {
+    await setDefaultBookApi(row.bookId);
+    await onSearch();
+  }
 
   async function onSearch() {
     try {
@@ -118,6 +128,9 @@ export function useHook() {
           groupName: group.data.find(g => g.groupId === item.groupId).groupName
         };
       });
+      defaultBookId.value = group.data.find(
+        group => group.groupId === searchForm.groupId
+      ).defaultBookId;
       pagination.total = data.total;
     } catch (e) {
       message(e.message || "查询失败", { type: "error" });
@@ -195,6 +208,8 @@ export function useHook() {
     dataList,
     pagination,
     tagStyle,
+    defaultBookId,
+    setDefault,
     onSearch,
     handleRecycleBin,
     handleSizeChange,

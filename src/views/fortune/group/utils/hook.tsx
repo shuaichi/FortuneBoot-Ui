@@ -7,7 +7,8 @@ import {
   getFortuneGroupPage,
   GroupQuery,
   GroupVo,
-  removeGroupApi
+  removeGroupApi,
+  getDefaultGroupId
 } from "@/api/fortune/group";
 import type { PaginationProps } from "@pureadmin/table";
 import { ElMessageBox } from "element-plus";
@@ -21,6 +22,7 @@ export function useHook() {
   // 状态控制
   const currentRow = ref<GroupVo>();
   const operationType = ref<"enable" | "disable">();
+  const defaultGroupId = ref<number>();
 
   onMounted(async () => {
     await onSearch();
@@ -28,9 +30,13 @@ export function useHook() {
 
   async function onSearch() {
     loading.value = true;
-    const { data } = await getFortuneGroupPage(searchForm);
-    dataList.value = data.rows;
-    pagination.total = data.total;
+    const [groupRes, defaultGroupRes] = await Promise.all([
+      getFortuneGroupPage(searchForm),
+      getDefaultGroupId()
+    ]);
+    dataList.value = groupRes.data.rows;
+    pagination.total = groupRes.data.total;
+    defaultGroupId.value = defaultGroupRes.data;
     loading.value = false;
   }
 
@@ -55,16 +61,19 @@ export function useHook() {
       loading.value = false;
     }
   }
+
   async function handleSizeChange(pageSize: number) {
     pagination.pageSize = pageSize;
     searchForm.pageSize = pageSize;
     await onSearch();
   }
+
   async function handleCurrentChange(currentPage: number) {
     pagination.currentPage = currentPage;
     searchForm.pageNum = currentPage;
     await onSearch();
   }
+
   // 添加状态切换处理函数
   async function handleStatusChange() {
     if (!currentRow.value) return;
@@ -105,6 +114,7 @@ export function useHook() {
       console.log("用户取消操作");
     }
   }
+
   const columns: TableColumnList = [
     {
       label: "分组名称",
@@ -150,7 +160,7 @@ export function useHook() {
     {
       label: "操作",
       fixed: "right",
-      width: 230,
+      width: 280,
       slot: "operation"
     }
   ];
@@ -159,6 +169,7 @@ export function useHook() {
     loading,
     columns,
     dataList,
+    defaultGroupId,
     pagination,
     onSearch,
     handleRemoveGroupApi,

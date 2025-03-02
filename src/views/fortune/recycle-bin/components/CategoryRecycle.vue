@@ -209,8 +209,10 @@ onMounted(async () => {
     return;
   }
   bookOptions.value = bookRes.data;
-  defaultBook.value = bookOptions.value[0].bookId;
-  searchForm.bookId = bookOptions.value[0].bookId;
+  defaultBook.value = groupOptions.value.find(
+    group => group.groupId === groupId.value
+  ).defaultBookId;
+  searchForm.bookId = defaultBook.value;
   await onSearch();
 });
 
@@ -223,7 +225,9 @@ watch(
       return;
     }
     bookOptions.value = bookRes.data;
-    searchForm.bookId = bookOptions.value[0].bookId;
+    searchForm.bookId = groupOptions.value.find(
+      group => group.groupId === groupId.value
+    ).defaultBookId;
     await onSearch();
   }
 );

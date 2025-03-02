@@ -119,7 +119,7 @@ import {
 import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
 import ReCol from "@/components/ReCol";
-import { getBookByGroupId } from "@/api/fortune/book";
+import { BookVo, getBookByGroupId } from "@/api/fortune/book";
 import { usePublicHooks } from "@/views/system/hooks";
 
 const props = defineProps<Props>();
@@ -128,7 +128,7 @@ const { switchStyle } = usePublicHooks();
 const bookTemplateOptions = ref();
 const currencyTemplateOptions = ref();
 
-const bookOptions = ref();
+const bookOptions = ref<Array<BookVo>>();
 onMounted(async () => {
   const bookTemplate = await getBookTemplate();
   bookTemplateOptions.value = bookTemplate.data;

@@ -86,6 +86,22 @@
         >
           <template #operation="{ row }">
             <div class="flex items-center justify-center gap-8px w-full">
+              <el-popconfirm
+                :title="`确认设置【${row.bookId}】为默认账本吗？`"
+                @confirm="setDefault(row)"
+              >
+                <template #reference>
+                  <el-button
+                    class="reset-margin"
+                    link
+                    type="success"
+                    :size="size"
+                    :disabled="defaultBookId === row.bookId"
+                  >
+                    默认
+                  </el-button>
+                </template>
+              </el-popconfirm>
               <el-button link type="primary" @click="openDialog('edit', row)">
                 编辑
               </el-button>
@@ -139,7 +155,7 @@ import { useHook } from "./utils/hook";
 import { useRoute } from "vue-router";
 import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
-import { getEnableGroupList } from "@/api/fortune/group";
+import { getEnableGroupList, GroupVo } from "@/api/fortune/group";
 import { message } from "@/utils/message";
 import { useRouter } from "vue-router";
 
@@ -159,6 +175,8 @@ const {
   columns,
   dataList,
   pagination,
+  defaultBookId,
+  setDefault,
   onSearch,
   handleRecycleBin,
   handleSizeChange,
@@ -169,7 +187,7 @@ const formRef = ref();
 const opType = ref<"add" | "edit">("add");
 const currentRow = ref<BookVo>();
 const modalVisible = ref(false);
-const groupOptions = ref([]);
+const groupOptions = ref<Array<GroupVo>>();
 const router = useRouter();
 
 onMounted(async () => {

@@ -113,7 +113,7 @@ const formData = reactive<AddTagCommand | ModifyTagCommand>({
 });
 const loading = ref(false);
 const formRef = ref();
-const tagOptions = ref([]);
+const tagOptions = ref<Array<TagVo>>();
 const { switchStyle } = usePublicHooks();
 const emits = defineEmits(["update:modelValue", "success"]);
 const visible = computed({
