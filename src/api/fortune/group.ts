@@ -168,3 +168,10 @@ export function setGroupDefaultApi(groupId: number) {
     `/fortune/group/${groupId}/setDefaultGroup`
   );
 }
+
+export function getGroupByIdApi(groupId: number) {
+  return http.request<ResponseData<GroupVo>>(
+    "get",
+    `/fortune/group/${groupId}/getByGroupId`
+  );
+}

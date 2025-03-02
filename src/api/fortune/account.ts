@@ -42,6 +42,15 @@ export interface AccountQuery extends BasePageQuery {
   enable?: boolean;
 }
 
+export interface BalanceAdjustCommand {
+  bookId?: number;
+  accountId?: number;
+  title?: string;
+  tradeTime?: Date;
+  balance?: number;
+  remark?: string;
+}
+
 export function getFortuneAccountPage(params: AccountQuery) {
   return http.request<ResponseData<PageDTO<AccountVo>>>(
     "get",
@@ -173,5 +182,15 @@ export function accountRemoveApi(groupId: number, accountId: number) {
   return http.request<ResponseData<any>>(
     "patch",
     `/fortune/account/${groupId}/${accountId}/remove`
+  );
+}
+
+export function balanceAdjustApi(adjustCommand: BalanceAdjustCommand) {
+  return http.request<ResponseData<void>>(
+    "patch",
+    "/fortune/account/balanceAdjust",
+    {
+      data: adjustCommand
+    }
   );
 }
