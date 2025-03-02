@@ -276,13 +276,13 @@ import {
   modifyBillApi,
   ModifyBillCommand
 } from "@/api/fortune/bill";
-import { getEnableBookList } from "@/api/fortune/book";
-import { getEnableAccountList } from "@/api/fortune/account";
+import { BookVo, getEnableBookList } from "@/api/fortune/book";
+import { AccountVo, getEnableAccountList } from "@/api/fortune/account";
 import { getEnableGroupList } from "@/api/fortune/group";
 import { message } from "@/utils/message";
-import { getEnableCategoryList } from "@/api/fortune/category";
-import { getEnablePayeeList } from "@/api/fortune/payee";
-import { getEnableTagList } from "@/api/fortune/tag";
+import { CategoryVo, getEnableCategoryList } from "@/api/fortune/category";
+import { getEnablePayeeList, PayeeVo } from "@/api/fortune/payee";
+import { getEnableTagList, TagVo } from "@/api/fortune/tag";
 import { Plus as PlusIcon } from "@element-plus/icons-vue";
 import { getFileByBillId } from "@/api/fortune/file";
 
@@ -372,12 +372,12 @@ const rules: FormRules = {
 };
 
 // 数据选项
-const bookOptions = ref([]);
-const accountOptions = ref([]);
-const toAccountOptions = ref([]);
-const categoryOptions = ref([]);
-const payeeOptions = ref([]);
-const tagOptions = ref([]);
+const bookOptions = ref<Array<BookVo>>();
+const accountOptions = ref<Array<AccountVo>>();
+const toAccountOptions = ref<Array<AccountVo>>();
+const categoryOptions = ref<Array<CategoryVo>>();
+const payeeOptions = ref<Array<PayeeVo>>();
+const tagOptions = ref<Array<TagVo>>();
 const fileList = ref([]);
 
 onMounted(async () => {

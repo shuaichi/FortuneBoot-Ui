@@ -107,7 +107,7 @@ const formData = reactive<AddCategoryCommand | ModifyCategoryCommand>({
 });
 const loading = ref(false);
 const formRef = ref();
-const categoryOptions = ref([]);
+const categoryOptions = ref<Array<CategoryVo>>();
 const { switchStyle } = usePublicHooks();
 const emits = defineEmits(["update:modelValue", "success"]);
 const visible = computed({

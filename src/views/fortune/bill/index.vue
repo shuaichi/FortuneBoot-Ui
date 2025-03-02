@@ -272,9 +272,9 @@ import {
   GroupVo
 } from "@/api/fortune/group";
 import { message } from "@/utils/message";
-import { getEnableCategoryList } from "@/api/fortune/category";
-import { getEnablePayeeList } from "@/api/fortune/payee";
-import { getEnableTagList } from "@/api/fortune/tag";
+import { CategoryVo, getEnableCategoryList } from "@/api/fortune/category";
+import { getEnablePayeeList, PayeeVo } from "@/api/fortune/payee";
+import { getEnableTagList, TagVo } from "@/api/fortune/tag";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -290,9 +290,9 @@ const groupOptions = ref<Array<GroupVo>>();
 const bookOptions = ref<Array<BookVo>>();
 const accountOptions = ref<Array<AccountVo>>();
 const formRef = ref();
-const categoryOptions = ref([]);
-const payeeOptions = ref([]);
-const tagOptions = ref([]);
+const categoryOptions = ref<Array<CategoryVo>>();
+const payeeOptions = ref<Array<PayeeVo>>();
+const tagOptions = ref<Array<TagVo>>();
 const trueFalseOptions = ref([
   {
     value: 1,
@@ -363,7 +363,9 @@ watch(
       return;
     }
     bookOptions.value = bookRes.data;
-    searchForm.bookId = bookOptions.value[0].bookId;
+    searchForm.bookId = groupOptions.value.find(
+      group => group.groupId === groupId.value
+    ).defaultBookId;
     await onSearch();
   }
 );

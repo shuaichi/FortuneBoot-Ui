@@ -157,17 +157,21 @@ import {
   getAssetsLiabilities,
   IncomeTrendsQuery
 } from "@/api/fortune/include";
-import { getDefaultGroupId, getEnableGroupList } from "@/api/fortune/group";
+import {
+  getDefaultGroupId,
+  getEnableGroupList,
+  GroupVo
+} from "@/api/fortune/group";
 import { message } from "@/utils/message";
-import { getEnableBookList } from "@/api/fortune/book";
+import { BookVo, getEnableBookList } from "@/api/fortune/book";
 
 defineOptions({
   name: "Welcome"
 });
 
 const searchForm = reactive<BaseQuery>({});
-const groupOptions = ref();
-const bookOptions = ref();
+const groupOptions = ref<Array<GroupVo>>();
+const bookOptions = ref<Array<BookVo>>();
 const assetsLiabilities = ref<AssetsLiabilitiesVo>({
   totalAssets: 0,
   totalLiabilities: 0,
@@ -201,7 +205,9 @@ onMounted(async () => {
     return;
   }
   bookOptions.value = bookRes.data;
-  searchForm.bookId = bookOptions.value[0].bookId;
+  searchForm.bookId = groupOptions.value.find(
+    group => group.groupId === groupId.value
+  ).defaultBookId;
 });
 watch(
   () => searchForm.groupId,
@@ -212,7 +218,9 @@ watch(
       return;
     }
     bookOptions.value = bookRes.data;
-    searchForm.bookId = bookOptions.value[0].bookId;
+    searchForm.bookId = groupOptions.value.find(
+      group => group.groupId === groupId.value
+    ).defaultBookId;
     // 计算资产负债
     const res = await getAssetsLiabilities(searchForm.groupId);
     assetsLiabilities.value = res.data;

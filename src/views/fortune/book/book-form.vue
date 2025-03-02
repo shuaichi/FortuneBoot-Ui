@@ -200,7 +200,11 @@ import {
   ModifyBookCommand,
   BookVo
 } from "@/api/fortune/book";
-import { getBookTemplate, getCurrencyTemplate } from "@/api/fortune/group";
+import {
+  getBookTemplate,
+  getCurrencyTemplate,
+  GroupVo
+} from "@/api/fortune/group";
 import { getEnableGroupList } from "@/api/fortune/group";
 import { usePublicHooks } from "@/views/system/hooks";
 import { getEnableAccountList } from "@/api/fortune/account";
@@ -221,7 +225,7 @@ const visible = computed({
 const loading = ref(false);
 const formRef = ref();
 const currencyOptions = ref([]);
-const groupOptions = ref([]);
+const groupOptions = ref<Array<GroupVo>>();
 const canExpenseOptions = ref([]);
 const canIncomeOptions = ref([]);
 const canTransferOutOption = ref([]);

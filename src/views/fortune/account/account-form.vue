@@ -212,7 +212,11 @@ import { useHook } from "@/views/fortune/account/utils/hook";
 import ReCol from "@/components/ReCol";
 import VDialog from "@/components/VDialog/VDialog.vue";
 import { ElMessage, FormRules } from "element-plus";
-import { getCurrencyTemplate, getEnableGroupList } from "@/api/fortune/group";
+import {
+  getCurrencyTemplate,
+  getEnableGroupList,
+  GroupVo
+} from "@/api/fortune/group";
 
 const props = defineProps<{
   type: "add" | "edit";
@@ -230,7 +234,7 @@ const loading = ref(false);
 const formRef = ref();
 const { accountTypeOptions } = useHook();
 const currencyOptions = ref([]);
-const groupOptions = ref([]);
+const groupOptions = ref<Array<GroupVo>>();
 
 const formData = reactive<AddAccountCommand | ModifyAccountCommand>({
   accountId: null,

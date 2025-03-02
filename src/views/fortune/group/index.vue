@@ -31,6 +31,22 @@
           @page-current-change="handleCurrentChange"
         >
           <template #operation="{ row }">
+            <el-popconfirm
+              :title="`确认设置【${row.groupName}】为默认分组吗？`"
+              @confirm="setDefault(row)"
+            >
+              <template #reference>
+                <el-button
+                  class="reset-margin"
+                  link
+                  type="success"
+                  :size="size"
+                  :disabled="defaultGroupId === row.groupId"
+                >
+                  默认
+                </el-button>
+              </template>
+            </el-popconfirm>
             <el-button
               class="reset-margin"
               link
@@ -102,7 +118,7 @@ import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import { ElMessage } from "element-plus";
-import { GroupVo } from "@/api/fortune/group";
+import { GroupVo, setGroupDefaultApi } from "@/api/fortune/group";
 import GroupForm from "@/views/fortune/group/group-form.vue";
 import PureTable from "@pureadmin/table";
 import GroupInvite from "@/views/fortune/group/group-invite.vue";
@@ -118,17 +134,22 @@ const opRow = ref<GroupVo>();
 const uploadVisible = ref<boolean>(false);
 const inviteVisible = ref<boolean>(false);
 const userVisible = ref<boolean>(false);
-
 const {
   loading,
   columns,
   dataList,
   pagination,
+  defaultGroupId,
   onSearch,
   handleRemoveGroupApi,
   handleSizeChange,
   handleCurrentChange
 } = useHook();
+
+async function setDefault(row: GroupVo) {
+  await setGroupDefaultApi(row.groupId);
+  await onSearch();
+}
 
 async function openUploadDialog(type: "add" | "upload", row?: GroupVo) {
   try {
@@ -140,6 +161,7 @@ async function openUploadDialog(type: "add" | "upload", row?: GroupVo) {
     ElMessage.error((e as Error)?.message || "加载菜单失败");
   }
 }
+
 function openInviteDialog(row?: GroupVo) {
   opRow.value = row;
   inviteVisible.value = true;

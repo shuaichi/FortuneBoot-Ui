@@ -161,3 +161,10 @@ export function removeGroupUserApi(groupUserId: number) {
     `/fortune/group/${groupUserId}/removeGroupUser`
   );
 }
+
+export function setGroupDefaultApi(groupId: number) {
+  return http.request<ResponseData<Array<GroupUserVo>>>(
+    "patch",
+    `/fortune/group/${groupId}/setDefaultGroup`
+  );
+}

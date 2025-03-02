@@ -108,7 +108,7 @@ export function bookPutBackApi(bookId: number) {
   );
 }
 
-export function bookSetDefaultBookApi(bookId: number) {
+export function setDefaultBookApi(bookId: number) {
   return http.request<ResponseData<any>>(
     "patch",
     `/fortune/book/base/${bookId}/setDefaultBook`
