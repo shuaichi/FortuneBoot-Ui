@@ -255,7 +255,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import { PureTableBar } from "@/components/RePureTableBar";
@@ -353,6 +353,20 @@ onMounted(async () => {
   payeeOptions.value = payeeRes.data;
   tagOptions.value = tagRes.data;
 });
+
+watch(
+  () => searchForm.groupId,
+  async () => {
+    const bookRes = await getEnableBookList(searchForm.groupId);
+    if (bookRes.data.length === 0) {
+      message("请先启用或创建账本");
+      return;
+    }
+    bookOptions.value = bookRes.data;
+    searchForm.bookId = bookOptions.value[0].bookId;
+    await onSearch();
+  }
+);
 
 const tableTitle = computed(() => {
   const statistics = billStatistics.value;
