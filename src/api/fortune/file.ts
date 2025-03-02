@@ -11,6 +11,6 @@ export interface FileVo {
 export const getFileByBillId = (billId: number) => {
   return http.request<ResponseData<Array<FileVo>>>(
     "get",
-    `/fortune/file/${billId}/getByBillId`
+    `/fortune/bill/file/${billId}/getByBillId`
   );
 };
