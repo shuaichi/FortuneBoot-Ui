@@ -139,3 +139,7 @@ type Result = {
 export const getAsyncRoutes = () => {
   return http.request<Result>("get", "/getRouters");
 };
+
+export const getRsaPublicKey = () => {
+  return http.request<ResponseData<string>>("get", "/getRsaPublicKey");
+};

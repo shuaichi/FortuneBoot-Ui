@@ -77,11 +77,12 @@ const ruleForm = reactive({
 const onLogin = async (formEl: FormInstance | undefined) => {
   loading.value = true;
   if (!formEl) return;
-  await formEl.validate((valid, fields) => {
+  await formEl.validate(async (valid, fields) => {
     if (valid) {
+      const pwd = await rsaEncrypt(ruleForm.password);
       CommonAPI.loginByPassword({
         username: ruleForm.username,
-        password: rsaEncrypt(ruleForm.password),
+        password: pwd,
         captchaCode: ruleForm.captchaCode,
         captchaCodeKey: ruleForm.captchaCodeKey
       })
