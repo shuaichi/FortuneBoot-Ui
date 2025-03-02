@@ -211,7 +211,14 @@
           >
             <!-- 操作列 -->
             <template #operation="{ row }">
-              <el-button link type="primary" @click="openDialog('edit', row)">
+              <el-button link type="success" @click="openAdjustDialog(row)">
+                余额调整
+              </el-button>
+              <el-button
+                link
+                type="primary"
+                @click="openEditDialog('edit', row)"
+              >
                 编辑
               </el-button>
               <el-popconfirm
@@ -232,6 +239,11 @@
         :row="currentRow"
         @success="onSearch"
       />
+      <balance-adjust
+        v-model="adjustVisible"
+        :row="currentRow"
+        @success="onSearch"
+      />
     </div>
   </div>
 </template>
@@ -249,10 +261,12 @@ import AccountForm from "@/views/fortune/account/account-form.vue";
 import { AccountVo } from "@/api/fortune/account";
 import {
   getCurrencyTemplate,
+  getDefaultGroupId,
   getEnableGroupList,
   GroupVo
 } from "@/api/fortune/group";
 import { message } from "@/utils/message";
+import BalanceAdjust from "@/views/fortune/account/balance-adjust.vue";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -261,7 +275,8 @@ defineOptions({
 
 const opType = ref<"add" | "edit">("add");
 const currentRow = ref<AccountVo>();
-const modalVisible = ref(false);
+const adjustVisible = ref<boolean>(false);
+const modalVisible = ref<boolean>(false);
 const groupOptions = ref<Array<GroupVo>>();
 const formRef = ref();
 const barRef = ref();
@@ -290,12 +305,15 @@ const {
 } = useHook();
 
 onMounted(async () => {
-  const groupRes = await getEnableGroupList();
+  const [groupRes, defaultGroupRes] = await Promise.all([
+    getEnableGroupList(),
+    getDefaultGroupId()
+  ]);
   if (groupRes.data.length === 0) {
     message("请先启用或创建分组");
   }
   groupOptions.value = groupRes.data;
-  searchForm.groupId = groupRes.data[0].groupId;
+  searchForm.groupId = defaultGroupRes.data;
   searchForm.recycleBin = false;
   searchForm.accountType = 1;
   const currency = await getCurrencyTemplate();
@@ -303,7 +321,12 @@ onMounted(async () => {
   await onSearch();
 });
 
-function openDialog(type: "add" | "edit", row?: AccountVo) {
+function openAdjustDialog(row: AccountVo) {
+  currentRow.value = row;
+  adjustVisible.value = true;
+}
+
+function openEditDialog(type: "add" | "edit", row: AccountVo) {
   opType.value = type;
   currentRow.value = row;
   modalVisible.value = true;

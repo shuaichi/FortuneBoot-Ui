@@ -105,7 +105,6 @@
             >
               <el-input-number
                 v-model="item.amount"
-                :min="0"
                 :precision="2"
                 :controls="false"
                 style="width: 100%"
@@ -273,6 +272,7 @@ import ReCol from "@/components/ReCol";
 import {
   addBillApi,
   AddBillCommand,
+  BillVo,
   modifyBillApi,
   ModifyBillCommand
 } from "@/api/fortune/bill";
@@ -289,7 +289,7 @@ import { getFileByBillId } from "@/api/fortune/file";
 const props = defineProps<{
   type: "add" | "edit";
   modelValue: boolean;
-  row?: any;
+  row?: BillVo;
   groupId: number;
   bookId: number;
 }>();
@@ -300,7 +300,7 @@ const visible = computed({
   set: v => emits("update:modelValue", v)
 });
 
-const loading = ref(false);
+const loading = ref<boolean>(false);
 const formRef = ref();
 const billTypeOptions = [
   { value: 1, label: "支出" },
@@ -375,7 +375,7 @@ const rules: FormRules = {
 const bookOptions = ref<Array<BookVo>>();
 const accountOptions = ref<Array<AccountVo>>();
 const toAccountOptions = ref<Array<AccountVo>>();
-const categoryOptions = ref<Array<CategoryVo>>();
+const categoryOptions = ref<Array<CategoryVo>>([]);
 const payeeOptions = ref<Array<PayeeVo>>();
 const tagOptions = ref<Array<TagVo>>();
 const fileList = ref([]);

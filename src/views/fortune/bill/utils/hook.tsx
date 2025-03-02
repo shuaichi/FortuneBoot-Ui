@@ -30,14 +30,15 @@ export function useHook() {
   const billTypeOptions = [
     { value: 1, label: "支出" },
     { value: 2, label: "收入" },
-    { value: 3, label: "转账" }
+    { value: 3, label: "转账" },
+    { value: 4, label: "余额调整" }
   ];
 
   const columns: TableColumnList = [
     {
       label: "所属账本",
       prop: "bookName",
-      width: 120,
+      width: 180,
       align: "left"
     },
     {
@@ -48,7 +49,7 @@ export function useHook() {
     {
       label: "类型",
       prop: "billType",
-      width: 60,
+      width: 120,
       formatter: ({ billType }) =>
         billTypeOptions.find(t => t.value === billType)?.label
     },
