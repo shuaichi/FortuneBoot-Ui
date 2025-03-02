@@ -120,7 +120,13 @@
             >
               <el-tree-select
                 :key="
-                  formData.billType + '-' + index + '-' + categoryOptions.length
+                  formData.billType +
+                  '-' +
+                  index +
+                  '-' +
+                  categoryOptions.length +
+                  '-' +
+                  formData.categoryAmountPair.length
                 "
                 v-model="item.categoryId"
                 :data="categoryOptions"
