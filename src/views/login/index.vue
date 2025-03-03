@@ -68,7 +68,7 @@ dataThemeChange();
 const { title } = useNav();
 
 const ruleForm = reactive({
-  username: "admin",
+  username: "",
   password: getPassword(),
   captchaCode: "",
   captchaCodeKey: ""
@@ -339,7 +339,7 @@ onBeforeUnmount(() => {
             >暂无
           </el-link>
           <!-- href="https://beian.miit.gov.cn" 闽ICP备2022018106号-2 -->
-          | version： 0.0.1 | api-version： {{ apiVersion }}
+          | version： 1.0.0 | api-version： {{ apiVersion }}
         </span>
       </div>
     </div>
