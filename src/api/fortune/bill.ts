@@ -1,4 +1,5 @@
 import { http } from "@/utils/http";
+import { TagVo } from "@/api/fortune/tag";
 
 export interface AddBillCommand {
   bookId?: number;
@@ -52,7 +53,7 @@ export interface BillVo {
   bookId: number;
   tradeTime: string;
   categoryAmountPair?: [{ categoryName: string; amount: number }];
-  tagList?: [{ tagName: string }];
+  tagList?: Array<TagVo>;
   currencyCode?: string;
   payeeName?: string;
 }

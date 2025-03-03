@@ -226,6 +226,9 @@
           @page-current-change="handleCurrentChange"
         >
           <template #operation="{ row }">
+            <el-button link type="success" @click="openDialog('add', row)">
+              复制
+            </el-button>
             <el-button link type="primary" @click="openDialog('edit', row)">
               编辑
             </el-button>
@@ -341,7 +344,9 @@ onMounted(async () => {
     getEnableAccountList(searchForm.groupId)
   ]);
   bookOptions.value = booksRes.data;
-  searchForm.bookId = booksRes.data[0].bookId;
+  searchForm.bookId = groupOptions.value.find(
+    group => group.groupId === defaultGroup.data
+  ).defaultBookId;
   accountOptions.value = accountsRes.data;
   await onSearch();
   const [categoryRes, payeeRes, tagRes] = await Promise.all([
@@ -364,7 +369,7 @@ watch(
     }
     bookOptions.value = bookRes.data;
     searchForm.bookId = groupOptions.value.find(
-      group => group.groupId === groupId.value
+      group => group.groupId === searchForm.groupId
     ).defaultBookId;
     await onSearch();
   }
