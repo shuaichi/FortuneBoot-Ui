@@ -332,13 +332,12 @@ onBeforeUnmount(() => {
         <span>Copyright © 2025-2025 FortuneBoot All Rights Reserved. </span>
         <span>
           <el-link
-            href=""
+            href="https://beian.miit.gov.cn"
             rel="external nofollow"
             target="_blank"
             type="primary"
-            >暂无
+            >京ICP备2024074449号-1
           </el-link>
-          <!-- href="https://beian.miit.gov.cn" 闽ICP备2022018106号-2 -->
           | version： 1.0.0 | api-version： {{ apiVersion }}
         </span>
       </div>
