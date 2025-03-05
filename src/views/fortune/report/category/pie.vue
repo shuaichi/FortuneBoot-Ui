@@ -1,50 +1,69 @@
 <template>
   <div class="chart-container">
-    <div v-if="loading" class="loading">Loading...</div>
+    <div v-if="loading" class="loading">加载中...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
-    <div v-else ref="chartRef" class="pie-chart" />
+    <template v-else>
+      <div v-if="hasData" ref="chartRef" class="pie-chart" />
+      <div v-else class="no-data">暂无数据</div>
+    </template>
   </div>
 </template>
-<script setup lang="ts">
-import { ref, onBeforeUnmount, onUnmounted, nextTick, watch } from "vue";
-import * as echarts from "echarts";
-import { getTotalAssets } from "@/api/fortune/include";
 
-/** 组件name最好和菜单表中的router_name一致 */
+<script setup lang="ts">
+import {
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+  watch,
+  computed
+} from "vue";
+import * as echarts from "echarts";
+import { PieVo } from "@/api/fortune/include";
+
 defineOptions({
   name: "TotalAssetsPie"
 });
 
-const chartRef = ref(null);
+const chartRef = ref<HTMLElement | null>(null);
 const loading = ref(true);
-const error = ref(null);
-let chartInstance = null;
-const props = defineProps<{ groupId: number }>();
+const error = ref<string | null>(null);
+let chartInstance: echarts.ECharts | null = null;
+const props = defineProps<{
+  data: PieVo[];
+}>();
+
+onMounted(() => {
+  initChart();
+  window.addEventListener("resize", handleResize);
+  if (props.data?.length) {
+    fetchData();
+  }
+});
+
 watch(
-  () => props.groupId,
+  () => props.data,
   async () => {
     await fetchData();
-    window.addEventListener("resize", () => chartInstance?.resize());
-  }
+  },
+  { deep: true }
 );
-
-onUnmounted(() => chartInstance?.dispose());
+const hasData = computed(
+  () => props.data?.length > 0 && props.data.some(item => item.value > 0)
+);
 onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
   chartInstance?.dispose();
 });
+
 const initChart = () => {
-  if (!chartRef.value) {
-    return;
-  }
+  if (!chartRef.value) return;
   chartInstance = echarts.init(chartRef.value);
   chartInstance.setOption({
     tooltip: {
       trigger: "item",
-      formatter: ({ data }) =>
-        `${data.name}<br/>
-        金额: ￥${data.value}<br/>
-        占比: ${data.percent}%`
+      formatter: ({ data }: { data: PieVo }) =>
+        `${data.name}<br/>金额: ￥${data.value}<br/>占比: ${data.percent}%`
     },
     legend: {
       orient: "vertical",
@@ -63,36 +82,32 @@ const initChart = () => {
         },
         label: {
           show: true,
-          formatter: ({ percent }) => `${percent}%`,
+          formatter: ({ percent }: { percent: number }) => `${percent}%`,
           position: "inner"
         },
         emphasis: {
-          label: {
-            show: true,
-            fontSize: 20
-          }
-        },
-        color: null,
-        data: []
+          label: { show: true, fontSize: 20 }
+        }
       }
     ]
   });
 };
+
 const fetchData = async () => {
   try {
-    const res = await getTotalAssets(props.groupId);
-    loading.value = false;
-    // 计算总值（确保数据结构中包含value字段）
-    const totalValue = res.data.reduce(
-      (sum: number, item: any) => sum + (item.value || 0),
+    loading.value = true;
+    const propData = [...props.data];
+    const totalValue = propData.reduce(
+      (sum, item) => sum + (item.value || 0),
       0
     );
     await nextTick();
-    initChart();
-    chartInstance.setOption({
+    if (!chartInstance) initChart();
+    console.log("propData === ", propData);
+
+    chartInstance?.setOption({
       graphic: [
         {
-          // 中心文字容器
           type: "group",
           left: "center",
           top: "center",
@@ -104,34 +119,32 @@ const fetchData = async () => {
                 fontSize: 24,
                 fontWeight: "bold",
                 fill: "#333"
-              },
-              left: "center",
-              top: "55%"
+              }
             }
           ]
         }
       ],
       series: [
         {
-          data: res.data
+          data: propData.map(item => ({
+            ...item,
+            percent: ((item.value / totalValue) * 100).toFixed(2)
+          }))
         }
       ]
     });
+    loading.value = false;
   } catch (err) {
     error.value = "加载失败";
     loading.value = false;
   }
 };
 
-const handleResize = () => {
-  chartInstance?.resize();
-};
+const handleResize = () => chartInstance?.resize();
 
-// 在<script setup>中添加汇总值计算
-const formatNumber = (num: number) => {
-  return num.toLocaleString("en-US"); // 添加千分位分隔符
-};
+const formatNumber = (num: number) => num.toLocaleString("en-US");
 </script>
+
 <style scoped>
 .chart-container {
   position: relative;
@@ -151,10 +164,17 @@ const formatNumber = (num: number) => {
   justify-content: center;
   height: 100%;
   font-size: 18px;
-  color: #666;
 }
 
 .error {
   color: #f56c6c;
+}
+
+.no-data {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #909399;
 }
 </style>

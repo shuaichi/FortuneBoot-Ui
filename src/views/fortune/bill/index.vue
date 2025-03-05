@@ -75,7 +75,7 @@
           v-model="searchForm.tradeTimeRange"
           type="daterange"
           range-separator="-"
-          class="!w-[200px]"
+          class="!w-[260px]"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
           value-format="YYYY-MM-DD"

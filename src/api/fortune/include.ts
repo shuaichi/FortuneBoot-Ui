@@ -24,18 +24,29 @@ export interface BaseQuery {
 
 export interface IncomeTrendsQuery extends BaseQuery {
   timeGranularity?: number;
-  timePoint?: string;
+  timePoint?: Date;
 }
 
 export interface ExpenseTrendsQuery extends BaseQuery {
   timeGranularity?: number;
-  timePoint?: string;
+  timePoint?: Date;
 }
 
 export interface AssetsLiabilitiesVo {
   totalAssets: number;
   totalLiabilities: number;
   netAssets: number;
+}
+
+export interface CategoryReportQuery {
+  bookId?: number;
+  title?: string;
+  startDate?: Date;
+  endDate?: Date;
+  accountIds?: Array<number>;
+  payeeId?: Array<number>;
+  categoryIds?: Array<number>;
+  tagIds?: Array<number>;
 }
 
 export function getBillStatistics(bookId: number) {
@@ -79,5 +90,21 @@ export function getAssetsLiabilities(groupId: number) {
   return http.request<ResponseData<AssetsLiabilitiesVo>>(
     "get",
     `/fortune/include/${groupId}/getFortuneAssetsLiabilities`
+  );
+}
+
+export function getCategoryExpenseApi(params: CategoryReportQuery) {
+  return http.request<ResponseData<Array<PieVo>>>(
+    "get",
+    "/fortune/include/getCategoryExpense",
+    { params }
+  );
+}
+
+export function getCategoryIncomeApi(params: CategoryReportQuery) {
+  return http.request<ResponseData<Array<PieVo>>>(
+    "get",
+    "/fortune/include/getCategoryIncome",
+    { params }
   );
 }
