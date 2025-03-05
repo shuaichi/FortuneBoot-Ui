@@ -7,7 +7,7 @@
         :model="searchForm"
         class="search-form bg-bg_color w-[99/100] pl-8 pt-[12px]"
       >
-        <el-form-item label="所属分组：" prop="groupId">
+        <el-form-item label="所属分组：">
           <el-select
             v-model="searchForm.groupId"
             placeholder="请选择分组"
@@ -22,7 +22,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="所属账本：" prop="bookId">
+        <el-form-item label="所属账本：">
           <el-select
             v-model="searchForm.bookId"
             placeholder="请选择账本"
@@ -169,7 +169,7 @@ defineOptions({
   name: "Welcome"
 });
 
-const searchForm = reactive<BaseQuery>({});
+const searchForm = reactive<BaseQuery>({ groupId: 0, bookId: 0 });
 const groupOptions = ref<Array<GroupVo>>();
 const bookOptions = ref<Array<BookVo>>();
 const assetsLiabilities = ref<AssetsLiabilitiesVo>({
@@ -206,7 +206,7 @@ onMounted(async () => {
   }
   bookOptions.value = bookRes.data;
   searchForm.bookId = groupOptions.value.find(
-    group => group.groupId === groupId.value
+    group => group.groupId === searchForm.groupId
   ).defaultBookId;
 });
 watch(
@@ -219,7 +219,7 @@ watch(
     }
     bookOptions.value = bookRes.data;
     searchForm.bookId = groupOptions.value.find(
-      group => group.groupId === groupId.value
+      group => group.groupId === searchForm.groupId
     ).defaultBookId;
     // 计算资产负债
     const res = await getAssetsLiabilities(searchForm.groupId);
