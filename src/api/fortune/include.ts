@@ -42,7 +42,7 @@ export interface AssetsLiabilitiesVo {
   netAssets: number;
 }
 
-export interface CategoryReportQuery {
+export interface BillReportQuery {
   bookId?: number;
   title?: string;
   startDate?: Date;
@@ -119,7 +119,7 @@ export function getAssetsLiabilities(groupId: number) {
   );
 }
 
-export function getCategoryExpenseApi(params: CategoryReportQuery) {
+export function getCategoryExpenseApi(params: BillReportQuery) {
   return http.request<ResponseData<Array<PieVo>>>(
     "get",
     "/fortune/include/getCategoryExpense",
@@ -127,7 +127,7 @@ export function getCategoryExpenseApi(params: CategoryReportQuery) {
   );
 }
 
-export function getCategoryIncomeApi(params: CategoryReportQuery) {
+export function getCategoryIncomeApi(params: BillReportQuery) {
   return http.request<ResponseData<Array<PieVo>>>(
     "get",
     "/fortune/include/getCategoryIncome",
@@ -135,7 +135,7 @@ export function getCategoryIncomeApi(params: CategoryReportQuery) {
   );
 }
 
-export function getPayeeExpenseApi(params: PayeeReportQuery) {
+export function getPayeeExpenseApi(params: BillReportQuery) {
   return http.request<ResponseData<Array<PieVo>>>(
     "get",
     "/fortune/include/getPayeeExpense",
@@ -143,7 +143,7 @@ export function getPayeeExpenseApi(params: PayeeReportQuery) {
   );
 }
 
-export function getPayeeIncomeApi(params: PayeeReportQuery) {
+export function getPayeeIncomeApi(params: BillReportQuery) {
   return http.request<ResponseData<Array<PieVo>>>(
     "get",
     "/fortune/include/getPayeeIncome",
@@ -151,7 +151,7 @@ export function getPayeeIncomeApi(params: PayeeReportQuery) {
   );
 }
 
-export function getTagExpenseApi(params: TagReportQuery) {
+export function getTagExpenseApi(params: BillReportQuery) {
   return http.request<ResponseData<Array<PieVo>>>(
     "get",
     "/fortune/include/getTagExpense",
@@ -159,7 +159,7 @@ export function getTagExpenseApi(params: TagReportQuery) {
   );
 }
 
-export function getTagIncomeApi(params: TagReportQuery) {
+export function getTagIncomeApi(params: BillReportQuery) {
   return http.request<ResponseData<Array<PieVo>>>(
     "get",
     "/fortune/include/getTagIncome",
