@@ -202,10 +202,14 @@ watch(
     searchForm.bookId = groupOptions.value.find(
       group => group.groupId === groupId.value
     ).defaultBookId;
+  }
+);
+watch(
+  () => searchForm.bookId,
+  async () => {
     await onSearch();
   }
 );
-
 async function onSearch() {
   try {
     loading.value = true;

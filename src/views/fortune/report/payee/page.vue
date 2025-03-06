@@ -129,7 +129,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { onMounted, reactive, ref, watch } from "vue";
 import {
   getDefaultGroupId,
   getEnableGroupList,
@@ -177,8 +177,7 @@ const categoryTreeProps = {
 };
 const resData = ref<Array<PieVo>>([]);
 onMounted(async () => {
-  const route = useRoute();
-  billType.value = "/fortune/report/payee/expense" === route.fullPath ? 1 : 2;
+  getBillTypeByFullPath();
   const groupRes = await getEnableGroupList();
   if (groupRes.data.length === 0) {
     message("请先启用或创建分组");
@@ -205,7 +204,40 @@ onMounted(async () => {
   payeeOptions.value = payeeRes.data;
   tagOptions.value = tagRes.data;
 });
-
+watch(
+  () => groupId.value,
+  async () => {
+    const bookRes = await getEnableBookList(groupId.value);
+    if (bookRes.data.length === 0) {
+      message("请先启用或创建账本");
+      return;
+    }
+    bookOptions.value = bookRes.data;
+    searchForm.bookId = groupOptions.value.find(
+      group => group.groupId === groupId.value
+    ).defaultBookId;
+  }
+);
+watch(
+  () => searchForm.bookId,
+  async () => {
+    await onSearch();
+  }
+);
+function getBillTypeByFullPath() {
+  const route = useRoute();
+  switch (route.path) {
+    case "/fortune/report/payee/expense":
+      billType.value = 1;
+      return;
+    case "/fortune/report/payee/income":
+      billType.value = 2;
+      return;
+    default:
+      message("参数有误；");
+      return;
+  }
+}
 async function resetForm() {
   const defaultGroup = await getDefaultGroupId();
   groupId.value = defaultGroup.data;

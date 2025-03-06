@@ -371,10 +371,14 @@ watch(
     searchForm.bookId = groupOptions.value.find(
       group => group.groupId === searchForm.groupId
     ).defaultBookId;
+  }
+);
+watch(
+  () => searchForm.bookId,
+  async () => {
     await onSearch();
   }
 );
-
 const tableTitle = computed(() => {
   const statistics = billStatistics.value;
   // eslint-disable-next-line no-irregular-whitespace
