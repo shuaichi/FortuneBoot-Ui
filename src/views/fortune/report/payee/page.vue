@@ -57,6 +57,7 @@
       <el-form-item label="账户：">
         <el-select
           v-model="searchForm.accountIds"
+          multiple
           placeholder="请选择账户"
           filterable
         >
@@ -71,7 +72,8 @@
       <el-form-item label="交易对象：">
         <el-select
           filterable
-          v-model="searchForm.payeeId"
+          multiple
+          v-model="searchForm.payeeIds"
           placeholder="请选择交易对象"
           style="width: 100%"
           clearable

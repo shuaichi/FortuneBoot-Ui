@@ -36,7 +36,9 @@ onBeforeUnmount(() => {
 });
 
 const initChart = () => {
-  if (!chartRef.value) return;
+  if (!chartRef.value) {
+    return;
+  }
   chartInstance = echarts.init(chartRef.value);
   chartInstance.setOption({
     tooltip: {
@@ -81,7 +83,9 @@ const fetchData = async () => {
       0
     );
     await nextTick();
-    if (!chartInstance) initChart();
+    if (!chartInstance) {
+      initChart();
+    }
     console.log("propData === ", propData);
 
     chartInstance?.setOption({
@@ -128,7 +132,7 @@ const formatNumber = (num: number) => num.toLocaleString("en-US");
 .chart-container {
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: 85vh;
 }
 
 .pie-chart {
