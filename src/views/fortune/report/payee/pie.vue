@@ -11,10 +11,6 @@ import { ref, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
 import * as echarts from "echarts";
 import { PieVo } from "@/api/fortune/include";
 
-defineOptions({
-  name: "TotalAssetsPie"
-});
-
 const chartRef = ref<HTMLElement | null>(null);
 const loading = ref(true);
 const error = ref<string | null>(null);
