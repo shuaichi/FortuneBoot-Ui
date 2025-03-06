@@ -49,6 +49,17 @@ export interface CategoryReportQuery {
   tagIds?: Array<number>;
 }
 
+export interface PayeeReportQuery {
+  bookId?: number;
+  title?: string;
+  startDate?: Date;
+  endDate?: Date;
+  accountIds?: Array<number>;
+  payeeId?: Array<number>;
+  categoryIds?: Array<number>;
+  tagIds?: Array<number>;
+}
+
 export function getBillStatistics(bookId: number) {
   return http.request<ResponseData<BillStatisticsVo>>(
     "get",
@@ -105,6 +116,22 @@ export function getCategoryIncomeApi(params: CategoryReportQuery) {
   return http.request<ResponseData<Array<PieVo>>>(
     "get",
     "/fortune/include/getCategoryIncome",
+    { params }
+  );
+}
+
+export function getPayeeExpenseApi(params: PayeeReportQuery) {
+  return http.request<ResponseData<Array<PieVo>>>(
+    "get",
+    "/fortune/include/getPayeeExpense",
+    { params }
+  );
+}
+
+export function getPayeeIncomeApi(params: PayeeReportQuery) {
+  return http.request<ResponseData<Array<PieVo>>>(
+    "get",
+    "/fortune/include/getPayeeIncome",
     { params }
   );
 }
