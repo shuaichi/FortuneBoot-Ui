@@ -4,7 +4,7 @@
       ref="formRef"
       :inline="true"
       :model="searchForm"
-      class="search-form bg-bg_color w-[99/100] pl-8 pt-[12px]"
+      class="search-form bg-bg_color w-[99/100] pl-8 pt-[12px] mb-5"
     >
       <el-form-item label="所属分组：">
         <el-select
@@ -126,7 +126,9 @@
         </el-button>
       </el-form-item>
     </el-form>
-    <bar :data="resData" />
+    <el-card>
+      <bar :data="resData" />
+    </el-card>
   </div>
 </template>
 
@@ -226,6 +228,7 @@ watch(
     await onSearch();
   }
 );
+
 function getBillTypeByFullPath() {
   const route = useRoute();
   switch (route.path) {
@@ -240,6 +243,7 @@ function getBillTypeByFullPath() {
       return;
   }
 }
+
 async function resetForm() {
   const defaultGroup = await getDefaultGroupId();
   groupId.value = defaultGroup.data;
@@ -248,7 +252,7 @@ async function resetForm() {
   ).defaultBookId;
   searchForm.title = null;
   searchForm.accountIds = [];
-  searchForm.payeeId = [];
+  searchForm.payeeIds = [];
   searchForm.tagIds = [];
   searchForm.categoryIds = [];
   searchForm.startDate = null;

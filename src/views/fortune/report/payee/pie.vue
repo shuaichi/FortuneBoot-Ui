@@ -132,7 +132,7 @@ const formatNumber = (num: number) => num.toLocaleString("en-US");
 .chart-container {
   position: relative;
   width: 100%;
-  height: 85vh;
+  height: 83vh;
 }
 
 .pie-chart {
