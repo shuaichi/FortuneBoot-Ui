@@ -1,23 +1,13 @@
 <template>
   <div class="chart-container">
-    <div v-if="loading" class="loading">加载中...</div>
-    <div v-else-if="error" class="error">{{ error }}</div>
-    <template v-else>
-      <div v-if="hasData" ref="chartRef" class="pie-chart" />
-      <div v-else class="no-data">暂无数据</div>
-    </template>
+    <div v-show="loading" class="loading">加载中...</div>
+    <div v-show="error" class="error">{{ error }}</div>
+    <div ref="chartRef" class="pie-chart" />
   </div>
 </template>
 
 <script setup lang="ts">
-import {
-  ref,
-  onMounted,
-  onBeforeUnmount,
-  nextTick,
-  watch,
-  computed
-} from "vue";
+import { ref, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
 import * as echarts from "echarts";
 import { PieVo } from "@/api/fortune/include";
 
@@ -34,11 +24,7 @@ const props = defineProps<{
 }>();
 
 onMounted(() => {
-  initChart();
   window.addEventListener("resize", handleResize);
-  if (props.data?.length) {
-    fetchData();
-  }
 });
 
 watch(
@@ -47,9 +33,6 @@ watch(
     await fetchData();
   },
   { deep: true }
-);
-const hasData = computed(
-  () => props.data?.length > 0 && props.data.some(item => item.value > 0)
 );
 onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
@@ -149,7 +132,7 @@ const formatNumber = (num: number) => num.toLocaleString("en-US");
 .chart-container {
   position: relative;
   width: 100%;
-  height: 100%;
+  height: 100vh;
 }
 
 .pie-chart {
@@ -168,13 +151,5 @@ const formatNumber = (num: number) => num.toLocaleString("en-US");
 
 .error {
   color: #f56c6c;
-}
-
-.no-data {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #909399;
 }
 </style>

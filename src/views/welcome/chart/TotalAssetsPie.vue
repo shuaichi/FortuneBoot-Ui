@@ -1,6 +1,6 @@
 <template>
   <div class="chart-container">
-    <div v-if="loading" class="loading">Loading...</div>
+    <div v-if="loading" class="loading">加载中...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else ref="chartRef" class="pie-chart" />
   </div>
