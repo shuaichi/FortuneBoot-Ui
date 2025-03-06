@@ -2,21 +2,21 @@
   <div class="chart-container">
     <div v-show="loading" class="loading">加载中...</div>
     <div v-show="error" class="error">{{ error }}</div>
-    <div ref="chartRef" class="pie-chart" />
+    <div ref="chartRef" class="bar-chart" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
 import * as echarts from "echarts";
-import { PieVo } from "@/api/fortune/include";
+import { BarVo } from "@/api/fortune/include";
 
 const chartRef = ref<HTMLElement | null>(null);
 const loading = ref(true);
 const error = ref<string | null>(null);
 let chartInstance: echarts.ECharts | null = null;
 const props = defineProps<{
-  data: PieVo[];
+  data: BarVo[];
 }>();
 
 onMounted(() => {
@@ -34,40 +34,42 @@ onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
   chartInstance?.dispose();
 });
-
 const initChart = () => {
-  if (!chartRef.value) {
-    return;
-  }
+  if (!chartRef.value) return;
   chartInstance = echarts.init(chartRef.value);
   chartInstance.setOption({
     tooltip: {
       trigger: "item",
-      formatter: ({ data }: { data: PieVo }) =>
-        `${data.name}<br/>金额: ￥${data.value}<br/>占比: ${data.percent}%`
+      // 直接通过 data.name 和 data.value 访问
+      formatter: ({ data }: { data: { name: string; value: number } }) =>
+        `对象：${data.name}<br/>金额: ${data.value}`
     },
-    legend: {
-      orient: "vertical",
-      right: 10,
-      top: "center"
+    xAxis: {
+      type: "category",
+      data: []
+    },
+    yAxis: {
+      type: "value"
     },
     series: [
       {
-        type: "pie",
-        radius: ["40%", "70%"],
-        avoidLabelOverlap: false,
+        type: "bar",
         itemStyle: {
-          borderRadius: 10,
+          borderRadius: [5, 5, 0, 0],
           borderColor: "#fff",
-          borderWidth: 2
+          borderWidth: 0
         },
         label: {
           show: true,
-          formatter: ({ percent }: { percent: number }) => `${percent}%`,
-          position: "inner"
+          position: "top",
+          formatter: ({ value }: { value: number }) => `￥${value}`
         },
         emphasis: {
-          label: { show: true, fontSize: 20 }
+          itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: "rgba(0, 0, 0, 0.5)"
+          }
         }
       }
     ]
@@ -78,40 +80,19 @@ const fetchData = async () => {
   try {
     loading.value = true;
     const propData = [...props.data];
-    const totalValue = propData.reduce(
-      (sum, item) => sum + (item.value || 0),
-      0
-    );
     await nextTick();
-    if (!chartInstance) {
-      initChart();
-    }
-    console.log("propData === ", propData);
+    if (!chartInstance) initChart();
 
     chartInstance?.setOption({
-      graphic: [
-        {
-          type: "group",
-          left: "center",
-          top: "center",
-          children: [
-            {
-              type: "text",
-              style: {
-                text: `${formatNumber(totalValue)}元`,
-                fontSize: 24,
-                fontWeight: "bold",
-                fill: "#333"
-              }
-            }
-          ]
-        }
-      ],
+      xAxis: {
+        data: propData.map(item => item.name)
+      },
       series: [
         {
+          // 确保 data 包含 name 和 value
           data: propData.map(item => ({
-            ...item,
-            percent: ((item.value / totalValue) * 100).toFixed(2)
+            name: item.name,
+            value: item.value
           }))
         }
       ]
@@ -124,8 +105,6 @@ const fetchData = async () => {
 };
 
 const handleResize = () => chartInstance?.resize();
-
-const formatNumber = (num: number) => num.toLocaleString("en-US");
 </script>
 
 <style scoped>
@@ -135,7 +114,7 @@ const formatNumber = (num: number) => num.toLocaleString("en-US");
   height: 85vh;
 }
 
-.pie-chart {
+.bar-chart {
   width: 100%;
   height: 100%;
 }

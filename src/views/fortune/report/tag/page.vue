@@ -126,7 +126,7 @@
         </el-button>
       </el-form-item>
     </el-form>
-    <pie :data="resData" />
+    <bar :data="resData" />
   </div>
 </template>
 
@@ -147,16 +147,16 @@ import { useRoute } from "vue-router";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
-import pie from "./pie.vue";
 import {
-  CategoryReportQuery,
-  getCategoryExpenseApi,
-  getCategoryIncomeApi,
-  PieVo
+  getTagExpenseApi,
+  getTagIncomeApi,
+  PayeeReportQuery,
+  BarVo
 } from "@/api/fortune/include";
+import Bar from "@/views/fortune/report/tag/bar.vue";
 
 const billType = ref<number>();
-const searchForm = reactive<CategoryReportQuery>({});
+const searchForm = reactive<PayeeReportQuery>({});
 const groupId = ref<number>();
 const tradeTimeRange = ref<[Date, Date]>([null, null]);
 const groupOptions = ref<Array<GroupVo>>();
@@ -177,7 +177,7 @@ const categoryTreeProps = {
   value: "categoryId",
   children: "children"
 };
-const resData = ref<Array<PieVo>>([]);
+const resData = ref<Array<BarVo>>([]);
 onMounted(async () => {
   getBillTypeByFullPath();
   const groupRes = await getEnableGroupList();
@@ -229,10 +229,10 @@ watch(
 function getBillTypeByFullPath() {
   const route = useRoute();
   switch (route.path) {
-    case "/fortune/report/category/expense":
+    case "/fortune/report/tag/expense":
       billType.value = 1;
       return;
-    case "/fortune/report/category/income":
+    case "/fortune/report/tag/income":
       billType.value = 2;
       return;
     default:
@@ -260,12 +260,11 @@ async function resetForm() {
 async function onSearch() {
   searchForm.startDate = tradeTimeRange.value[0];
   searchForm.endDate = tradeTimeRange.value[1];
-  console.log(searchForm);
   if (billType.value === 1) {
-    const res = await getCategoryExpenseApi(searchForm);
+    const res = await getTagExpenseApi(searchForm);
     resData.value = res.data;
   } else if (billType.value === 2) {
-    const res = await getCategoryIncomeApi(searchForm);
+    const res = await getTagIncomeApi(searchForm);
     resData.value = res.data;
   }
 }

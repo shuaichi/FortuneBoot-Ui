@@ -11,6 +11,10 @@ export interface PieVo {
   name: string;
   value: number;
 }
+export interface BarVo {
+  name: string;
+  value: number;
+}
 
 export interface LineVo {
   name: string;
@@ -44,7 +48,7 @@ export interface CategoryReportQuery {
   startDate?: Date;
   endDate?: Date;
   accountIds?: Array<number>;
-  payeeId?: Array<number>;
+  payeeIds?: Array<number>;
   categoryIds?: Array<number>;
   tagIds?: Array<number>;
 }
@@ -55,7 +59,7 @@ export interface PayeeReportQuery {
   startDate?: Date;
   endDate?: Date;
   accountIds?: Array<number>;
-  payeeId?: Array<number>;
+  payeeIds?: Array<number>;
   categoryIds?: Array<number>;
   tagIds?: Array<number>;
 }
@@ -66,7 +70,7 @@ export interface TagReportQuery {
   startDate?: Date;
   endDate?: Date;
   accountIds?: Array<number>;
-  payeeId?: Array<number>;
+  payeeIds?: Array<number>;
   categoryIds?: Array<number>;
   tagIds?: Array<number>;
 }
