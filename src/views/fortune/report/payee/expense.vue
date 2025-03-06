@@ -8,7 +8,7 @@ import { defineComponent } from "vue";
 import Page from "./page.vue";
 
 export default defineComponent({
-  name: "FortuneCategoryExpense", // 直接在这里定义 name
+  name: "FortunePayeeExpense", // 直接在这里定义 name
   components: { Page }
 });
 </script>
