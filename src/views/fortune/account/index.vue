@@ -183,7 +183,7 @@
           <el-button
             type="primary"
             :icon="useRenderIcon(AddFill)"
-            @click="openDialog('add')"
+            @click="openEditDialog('add', null)"
           >
             新增账户
           </el-button>

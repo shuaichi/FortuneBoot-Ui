@@ -228,6 +228,7 @@ const onUpdate = async (formEl: FormInstance | undefined) => {
             type: "success"
           });
           loading.value = false;
+          onBack();
         }, 1000);
       } else {
         loading.value = false;
