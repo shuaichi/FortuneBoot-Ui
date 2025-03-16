@@ -130,7 +130,7 @@ export function getDefaultGroupId() {
 
 export function removeGroupApi(groupId: number) {
   return http.request<ResponseData<any>>(
-    "patch",
+    "delete",
     `/fortune/group/${groupId}/remove`
   );
 }
