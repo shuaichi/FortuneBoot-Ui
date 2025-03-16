@@ -234,12 +234,15 @@
         </template>
       </PureTableBar>
       <account-form
+        v-if="modalVisible"
         v-model="modalVisible"
         :type="opType"
         :row="currentRow"
+        :group-id="searchForm.groupId"
         @success="onSearch"
       />
       <balance-adjust
+        v-if="adjustVisible"
         v-model="adjustVisible"
         :row="currentRow"
         @success="onSearch"

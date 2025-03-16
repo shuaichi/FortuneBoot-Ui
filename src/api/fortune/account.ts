@@ -1,11 +1,11 @@
 import { http } from "@/utils/http";
 
 export interface AddAccountCommand {
-  groupId: number;
-  accountName: string;
-  currencyCode: string;
-  balance: number;
-  accountType: number;
+  groupId?: number;
+  accountName?: string;
+  currencyCode?: string;
+  balance?: number;
+  accountType?: number;
   cardNo?: string;
   billDay?: string;
   repayDay?: string;
