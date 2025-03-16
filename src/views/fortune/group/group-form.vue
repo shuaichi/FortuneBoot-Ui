@@ -159,7 +159,8 @@ const visible = computed({
 });
 const formData = reactive<AddGroupCommand | ModifyGroupCommand>({
   defaultCurrency: "CNY",
-  defaultBookId: null
+  defaultBookId: null,
+  enable: true
 });
 
 function handleOpened() {

@@ -222,6 +222,7 @@ const props = defineProps<{
   type: "add" | "edit";
   modelValue: boolean;
   row?: AccountVo;
+  groupId: number;
 }>();
 
 const { switchStyle } = usePublicHooks();
@@ -237,26 +238,14 @@ const currencyOptions = ref([]);
 const groupOptions = ref<Array<GroupVo>>();
 
 const formData = reactive<AddAccountCommand | ModifyAccountCommand>({
-  accountId: null,
-  groupId: null,
-  accountName: null,
   currencyCode: "CNY",
-  balance: null,
-  accountType: null,
-  cardNo: null,
-  billDay: null,
-  repayDay: null,
+  accountType: 1,
   canExpense: true,
   canIncome: true,
   canTransferOut: true,
   canTransferIn: true,
   include: true,
-  creditLimit: null,
-  enable: true,
-  apr: null,
-  initialBalance: null,
-  sort: null,
-  remark: null
+  enable: true
 });
 
 const rules: FormRules = {
@@ -273,6 +262,7 @@ const rules: FormRules = {
 };
 
 onMounted(async () => {
+  formData.groupId = props.groupId;
   const [currencyRes, groupRes] = await Promise.all([
     getCurrencyTemplate(),
     getEnableGroupList()

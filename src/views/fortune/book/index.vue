@@ -135,6 +135,7 @@
       </template>
     </PureTableBar>
     <book-form
+      v-if="modalVisible"
       v-model="modalVisible"
       :type="opType"
       :row="currentRow"
