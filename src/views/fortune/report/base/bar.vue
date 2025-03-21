@@ -164,6 +164,32 @@ const updateChart = () => {
 
   const isLineChart = currentView.value === "line";
 
+  // 亮丽的渐变色配置
+  const lineColor = {
+    type: "linear",
+    x: 0,
+    y: 0,
+    x2: 0,
+    y2: 1,
+    colorStops: [
+      { offset: 0, color: "#00BFFF" }, // 深天蓝
+      { offset: 1, color: "#00FF7F" } // 春绿色
+    ]
+  };
+
+  // 柱状图渐变色配置
+  const barColor = {
+    type: "linear",
+    x: 0,
+    y: 0,
+    x2: 0,
+    y2: 1,
+    colorStops: [
+      { offset: 0, color: "#4169E1" }, // 皇家蓝
+      { offset: 1, color: "#00BFFF" } // 深天蓝
+    ]
+  };
+
   chartInstance.setOption({
     tooltip: {
       trigger: "item",
@@ -203,8 +229,11 @@ const updateChart = () => {
           value: item.value
         })),
         itemStyle: isLineChart
-          ? {}
+          ? {
+              color: lineColor
+            }
           : {
+              color: barColor,
               borderRadius: [5, 5, 0, 0],
               borderColor: "#fff",
               borderWidth: 0
@@ -227,7 +256,22 @@ const updateChart = () => {
               smooth: true,
               symbolSize: 8,
               lineStyle: {
-                width: 3
+                width: 3,
+                color: lineColor
+              },
+              areaStyle: {
+                opacity: 0.3,
+                color: {
+                  type: "linear",
+                  x: 0,
+                  y: 0,
+                  x2: 0,
+                  y2: 1,
+                  colorStops: [
+                    { offset: 0, color: "rgba(0, 191, 255, 0.5)" },
+                    { offset: 1, color: "rgba(0, 255, 127, 0.1)" }
+                  ]
+                }
               }
             }
           : {})
