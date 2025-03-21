@@ -285,7 +285,7 @@ function openDialog(type: "add" | "edit", row?: TagVo) {
   justify-content: flex-end;
   justify-self: end;
   height: 40px;
-  margin-right: 0;
+  margin-right: 30px;
 }
 
 /* 确保按钮垂直居中 */
