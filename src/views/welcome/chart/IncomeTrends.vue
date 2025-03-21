@@ -24,6 +24,7 @@ import {
 } from "@/api/fortune/include";
 import { message } from "@/utils/message";
 import moment from "moment";
+
 use([
   SVGRenderer,
   LineChart,
@@ -74,6 +75,7 @@ async function onSearch() {
     message(e.message || "查询失败", { type: "error" });
   }
 }
+
 // 处理原始数据格式
 const processedData = computed(() => {
   return chartData.value.map(item => ({

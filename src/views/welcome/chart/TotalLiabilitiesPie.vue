@@ -6,7 +6,14 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, onBeforeUnmount, onUnmounted, nextTick, watch } from "vue";
+import {
+  ref,
+  onBeforeUnmount,
+  onUnmounted,
+  nextTick,
+  watch,
+  onMounted
+} from "vue";
 import * as echarts from "echarts";
 import { getTotalLiabilities } from "@/api/fortune/include";
 
@@ -20,6 +27,15 @@ const loading = ref(true);
 const error = ref(null);
 let chartInstance = null;
 const props = defineProps<{ groupId: number }>();
+
+// 暴露刷新方法给父组件
+const refresh = async () => {
+  loading.value = true;
+  await fetchData();
+};
+defineExpose({ refresh });
+
+// 监听groupId变化
 watch(
   () => props.groupId,
   async () => {
@@ -27,6 +43,14 @@ watch(
     window.addEventListener("resize", () => chartInstance?.resize());
   }
 );
+
+// 组件挂载时初始化数据
+onMounted(async () => {
+  if (props.groupId) {
+    await fetchData();
+    window.addEventListener("resize", handleResize);
+  }
+});
 onUnmounted(() => chartInstance?.dispose());
 onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
