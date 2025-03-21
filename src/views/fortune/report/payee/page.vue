@@ -14,14 +14,14 @@
       @search="onSearch"
       @reset="resetForm"
     />
-    <el-card>
-      <pie :data="resData" />
+    <el-card class="report-card">
+      <pie :data="resData" :title="reportTitle" @refresh="onSearch" />
     </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { message } from "@/utils/message";
 import { useRoute } from "vue-router";
 import pie from "../base/pie.vue";
@@ -30,6 +30,10 @@ import { useReportSearch } from "../base/useReportSearch";
 import { getPayeeExpenseApi, getPayeeIncomeApi } from "@/api/fortune/include";
 
 const billType = ref<number>();
+const reportTitle = computed(() => {
+  return billType.value === 1 ? "支出交易对象统计" : "收入交易对象统计";
+});
+
 const {
   searchForm,
   groupId,
@@ -49,6 +53,7 @@ const {
     ? getPayeeExpenseApi(params)
     : getPayeeIncomeApi(params);
 });
+
 onMounted(async () => {
   getBillTypeByFullPath();
 });
@@ -68,3 +73,10 @@ function getBillTypeByFullPath() {
   }
 }
 </script>
+
+<style scoped>
+.report-card {
+  margin-top: 16px;
+  box-shadow: 0 2px 12px 0 rgb(0 0 0 / 10%);
+}
+</style>
