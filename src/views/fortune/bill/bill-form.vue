@@ -517,23 +517,51 @@ function removeCategory(index: number) {
 }
 
 // 判断是否为图片文件
-const isImageFile = (fileName: string) => {
+const isImageFile = (file: any) => {
+  // 如果传入的是文件对象
+  if (typeof file === "object") {
+    // 检查MIME类型
+    if (file.type && file.type.startsWith("image/")) {
+      return true;
+    }
+    if (file.contentType && file.contentType.startsWith("image/")) {
+      return true;
+    }
+    // 如果有raw属性（上传的文件）
+    if (file.raw && file.raw.type && file.raw.type.startsWith("image/")) {
+      return true;
+    }
+
+    // 如果没有类型信息，尝试通过文件名判断
+    if (file.name) {
+      return isImageByFileName(file.name);
+    }
+    return false;
+  }
+
+  // 如果传入的是文件名字符串
+  if (typeof file === "string") {
+    return isImageByFileName(file);
+  }
+
+  return false;
+};
+
+// 通过文件名判断是否为图片
+const isImageByFileName = (fileName: string) => {
+  // 常见图片扩展名
   const imageExtensions = [
-    ".png",
     ".jpg",
     ".jpeg",
+    ".png",
     ".gif",
-    ".tiff",
-    ".svg",
-    ".psd",
-    ".webp",
     ".bmp",
+    ".webp",
+    ".svg",
+    ".tiff",
     ".ico",
     ".heif",
-    ".heic",
-    ".raw",
-    ".nef",
-    ".cr2"
+    ".heic"
   ];
   const name = fileName.toLowerCase();
   return imageExtensions.some(ext => name.endsWith(ext));
@@ -552,7 +580,7 @@ const getFileIcon = file => {
     ppt: "/file-icons/ppt.png",
     pptx: "/file-icons/ppt.png"
   };
-  return icons[ext] || "/file-icons/default.png";
+  return icons[ext] || "/file-icons/default.svg";
 };
 
 // 计算显示列表（处理不同状态）
