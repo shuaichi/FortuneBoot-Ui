@@ -14,14 +14,14 @@
       @search="onSearch"
       @reset="resetForm"
     />
-    <el-card>
-      <bar :data="resData" />
+    <el-card class="report-card">
+      <bar :data="resData" :title="reportTitle" @refresh="onSearch" />
     </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { message } from "@/utils/message";
 import { useRoute } from "vue-router";
 import bar from "../base/bar.vue";
@@ -30,6 +30,10 @@ import { useReportSearch } from "../base/useReportSearch";
 import { getTagExpenseApi, getTagIncomeApi } from "@/api/fortune/include";
 
 const billType = ref<number>();
+const reportTitle = computed(() => {
+  return billType.value === 1 ? "支出标签统计" : "收入标签统计";
+});
+
 const {
   searchForm,
   groupId,
@@ -49,6 +53,7 @@ const {
     ? getTagExpenseApi(params)
     : getTagIncomeApi(params);
 });
+
 onMounted(async () => {
   getBillTypeByFullPath();
 });
@@ -68,3 +73,10 @@ function getBillTypeByFullPath() {
   }
 }
 </script>
+
+<style scoped>
+.report-card {
+  margin-top: 16px;
+  box-shadow: 0 2px 12px 0 rgb(0 0 0 / 10%);
+}
+</style>
