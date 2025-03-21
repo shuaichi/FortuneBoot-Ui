@@ -5,7 +5,7 @@
       ref="formRef"
       :inline="true"
       :model="searchForm"
-      class="search-form bg-bg_color w-[99/100] pl-8 pt-[12px]"
+      class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] grid-form"
     >
       <el-form-item label="分组：" prop="groupId">
         <el-select
@@ -88,7 +88,7 @@
             placeholder="最小值"
             :precision="2"
             :controls="false"
-            class="!w-[100px]"
+            class="amount-input"
           />
           <span class="range-separator">—</span>
           <el-input-number
@@ -96,7 +96,7 @@
             placeholder="最大值"
             :precision="2"
             :controls="false"
-            class="!w-[100px]"
+            class="amount-input"
           />
         </div>
       </el-form-item>
@@ -177,10 +177,9 @@
           v-model="searchForm.remark"
           placeholder="请输入备注"
           clearable
-          class="!w-[200px]"
         />
       </el-form-item>
-      <el-form-item>
+      <el-form-item class="search-buttons">
         <el-button
           type="primary"
           :icon="useRenderIcon(Search)"
@@ -395,3 +394,88 @@ function openDialog(type: "add" | "edit", row?: any) {
   modalVisible.value = true;
 }
 </script>
+
+<style scoped>
+.grid-form {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  padding-bottom: 16px;
+}
+
+/* 统一标签宽度和对齐方式 */
+.grid-form :deep(.el-form-item__label) {
+  width: 80px;
+  height: 40px;
+  padding-right: 8px;
+  line-height: 40px;
+  text-align: right;
+}
+
+/* 统一表单项内容区域样式 */
+.grid-form :deep(.el-form-item__content) {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: flex-start;
+  height: 40px;
+}
+
+/* 统一所有输入控件的宽度 */
+.grid-form :deep(.el-select),
+.grid-form :deep(.el-input),
+.grid-form :deep(.el-date-editor),
+.grid-form :deep(.el-tree-select),
+.grid-form :deep(.el-input-number) {
+  width: 100%;
+  height: 32px;
+}
+
+/* 确保日期选择器的宽度正确 */
+.grid-form :deep(.el-date-editor.el-input__wrapper) {
+  width: 100% !important;
+}
+
+/* 按钮容器样式 */
+.search-buttons {
+  display: flex;
+  grid-column: 5;
+  align-items: center;
+  justify-content: flex-end;
+  justify-self: end;
+  height: 40px;
+  margin-right: 0;
+}
+
+/* 确保按钮垂直居中 */
+.search-buttons :deep(.el-button) {
+  height: 32px;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* 金额范围选择器样式 */
+.number-range-picker {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 32px;
+}
+
+.amount-input {
+  flex: 1;
+  width: calc(50% - 10px) !important;
+}
+
+.range-separator {
+  flex: none;
+  margin: 0 5px;
+}
+
+/* 修复可能的对齐问题 */
+.grid-form :deep(.el-input__wrapper),
+.grid-form :deep(.el-select__wrapper) {
+  height: 32px;
+  line-height: 32px;
+}
+</style>
