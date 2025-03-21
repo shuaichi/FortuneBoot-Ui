@@ -487,33 +487,18 @@ function handleFile2Blob(file: any) {
 
 // 文件预览/下载处理
 const handleFilePreview = async (file: any) => {
-  const imageExtensions = [
-    ".png",
-    ".jpg",
-    ".jpeg",
-    ".gif",
-    ".tiff",
-    ".svg",
-    ".psd",
-    ".webp",
-    ".bmp",
-    ".ico",
-    ".heif",
-    ".heic",
-    ".raw",
-    ".nef",
-    ".cr2"
-  ];
-  const n = file.name.toLowerCase();
-  if (imageExtensions.some(ext => n.endsWith(ext))) {
+  // 获取原始文件列表中的对应文件
+  const originalFile = fileList.value.find(f => f.uid === file.uid);
+  if (!originalFile) return;
+
+  if (isImageFile(file.name)) {
     // 如果是图片，直接预览
-    window.open(file.url, "_blank");
+    window.open(originalFile.url, "_blank");
   } else {
-    console.log(file);
     // 如果是非图片文件，使用文件的实际 URL 进行下载
     const a = document.createElement("a");
-    a.href = file.url;
-    a.download = file.name || file.url.split("/").pop();
+    a.href = originalFile.url;
+    a.download = file.name || originalFile.url.split("/").pop();
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -531,29 +516,59 @@ function removeCategory(index: number) {
   formData.categoryAmountPair.splice(index, 1);
 }
 
-// 计算显示列表（处理不同状态）
-const fileListDisplay = computed(() => {
-  return fileList.value.map(file => ({
-    uid: file.uid,
-    name: file.name,
-    url: file.url,
-    // url: file.fileType?.startsWith("image/") ? file.url : getFileIcon(file),
-    status: file.status || "success"
-  }));
-});
+// 判断是否为图片文件
+const isImageFile = (fileName: string) => {
+  const imageExtensions = [
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".tiff",
+    ".svg",
+    ".psd",
+    ".webp",
+    ".bmp",
+    ".ico",
+    ".heif",
+    ".heic",
+    ".raw",
+    ".nef",
+    ".cr2"
+  ];
+  const name = fileName.toLowerCase();
+  return imageExtensions.some(ext => name.endsWith(ext));
+};
 
 // 文件类型图标映射
-// const getFileIcon = file => {
-//   const ext = file.name.split(".").pop()?.toLowerCase();
-//   const icons = {
-//     pdf: "/file-icons/pdf.png",
-//     doc: "/file-icons/word.png",
-//     xls: "/file-icons/excel.png",
-//     txt: "/file-icons/pdf.png"
-//     // TODO 其他类型获取图片
-//   };
-//   return icons[ext] || "/file-icons/default.png";
-// };
+const getFileIcon = file => {
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  const icons = {
+    pdf: "/file-icons/pdf.png",
+    doc: "/file-icons/word.png",
+    docx: "/file-icons/word.png",
+    xls: "/file-icons/excel.png",
+    xlsx: "/file-icons/excel.png",
+    txt: "/file-icons/txt.png",
+    ppt: "/file-icons/ppt.png",
+    pptx: "/file-icons/ppt.png"
+  };
+  return icons[ext] || "/file-icons/default.png";
+};
+
+// 计算显示列表（处理不同状态）
+const fileListDisplay = computed(() => {
+  return fileList.value.map(file => {
+    // 检查是否为图片类型
+    const isImage = isImageFile(file.name);
+    return {
+      uid: file.uid,
+      name: file.name,
+      // 图片文件显示实际预览，非图片文件显示图标
+      url: isImage ? file.url : getFileIcon(file),
+      status: file.status || "success"
+    };
+  });
+});
 
 // 文件变化处理
 const handleFileChange = uploadFile => {
