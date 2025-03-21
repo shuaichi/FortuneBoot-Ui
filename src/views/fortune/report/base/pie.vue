@@ -201,7 +201,7 @@ const updateChart = () => {
         name: props.title || "数据统计",
         type: "pie",
         radius: isRoseChart ? ["20%", "70%"] : ["40%", "70%"],
-        center: ["40%", "50%"],
+        center: ["50%", "50%"],
         roseType: isRoseChart ? "area" : undefined,
         avoidLabelOverlap: true,
         itemStyle: {
@@ -233,33 +233,18 @@ const updateChart = () => {
     graphic: [
       {
         type: "group",
-        left: "40%",
+        left: "center",
         top: "50%",
         children: [
           {
             type: "text",
             z: 100,
-            left: "center",
-            top: "middle",
             style: {
               text: formatCurrency(totalAmount.value),
               fontSize: 20,
               fontWeight: "bold",
               textAlign: "center",
               fill: "#333"
-            }
-          },
-          {
-            type: "text",
-            z: 100,
-            left: "center",
-            top: "middle",
-            style: {
-              text: "总金额",
-              fontSize: 14,
-              textAlign: "center",
-              fill: "#666",
-              y: 30
             }
           }
         ]
