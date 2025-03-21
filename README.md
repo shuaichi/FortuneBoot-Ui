@@ -121,8 +121,8 @@ npm config set registry https://registry.npmmirror.com
 
 演示地址：
 
-- <www.fortuneboot.com>
-- <www.fortuneboot.cn>
+- <http://fortuneboot.com>
+- <http://fortuneboot.cn>
   > 管理员账密：admin/admin123  
   > 不定期清理数据，请勿存储真实数据。
 
