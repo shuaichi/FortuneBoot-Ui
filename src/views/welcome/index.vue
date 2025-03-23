@@ -101,7 +101,7 @@
               <el-icon>
                 <PieChart />
               </el-icon>
-              <span>总收入</span>
+              <span>资产账户</span>
             </div>
             <el-tooltip content="刷新数据">
               <el-button
@@ -136,7 +136,7 @@
               <el-icon>
                 <PieChart />
               </el-icon>
-              <span>总支出</span>
+              <span>负债账户</span>
             </div>
             <el-tooltip content="刷新数据">
               <el-button
