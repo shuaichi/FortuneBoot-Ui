@@ -1,6 +1,6 @@
 {
   "name": "fortuneboot-ui",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "private": true,
   "scripts": {
     "dev": "NODE_OPTIONS=--max-old-space-size=4096 vite",
@@ -138,7 +138,7 @@
       "stable": "*"
     }
   },
-  "repository": "ssh://git@gitea.fortuneboot.com:38577/FortuneBoot/FortuneBoot-Ui.git",
-  "author": "valarchie",
+  "repository": "https://github.com/shuaichi/FortuneBoot-Ui",
+  "author": "shuaichi",
   "license": "MIT"
 }
