@@ -277,6 +277,7 @@ import { message } from "@/utils/message";
 import { CategoryVo, getEnableCategoryList } from "@/api/fortune/category";
 import { getEnablePayeeList, PayeeVo } from "@/api/fortune/payee";
 import { getEnableTagList, TagVo } from "@/api/fortune/tag";
+import { useRoute } from "vue-router";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -295,6 +296,9 @@ const formRef = ref();
 const categoryOptions = ref<Array<CategoryVo>>();
 const payeeOptions = ref<Array<PayeeVo>>();
 const tagOptions = ref<Array<TagVo>>();
+
+const route = useRoute();
+
 const trueFalseOptions = ref([
   {
     value: 1,
@@ -331,23 +335,55 @@ const {
 } = useHook();
 
 onMounted(async () => {
+  // 初始化分组
+  await initGroup();
+  // 初始化分组下的账本和账户
+  await initBookAndAccount();
+  // 查询账单数据
+  await onSearch();
+  // 初始化搜索表单下拉框
+  await initSearchSelect();
+});
+
+const initGroup = async () => {
   const groupRes = await getEnableGroupList();
   if (groupRes.data.length === 0) {
     message("请先启用或创建分组");
   }
   groupOptions.value = groupRes.data;
-  const defaultGroup = await getDefaultGroupId();
-  searchForm.groupId = defaultGroup.data;
+  // 获取 onMounted 时的分组 id
+  searchForm.groupId = await getMountedGroupId();
+};
+
+const getMountedGroupId = async () => {
+  if (route.query.groupId) {
+    return Number(route.query.groupId);
+  } else {
+    const defaultGroup = await getDefaultGroupId();
+    return defaultGroup.data;
+  }
+};
+
+// 初始化账本和账户
+const initBookAndAccount = async () => {
   const [booksRes, accountsRes] = await Promise.all([
     getEnableBookList(searchForm.groupId),
     getEnableAccountList(searchForm.groupId)
   ]);
   bookOptions.value = booksRes.data;
   searchForm.bookId = groupOptions.value.find(
-    group => group.groupId === defaultGroup.data
+    group => group.groupId === searchForm.groupId
   ).defaultBookId;
   accountOptions.value = accountsRes.data;
-  await onSearch();
+
+  // 对账（如果 route 中有账户，则查询这个账户的数据）
+  if (route.query.accountId) {
+    searchForm.accountId = Number(route.query.accountId);
+  }
+};
+
+const initSearchSelect = async () => {
+  // 查询账单分类、交易对象、标签下拉框
   const [categoryRes, payeeRes, tagRes] = await Promise.all([
     getEnableCategoryList(searchForm.bookId, null),
     getEnablePayeeList(searchForm.bookId, null),
@@ -356,7 +392,7 @@ onMounted(async () => {
   categoryOptions.value = categoryRes.data;
   payeeOptions.value = payeeRes.data;
   tagOptions.value = tagRes.data;
-});
+};
 
 watch(
   () => searchForm.groupId,
@@ -386,6 +422,7 @@ const tableTitle = computed(() => {
     // eslint-disable-next-line no-irregular-whitespace
   }元　|　总结余：${statistics?.surplus ?? 0}元`;
 });
+
 function openDialog(type: "add" | "edit", row?: any) {
   opType.value = type;
   groupIdProp.value = searchForm.groupId;

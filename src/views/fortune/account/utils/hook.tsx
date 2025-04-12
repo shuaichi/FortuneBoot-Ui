@@ -1,4 +1,4 @@
-import { reactive, ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
 import { usePublicHooks } from "@/views/system/hooks";
@@ -20,14 +20,31 @@ import {
   includeAccountApi,
   excludeAccountApi
 } from "@/api/fortune/account";
-import { getDefaultGroupId } from "@/api/fortune/group";
+import {
+  getCurrencyTemplate,
+  getDefaultGroupId,
+  getEnableGroupList,
+  GroupVo
+} from "@/api/fortune/group";
 import dayjs from "dayjs";
+import { useRouter } from "vue-router";
 
 export function useHook() {
   const { tagStyle } = usePublicHooks();
+  const router = useRouter();
+
   const loading = ref(false);
   const dataList = ref<AccountVo[]>([]);
   const searchForm = reactive<AccountQuery>({});
+  const currentRow = ref<AccountVo>();
+
+  const opType = ref<"add" | "edit">("add");
+  const adjustVisible = ref<boolean>(false);
+  const modalVisible = ref<boolean>(false);
+
+  const currencyTemplateOptions = ref();
+  const groupOptions = ref<Array<GroupVo>>();
+
   const pagination = reactive({
     total: 0,
     pageSize: 10,
@@ -286,9 +303,26 @@ export function useHook() {
       label: "操作",
       slot: "operation",
       fixed: "right",
-      width: 220
+      width: 250
     }
   ];
+
+  onMounted(async () => {
+    const [groupRes, defaultGroupRes] = await Promise.all([
+      getEnableGroupList(),
+      getDefaultGroupId()
+    ]);
+    if (groupRes.data.length === 0) {
+      message("请先启用或创建分组");
+    }
+    groupOptions.value = groupRes.data;
+    searchForm.groupId = defaultGroupRes.data;
+    searchForm.recycleBin = false;
+    searchForm.accountType = 1;
+    const currency = await getCurrencyTemplate();
+    currencyTemplateOptions.value = currency.data;
+    await onSearch();
+  });
 
   async function onSearch(barRef?: any) {
     try {
@@ -498,6 +532,28 @@ export function useHook() {
     onSearch();
   }
 
+  function reconcileAccounts(row: AccountVo) {
+    console.log(row);
+    router.push({
+      path: "/fortune/bill/index",
+      query: {
+        groupId: row.groupId,
+        accountId: row.accountId
+      }
+    });
+  }
+
+  function openAdjustDialog(row: AccountVo) {
+    currentRow.value = row;
+    adjustVisible.value = true;
+  }
+
+  function openEditDialog(type: "add" | "edit", row: AccountVo) {
+    opType.value = type;
+    currentRow.value = row;
+    modalVisible.value = true;
+  }
+
   return {
     searchForm,
     loading,
@@ -505,10 +561,19 @@ export function useHook() {
     dataList,
     pagination,
     accountTypeOptions,
+    currencyTemplateOptions,
+    groupOptions,
+    adjustVisible,
+    modalVisible,
+    currentRow,
+    opType,
     resetForm,
     onSearch,
     handleMove2RecycleBin,
     handleSizeChange,
-    handleCurrentChange
+    handleCurrentChange,
+    reconcileAccounts,
+    openAdjustDialog,
+    openEditDialog
   };
 }
