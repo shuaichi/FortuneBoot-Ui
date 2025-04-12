@@ -214,6 +214,9 @@
               <el-button link type="success" @click="openAdjustDialog(row)">
                 余额调整
               </el-button>
+              <el-button link type="primary" @click="reconcileAccounts(row)">
+                对账
+              </el-button>
               <el-button
                 link
                 type="primary"
@@ -254,21 +257,13 @@
 <script setup lang="ts">
 import { useHook } from "./utils/hook";
 import PureTable from "@pureadmin/table";
-import { onMounted, ref } from "vue";
+import { ref } from "vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import { PureTableBar } from "@/components/RePureTableBar";
 import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
 import AccountForm from "@/views/fortune/account/account-form.vue";
-import { AccountVo } from "@/api/fortune/account";
-import {
-  getCurrencyTemplate,
-  getDefaultGroupId,
-  getEnableGroupList,
-  GroupVo
-} from "@/api/fortune/group";
-import { message } from "@/utils/message";
 import BalanceAdjust from "@/views/fortune/account/balance-adjust.vue";
 
 /** 组件name最好和菜单表中的router_name一致 */
@@ -276,14 +271,9 @@ defineOptions({
   name: "FortuneAccount"
 });
 
-const opType = ref<"add" | "edit">("add");
-const currentRow = ref<AccountVo>();
-const adjustVisible = ref<boolean>(false);
-const modalVisible = ref<boolean>(false);
-const groupOptions = ref<Array<GroupVo>>();
 const formRef = ref();
 const barRef = ref();
-const currencyTemplateOptions = ref();
+
 const trueFalseOptions = ref([
   {
     value: 1,
@@ -298,42 +288,23 @@ const {
   searchForm,
   dataList,
   columns,
-  resetForm,
   loading,
   pagination,
+  currencyTemplateOptions,
+  groupOptions,
+  adjustVisible,
+  modalVisible,
+  currentRow,
+  opType,
+  resetForm,
   onSearch,
   handleMove2RecycleBin,
   handleSizeChange,
-  handleCurrentChange
+  handleCurrentChange,
+  reconcileAccounts,
+  openAdjustDialog,
+  openEditDialog
 } = useHook();
-
-onMounted(async () => {
-  const [groupRes, defaultGroupRes] = await Promise.all([
-    getEnableGroupList(),
-    getDefaultGroupId()
-  ]);
-  if (groupRes.data.length === 0) {
-    message("请先启用或创建分组");
-  }
-  groupOptions.value = groupRes.data;
-  searchForm.groupId = defaultGroupRes.data;
-  searchForm.recycleBin = false;
-  searchForm.accountType = 1;
-  const currency = await getCurrencyTemplate();
-  currencyTemplateOptions.value = currency.data;
-  await onSearch();
-});
-
-function openAdjustDialog(row: AccountVo) {
-  currentRow.value = row;
-  adjustVisible.value = true;
-}
-
-function openEditDialog(type: "add" | "edit", row: AccountVo) {
-  opType.value = type;
-  currentRow.value = row;
-  modalVisible.value = true;
-}
 </script>
 
 <style scoped>
