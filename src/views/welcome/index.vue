@@ -658,6 +658,11 @@ watch(
     &:hover {
       box-shadow: 0 4px 20px 0 rgb(0 0 0 / 10%);
     }
+
+    :deep(.el-card__body) {
+      height: calc(100% - 60px);
+      padding: 0;
+    }
   }
 
   .chart-header {
