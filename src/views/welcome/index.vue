@@ -602,6 +602,11 @@ watch(
     .summary-value {
       color: #67c23a;
     }
+
+    :deep(.el-card__body) {
+      display: flex;
+      flex: 1;
+    }
   }
 
   .liabilities-card {
@@ -612,6 +617,11 @@ watch(
     .summary-value {
       color: #f56c6c;
     }
+
+    :deep(.el-card__body) {
+      display: flex;
+      flex: 1;
+    }
   }
 
   .net-assets-card {
@@ -621,6 +631,11 @@ watch(
 
     .summary-value {
       color: #409eff;
+    }
+
+    :deep(.el-card__body) {
+      display: flex;
+      flex: 1;
     }
   }
 }
@@ -642,11 +657,6 @@ watch(
 
     &:hover {
       box-shadow: 0 4px 20px 0 rgb(0 0 0 / 10%);
-    }
-
-    :deep(.el-card__body) {
-      height: calc(100% - 60px);
-      padding: 0;
     }
   }
 

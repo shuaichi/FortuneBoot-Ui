@@ -239,14 +239,12 @@ onMounted(() => {
 .grid-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
   padding-bottom: 16px;
 }
 
 .grid-row {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 16px;
 }
 
 /* 统一标签宽度和对齐方式 */
