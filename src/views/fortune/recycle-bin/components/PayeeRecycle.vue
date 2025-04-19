@@ -257,7 +257,6 @@ async function handleRemove(row: PayeeVo) {
 .grid-form {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 16px;
   padding-bottom: 16px;
 }
 
