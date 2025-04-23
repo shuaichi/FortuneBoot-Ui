@@ -127,14 +127,18 @@ const fetchData = async () => {
               type: "text",
               style: {
                 text: `${formatNumber(totalValue)}元`,
-                fontSize: 24,
+                fontSize: window.innerWidth < 768 ? 18 : 24,
                 fontWeight: "bold",
-                fill: "#333"
+                fill: "#333",
+                textAlign: "center",
+                textVerticalAlign: "middle"
               },
               left: "center",
-              top: "55%"
+              top: "center",
+              z: 100
             }
-          ]
+          ],
+          z: 100
         }
       ],
       series: [
