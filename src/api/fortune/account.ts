@@ -46,7 +46,7 @@ export interface BalanceAdjustCommand {
   bookId?: number;
   accountId?: number;
   title?: string;
-  tradeTime?: Date;
+  tradeTime?: string;
   balance?: number;
   remark?: string;
 }
