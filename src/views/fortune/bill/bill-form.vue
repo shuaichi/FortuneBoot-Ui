@@ -285,6 +285,7 @@ import { getEnablePayeeList, PayeeVo } from "@/api/fortune/payee";
 import { getEnableTagList, TagVo } from "@/api/fortune/tag";
 import { Plus as PlusIcon } from "@element-plus/icons-vue";
 import { getFileByBillId } from "@/api/fortune/file";
+import dayjs from "dayjs";
 
 const props = defineProps<{
   type: "add" | "edit";
@@ -468,6 +469,8 @@ async function handleOpened() {
   } else {
     formRef.value?.resetFields();
     formData.bookId = props.bookId;
+    // 设置默认交易时间为当前时间
+    formData.tradeTime = dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss");
     handleCategoryPayeeTagRefresh();
   }
 }

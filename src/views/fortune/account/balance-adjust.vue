@@ -85,6 +85,7 @@ import {
 import { ElMessage, FormRules } from "element-plus";
 import { getGroupByIdApi } from "@/api/fortune/group";
 import { BookVo, getEnableBookList } from "@/api/fortune/book";
+import dayjs from "dayjs";
 
 const loading = ref<boolean>(false);
 const bookOptions = ref<Array<BookVo>>();
@@ -107,7 +108,7 @@ const rules: FormRules = {
 async function handleOpened() {
   formData.accountId = props.row.accountId;
   formData.balance = props.row.balance;
-  formData.tradeTime = new Date();
+  formData.tradeTime = dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss");
   const [group, bookRes] = await Promise.all([
     getGroupByIdApi(props.row.groupId),
     getEnableBookList(props.row.groupId)
