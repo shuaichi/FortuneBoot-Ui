@@ -115,8 +115,10 @@ const fetchData = async () => {
       name: item.name,
       percent: item.percent
     }));
+    // 对数据进行从大到小排序
+    const sortedData = data.sort((a, b) => b.value - a.value);
     // 计算总值（确保数据结构中包含value字段）
-    const totalValue = data.reduce(
+    const totalValue = sortedData.reduce(
       (sum: number, item: any) => sum + (item.value || 0),
       0
     );
@@ -150,7 +152,7 @@ const fetchData = async () => {
       ],
       series: [
         {
-          data: data
+          data: sortedData
         }
       ]
     });

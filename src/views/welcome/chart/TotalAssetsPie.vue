@@ -113,8 +113,10 @@ const fetchData = async () => {
   try {
     const res = await getTotalAssets(props.groupId);
     loading.value = false;
+    // 对数据进行从大到小排序
+    const sortedData = [...res.data].sort((a, b) => b.value - a.value);
     // 计算总值（确保数据结构中包含value字段）
-    const totalValue = res.data.reduce(
+    const totalValue = sortedData.reduce(
       (sum: number, item: any) => sum + (item.value || 0),
       0
     );
@@ -147,7 +149,7 @@ const fetchData = async () => {
       ],
       series: [
         {
-          data: res.data
+          data: sortedData
         }
       ]
     });
