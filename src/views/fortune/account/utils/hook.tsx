@@ -265,7 +265,7 @@ export function useHook() {
       )
     },
     {
-      label: "计入净资产",
+      label: "计入总资产",
       prop: "include",
       width: 120,
       cellRenderer: ({ row, props }) => (
@@ -275,7 +275,7 @@ export function useHook() {
           onClick={() => handleIncludeClick(row)}
           class="cursor-pointer"
         >
-          {row.include ? "计入净资产" : "不计入净资产"}
+          {row.include ? "计入总资产" : "不计入总资产"}
         </el-tag>
       )
     },
