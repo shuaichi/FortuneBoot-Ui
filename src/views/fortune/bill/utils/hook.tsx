@@ -50,8 +50,18 @@ export function useHook() {
       label: "类型",
       prop: "billType",
       width: 120,
-      formatter: ({ billType }) =>
-        billTypeOptions.find(t => t.value === billType)?.label
+      cellRenderer: ({ row }) => {
+        const type = billTypeOptions.find(t => t.value === row.billType);
+        let color = "";
+        if (row.billType === 1) {
+          color = "#67C23A"; // 支出-绿色
+        } else if (row.billType === 2) {
+          color = "#F56C6C"; // 收入-红色
+        } else {
+          color = "#000000"; // 转账和余额调整-黑色
+        }
+        return <span style={{ color }}>{type?.label}</span>;
+      }
     },
     {
       label: "金额",
