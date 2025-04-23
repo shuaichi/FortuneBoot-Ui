@@ -88,7 +88,14 @@ const initChart = () => {
         label: {
           show: true,
           formatter: ({ percent }) => `${percent}%`,
-          position: "inner"
+          fontSize: 12,
+          color: "#666",
+          fontWeight: "bold"
+        },
+        labelLine: {
+          show: true,
+          length: 10,
+          length2: 15
         },
         emphasis: {
           label: {
