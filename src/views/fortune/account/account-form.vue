@@ -257,7 +257,7 @@ const rules: FormRules = {
   canIncome: [{ required: true, message: "收入状态不能为空" }],
   canTransferOut: [{ required: true, message: "转出状态不能为空" }],
   canTransferIn: [{ required: true, message: "转入状态不能为空" }],
-  include: [{ required: true, message: "计入净资产状态不能为空" }],
+  include: [{ required: true, message: "计入总资产状态不能为空" }],
   enable: [{ required: true, message: "启用状态不能为空" }]
 };
 
