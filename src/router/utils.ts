@@ -159,9 +159,7 @@ function handleAsyncRoutes(routeList) {
   } else {
     // 处理所有顶层路由，直接挂到 layout 的 children 下
     const topLevelIframes = routeList.filter(
-      (v: any) =>
-        v.meta?.frameSrc &&
-        (!v.parentId || v.parentId === "" || v.parentId === null)
+      (v: any) => v.meta?.frameSrc && (!v.parentId || v.parentId === 0)
     );
     if (topLevelIframes.length > 0) {
       topLevelIframes.forEach((v: any) => {
