@@ -221,6 +221,10 @@ function deleteDynamicTag(obj: any, current: any, tag?: string) {
       // 关闭其他标签页时保持当前路由的query参数
       return;
     }
+    if (tag === "right") {
+      // 关闭其他标签页时保持当前路由的query参数
+      return;
+    }
     if (newRoute[0]?.query) {
       router.push({ name: newRoute[0].name, query: newRoute[0].query });
     } else if (newRoute[0]?.params) {
