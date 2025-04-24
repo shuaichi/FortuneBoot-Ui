@@ -22,6 +22,7 @@ import { buildHierarchyTree } from "@/utils/tree";
 import { sessionKey } from "@/utils/auth";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { usePermissionStoreHook } from "@/store/modules/permission";
+
 const IFrame = () => import("@/layout/frameView.vue");
 // https://cn.vitejs.dev/guide/features.html#glob-import
 const modulesRoutes = import.meta.glob("/src/views/**/*.{vue,tsx}");
@@ -156,6 +157,24 @@ function handleAsyncRoutes(routeList) {
   if (routeList.length === 0) {
     usePermissionStoreHook().handleWholeMenus(routeList);
   } else {
+    // 处理所有顶层路由，直接挂到 layout 的 children 下
+    const topLevelIframes = routeList.filter(
+      (v: any) =>
+        v.meta?.frameSrc &&
+        (!v.parentId || v.parentId === "" || v.parentId === null)
+    );
+    if (topLevelIframes.length > 0) {
+      topLevelIframes.forEach((v: any) => {
+        // 防止重复添加
+        if (
+          !router.options.routes[0].children.some(
+            child => child.path === v.path
+          )
+        ) {
+          router.options.routes[0].children.push(v);
+        }
+      });
+    }
     formatFlatteningRoutes(addAsyncRoutes(routeList)).map(
       (v: RouteRecordRaw) => {
         // 防止重复添加路由
