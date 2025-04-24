@@ -1,5 +1,5 @@
 <p align="center">
-      <img src="https://img.shields.io/badge/Release-V1.0.7-green.svg" alt="Downloads">
+      <img src="https://img.shields.io/badge/Release-V1.0.8-green.svg" alt="Downloads">
       <img src="https://img.shields.io/badge/JDK-21+-green.svg" alt="Build Status">
   <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Build Status">
    <img src="https://img.shields.io/badge/Spring%20Boot-3.3-blue.svg" alt="Downloads">
@@ -15,7 +15,7 @@
 [//]: # '<img alt="logo" height="200" src="">'
 
 </p>
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">FortuneBoot v1.0.7</h1>
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">FortuneBoot v1.0.8</h1>
 
 <h4 align="center">基于SpringBoot3+Vue3前后端分离的记账管理系统</h4>
 <p align="center">
