@@ -214,7 +214,13 @@ function deleteDynamicTag(obj: any, current: any, tag?: string) {
   const newRoute = useMultiTagsStoreHook().handleTags("slice");
   if (current === route.path) {
     // 如果删除当前激活tag就自动切换到最后一个tag
-    if (tag === "left") return;
+    if (tag === "left") {
+      return;
+    }
+    if (tag === "other") {
+      // 关闭其他标签页时保持当前路由的query参数
+      return;
+    }
     if (newRoute[0]?.query) {
       router.push({ name: newRoute[0].name, query: newRoute[0].query });
     } else if (newRoute[0]?.params) {
