@@ -52,6 +52,7 @@ export interface BillVo {
   billId: number;
   bookId: number;
   tradeTime: string;
+  billType?: number;
   categoryAmountPair?: [{ categoryName: string; amount: number }];
   tagList?: Array<TagVo>;
   currencyCode?: string;
