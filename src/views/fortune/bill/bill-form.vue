@@ -15,6 +15,7 @@
         <re-col :value="12">
           <el-form-item prop="bookId" label="所属账本">
             <el-select
+              :disabled="props.type === 'edit'"
               filterable
               v-model="formData.bookId"
               placeholder="请选择账本"
@@ -33,6 +34,7 @@
         <re-col :value="12">
           <el-form-item prop="billType" label="交易类型">
             <el-select
+              :disabled="props.type === 'edit'"
               filterable
               v-model="formData.billType"
               placeholder="请选择类型"
@@ -396,24 +398,29 @@ onMounted(async () => {
     return;
   }
   bookOptions.value = booksRes.data;
-  accountOptions.value = accountsRes.data.filter(item => item.canExpense);
+  if (props.row.billType === 1) {
+    accountOptions.value = accountsRes.data.filter(item => item.canExpense);
+  } else if (props.row.billType === 2) {
+    accountOptions.value = accountsRes.data.filter(item => item.canIncome);
+  } else if (props.row.billType === 3) {
+    accountOptions.value = accountsRes.data.filter(item => item.canTransferOut);
+    toAccountOptions.value = accountsRes.data.filter(
+      item => item.canTransferIn
+    );
+  }
 });
 
 async function handleBillTypeChange(type: number) {
+  const accountsRes = await getEnableAccountList(props.groupId);
   if (type === 1) {
-    const accountsRes = await getEnableAccountList(props.groupId);
     accountOptions.value = accountsRes.data.filter(item => item.canExpense);
     handleBookOrBillTypeChange();
     formData.toAccountId = null;
   } else if (type === 2) {
-    const accountsRes = await getEnableAccountList(props.groupId);
     accountOptions.value = accountsRes.data.filter(item => item.canIncome);
     handleBookOrBillTypeChange();
   } else if (type === 3) {
-    const [tagRes, accountsRes] = await Promise.all([
-      getEnableTagList(formData.bookId, formData.billType),
-      getEnableAccountList(props.groupId)
-    ]);
+    const tagRes = await getEnableTagList(formData.bookId, formData.billType);
     tagOptions.value = tagRes.data;
     accountOptions.value = accountsRes.data.filter(item => item.canTransferOut);
     toAccountOptions.value = accountsRes.data.filter(
@@ -445,7 +452,7 @@ async function handleCategoryPayeeTagRefresh() {
 }
 
 async function handleOpened() {
-  if (props.row) {
+  if (props.type === "edit") {
     Object.assign(formData, props.row);
     formData.tagIdList = props.row.tagList
       ? props.row.tagList.map(item => item.tagId)
