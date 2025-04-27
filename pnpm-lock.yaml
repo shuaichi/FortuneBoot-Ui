@@ -7,10 +7,10 @@ settings:
 dependencies:
   "@pureadmin/descriptions":
     specifier: ^1.1.1
-    version: 1.1.1(element-plus@2.9.8)(typescript@5.0.4)
+    version: 1.1.1(element-plus@2.3.6)(typescript@5.0.4)
   "@pureadmin/table":
     specifier: ^2.3.2
-    version: 2.3.2(element-plus@2.9.8)(typescript@5.0.4)
+    version: 2.3.2(element-plus@2.3.6)(typescript@5.0.4)
   "@pureadmin/utils":
     specifier: ^1.9.6
     version: 1.9.6(echarts@5.6.0)(vue@3.5.13)
@@ -39,8 +39,8 @@ dependencies:
     specifier: ^5.6.0
     version: 5.6.0
   element-plus:
-    specifier: 2.9.8
-    version: 2.9.8(vue@3.5.13)
+    specifier: 2.3.6
+    version: 2.3.6(vue@3.5.13)
   js-cookie:
     specifier: ^3.0.5
     version: 3.0.5
@@ -1633,7 +1633,7 @@ packages:
       }
     dev: false
 
-  /@pureadmin/descriptions@1.1.1(element-plus@2.9.8)(typescript@5.0.4):
+  /@pureadmin/descriptions@1.1.1(element-plus@2.3.6)(typescript@5.0.4):
     resolution:
       {
         integrity: sha512-4BHLKomLU/LxGs5EUA+h+aKNrJEkhrU6+QE8VoWfJZ8VTU6ddvFLT/Pi4WuO5CWNXM9ZjqvHLFFVwEPlKntqtg==
@@ -1642,13 +1642,13 @@ packages:
       element-plus: ^2.0.0
     dependencies:
       "@element-plus/icons-vue": 2.1.0(vue@3.5.13)
-      element-plus: 2.9.8(vue@3.5.13)
+      element-plus: 2.3.6(vue@3.5.13)
       vue: 3.5.13(typescript@5.0.4)
     transitivePeerDependencies:
       - typescript
     dev: false
 
-  /@pureadmin/table@2.3.2(element-plus@2.9.8)(typescript@5.0.4):
+  /@pureadmin/table@2.3.2(element-plus@2.3.6)(typescript@5.0.4):
     resolution:
       {
         integrity: sha512-oaMf8X4bv5KPcO4li+bO7W28BS5IMy+zxPpPNh/Tdxewc2dykvoqqpRIAiS8prJOHxI42/77xbjoGb+lwQH5aA==
@@ -1656,7 +1656,7 @@ packages:
     peerDependencies:
       element-plus: ^2.0.0
     dependencies:
-      element-plus: 2.9.8(vue@3.5.13)
+      element-plus: 2.3.6(vue@3.5.13)
       vue: 3.5.13(typescript@5.0.4)
     transitivePeerDependencies:
       - typescript
@@ -4299,10 +4299,10 @@ packages:
       }
     dev: true
 
-  /element-plus@2.9.8(vue@3.5.13):
+  /element-plus@2.3.6(vue@3.5.13):
     resolution:
       {
-        integrity: sha512-srViUaUdfblBKGMeuEPiXxxKlH5aUmKqEwmhb/At9Sj91DbU6od/jYN1955cTnzt3wTSA7GfnZF7UiRX9sdRHg==
+        integrity: sha512-GLz0pXUYI2zRfIgyI6W7SWmHk6dSEikP9yR++hsQUyy63+WjutoiGpA3SZD4cGPSXUzRFeKfVr8CnYhK5LqXZw==
       }
     peerDependencies:
       vue: ^3.2.0
