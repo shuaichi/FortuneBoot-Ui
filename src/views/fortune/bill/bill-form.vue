@@ -278,7 +278,7 @@ import {
   modifyBillApi,
   ModifyBillCommand
 } from "@/api/fortune/bill";
-import { BookVo, getEnableBookList } from "@/api/fortune/book";
+import { BookVo, getBookById, getEnableBookList } from "@/api/fortune/book";
 import { AccountVo, getEnableAccountList } from "@/api/fortune/account";
 import { getEnableGroupList } from "@/api/fortune/group";
 import { message } from "@/utils/message";
@@ -384,10 +384,9 @@ const tagOptions = ref<Array<TagVo>>();
 const fileList = ref([]);
 
 onMounted(async () => {
-  const [groupRes, booksRes, accountsRes] = await Promise.all([
+  const [groupRes, booksRes] = await Promise.all([
     getEnableGroupList(),
-    getEnableBookList(props.groupId),
-    getEnableAccountList(props.groupId)
+    getEnableBookList(props.groupId)
   ]);
   if (groupRes.data.length === 0) {
     message("请先启用或创建分组");
@@ -398,7 +397,12 @@ onMounted(async () => {
     return;
   }
   bookOptions.value = booksRes.data;
-  if (props.row.billType === 1) {
+  initAccountOptions();
+});
+
+async function initAccountOptions() {
+  const accountsRes = await getEnableAccountList(props.groupId);
+  if (!props.row || props.row.billType === 1) {
     accountOptions.value = accountsRes.data.filter(item => item.canExpense);
   } else if (props.row.billType === 2) {
     accountOptions.value = accountsRes.data.filter(item => item.canIncome);
@@ -408,17 +412,19 @@ onMounted(async () => {
       item => item.canTransferIn
     );
   }
-});
+}
 
 async function handleBillTypeChange(type: number) {
   const accountsRes = await getEnableAccountList(props.groupId);
+  const bookRes = await getBookById(props.bookId);
   if (type === 1) {
     accountOptions.value = accountsRes.data.filter(item => item.canExpense);
     handleBookOrBillTypeChange();
-    formData.toAccountId = null;
+    formData.accountId = bookRes.data.defaultExpenseAccountId;
   } else if (type === 2) {
     accountOptions.value = accountsRes.data.filter(item => item.canIncome);
     handleBookOrBillTypeChange();
+    formData.accountId = bookRes.data.defaultIncomeAccountId;
   } else if (type === 3) {
     const tagRes = await getEnableTagList(formData.bookId, formData.billType);
     tagOptions.value = tagRes.data;
@@ -429,6 +435,8 @@ async function handleBillTypeChange(type: number) {
     formData.tagIdList = [];
     formData.categoryAmountPair = [];
     formData.payeeId = null;
+    formData.accountId = bookRes.data.defaultTransferOutAccountId;
+    formData.toAccountId = bookRes.data.defaultTransferInAccountId;
   }
 }
 
@@ -437,6 +445,7 @@ function handleBookOrBillTypeChange() {
   formData.payeeId = null;
   formData.tagIdList = [];
   formData.amount = null;
+  formData.toAccountId = null;
   handleCategoryPayeeTagRefresh();
 }
 
@@ -478,6 +487,8 @@ async function handleOpened() {
     formData.bookId = props.bookId;
     // 设置默认交易时间为当前时间
     formData.tradeTime = dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    const bookRes = await getBookById(props.bookId);
+    formData.accountId = bookRes.data.defaultExpenseAccountId;
     handleCategoryPayeeTagRefresh();
   }
 }
