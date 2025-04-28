@@ -26,6 +26,7 @@ import setting from "./components/setting/index.vue";
 import Vertical from "./components/sidebar/vertical.vue";
 import Horizontal from "./components/sidebar/horizontal.vue";
 import backTop from "@/assets/svg/back_top.svg?component";
+import GlobalAddBillButton from "@/views/fortune/bill/global-add-bill-button.vue";
 
 const appWrapperRef = ref();
 const { isDark } = useDark();
@@ -190,6 +191,7 @@ const layoutHeader = defineComponent({
     </div>
     <!-- 系统设置 -->
     <setting />
+    <GlobalAddBillButton />
   </div>
 </template>
 
