@@ -109,3 +109,10 @@ export const includeBillApi = (bookId: number, billId: number) => {
 export const excludeBillApi = (bookId: number, billId: number) => {
   return http.request("patch", `/fortune/bill/${bookId}/${billId}/exclude`);
 };
+
+/** 批量导出用户 */
+export const exportBillExcelApi = (params: BillQuery, fileName: string) => {
+  return http.download("/fortune/bill/excel", fileName, {
+    params
+  });
+};
