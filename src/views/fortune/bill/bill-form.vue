@@ -103,7 +103,7 @@
             <el-form-item
               :prop="'categoryAmountPair.' + index + '.amount'"
               label="金额"
-              required
+              :rules="rules[`categoryAmountPair.${index}.amount`]"
             >
               <el-input-number
                 v-model="item.amount"
@@ -117,7 +117,7 @@
             <el-form-item
               label="分类"
               :prop="'categoryAmountPair.' + index + '.categoryId'"
-              :required="formData.billType !== 3"
+              :rules="rules[`categoryAmountPair.${index}.categoryId`]"
             >
               <el-tree-select
                 :key="
@@ -157,7 +157,7 @@
 
       <el-row :gutter="30">
         <re-col :value="12" v-if="formData.billType === 3">
-          <el-form-item prop="amount" label="金额" required>
+          <el-form-item prop="amount" label="金额">
             <el-input-number
               v-model="formData.amount"
               :precision="2"
@@ -334,26 +334,18 @@ const rules: FormRules = {
   tradeTime: [{ required: true, message: "请选择交易时间" }],
   accountId: [{ required: formData.billType === 3, message: "请选择账户" }],
   // 动态规则：categoryAmountPair 校验
-  categoryAmountPair: [
+  "categoryAmountPair.0.categoryId": [
     {
-      validator: (rule, value, callback) => {
-        // 检查所有分类和金额是否有效
-        const hasEmptyCategory = value.some(item => !item.categoryId);
-        const hasInvalidAmount = value.some(
-          item => item.amount === null || item.amount <= 0
-        );
-
-        if (hasEmptyCategory) {
-          callback(new Error("请填写所有分类"));
-          return;
-        }
-        if (hasInvalidAmount) {
-          callback(new Error("金额必须大于0"));
-          return;
-        }
-        callback();
-      },
-      trigger: "blur"
+      required: true,
+      message: "请选择分类",
+      trigger: "change"
+    }
+  ],
+  "categoryAmountPair.0.amount": [
+    {
+      required: true,
+      message: "金额不能为空",
+      trigger: "change"
     }
   ],
   toAccountId: [
@@ -531,10 +523,40 @@ function insertCategory(index: number) {
     categoryId: null,
     amount: null
   });
+
+  // 动态添加新规则
+  const newIndex = index + 1;
+  rules[`categoryAmountPair.${newIndex}.categoryId`] = [
+    {
+      required: true,
+      message: "请选择分类",
+      trigger: "change"
+    }
+  ];
+  rules[`categoryAmountPair.${newIndex}.amount`] = [
+    {
+      required: true,
+      message: "金额不能为空",
+      trigger: "change"
+    }
+  ];
 }
 
 function removeCategory(index: number) {
   formData.categoryAmountPair.splice(index, 1);
+  // 清理对应规则
+  delete rules[`categoryAmountPair.${index}.categoryId`];
+  delete rules[`categoryAmountPair.${index}.amount`];
+
+  // 重新排序后续规则
+  formData.categoryAmountPair.forEach((_, i) => {
+    if (i >= index) {
+      rules[`categoryAmountPair.${i}.categoryId`] =
+        rules[`categoryAmountPair.${i + 1}.categoryId`];
+      rules[`categoryAmountPair.${i}.amount`] =
+        rules[`categoryAmountPair.${i + 1}.amount`];
+    }
+  });
 }
 
 // 判断是否为图片文件
