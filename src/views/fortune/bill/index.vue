@@ -203,6 +203,13 @@
         >
           新增账单
         </el-button>
+        <el-button
+          type="warning"
+          :icon="useRenderIcon(Download)"
+          @click="exportAllExcel"
+        >
+          导出账单
+        </el-button>
       </template>
       <template v-slot="{ size, dynamicColumns }">
         <pure-table
@@ -278,6 +285,7 @@ import { CategoryVo, getEnableCategoryList } from "@/api/fortune/category";
 import { getEnablePayeeList, PayeeVo } from "@/api/fortune/payee";
 import { getEnableTagList, TagVo } from "@/api/fortune/tag";
 import { useRoute } from "vue-router";
+import Download from "@iconify-icons/ep/download";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -328,6 +336,7 @@ const {
   billTypeOptions,
   billStatistics,
   onSearch,
+  exportAllExcel,
   handleDelete,
   resetForm,
   handleSizeChange,
