@@ -453,7 +453,7 @@ async function handleCategoryPayeeTagRefresh() {
 }
 
 async function handleOpened() {
-  if (props.type === "edit") {
+  if (props.row) {
     Object.assign(formData, props.row);
     formData.tagIdList = props.row.tagList
       ? props.row.tagList.map(item => item.tagId)
