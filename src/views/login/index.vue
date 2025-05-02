@@ -338,7 +338,7 @@ onBeforeUnmount(() => {
             type="primary"
             >京ICP备2024074449号-1
           </el-link>
-          | version： 1.0.10 | api-version： {{ apiVersion }}
+          | version： 1.0.11 | api-version： {{ apiVersion }}
         </span>
       </div>
     </div>
