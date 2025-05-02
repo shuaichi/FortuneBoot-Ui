@@ -453,6 +453,8 @@ watch(
 
       // 重新加载数据
       await loadData();
+      await refreshAssetsPie();
+      await refreshLiabilitiesPie();
     } catch (error) {
       console.error("切换分组失败", error);
       message("切换分组失败", { type: "error" });
@@ -465,13 +467,17 @@ watch(
 watch(
   () => searchForm.bookId,
   async newBookId => {
-    if (!newBookId) return;
-
+    if (!newBookId) {
+      return;
+    }
     // 更新搜索表单
     incomeSearchForm.bookId = newBookId;
     incomeSearchForm.groupId = searchForm.groupId;
     expenseSearchForm.bookId = newBookId;
     expenseSearchForm.groupId = searchForm.groupId;
+    await loadData();
+    await refreshAssetsPie();
+    await refreshLiabilitiesPie();
   }
 );
 </script>
