@@ -215,8 +215,24 @@ function openDialog(type: "add" | "edit", row?: PayeeVo) {
 </script>
 
 <style scoped>
+/* 分辨率 <= 1080px 时四列 */
+@media (width <= 1920px) {
+  .grid-form {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* 分辨率 <= 768px 时三列 */
+@media (width <= 1280px) {
+  .grid-form {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .grid-form {
   display: grid;
+
+  /* 默认五列 */
   grid-template-columns: repeat(5, 1fr);
   padding-bottom: 16px;
 }
@@ -245,7 +261,7 @@ function openDialog(type: "add" | "edit", row?: PayeeVo) {
 .grid-form :deep(.el-date-editor),
 .grid-form :deep(.el-tree-select),
 .grid-form :deep(.el-input-number) {
-  width: 100% !important;
+  width: 100%;
   height: 32px;
 }
 
@@ -257,7 +273,7 @@ function openDialog(type: "add" | "edit", row?: PayeeVo) {
 /* 按钮容器样式 */
 .search-buttons {
   display: flex;
-  grid-column: 5;
+  grid-column: span 1 / -1;
   align-items: center;
   justify-content: flex-end;
   justify-self: end;

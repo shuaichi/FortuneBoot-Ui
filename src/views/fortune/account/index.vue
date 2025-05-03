@@ -308,26 +308,24 @@ const {
 </script>
 
 <style scoped>
-/* 深度选择器覆盖 element 样式 */
-:deep(.full-width-group) {
-  display: flex;
-  width: 100%;
+/* 分辨率 <= 1080px 时四列 */
+@media (width <= 1920px) {
+  .grid-form {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
-:deep(.quarter-width) {
-  flex: 1; /* 等分剩余空间 */
-
-  /* 调整内部按钮宽度 */
-
-  .el-radio-button__inner {
-    display: block;
-    width: 100%;
-    text-align: center;
+/* 分辨率 <= 768px 时三列 */
+@media (width <= 1280px) {
+  .grid-form {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
 .grid-form {
   display: grid;
+
+  /* 默认五列 */
   grid-template-columns: repeat(5, 1fr);
   padding-bottom: 16px;
 }
@@ -368,7 +366,7 @@ const {
 /* 按钮容器样式 */
 .search-buttons {
   display: flex;
-  grid-column: 5;
+  grid-column: span 1 / -1;
   align-items: center;
   justify-content: flex-end;
   justify-self: end;
@@ -381,6 +379,24 @@ const {
   height: 32px;
   margin-top: 0;
   margin-bottom: 0;
+}
+
+/* 金额范围选择器样式 */
+.number-range-picker {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 32px;
+}
+
+.amount-input {
+  flex: 1;
+  width: calc(50% - 10px) !important;
+}
+
+.range-separator {
+  flex: none;
+  margin: 0 5px;
 }
 
 /* 修复可能的对齐问题 */

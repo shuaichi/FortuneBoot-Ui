@@ -11,7 +11,6 @@
         <el-select
           v-model="searchForm.groupId"
           placeholder="请选择分组"
-          class="!w-[200px]"
           filterable
         >
           <el-option
@@ -27,7 +26,6 @@
           v-model="searchForm.bookName"
           placeholder="请输入账本名称"
           clearable
-          class="!w-[200px]"
         />
       </el-form-item>
       <el-form-item class="search-buttons">
@@ -213,8 +211,24 @@ async function handleRemove(row: BookVo) {
 </script>
 
 <style scoped>
+/* 分辨率 <= 1080px 时四列 */
+@media (width <= 1920px) {
+  .grid-form {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* 分辨率 <= 768px 时三列 */
+@media (width <= 1280px) {
+  .grid-form {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .grid-form {
   display: grid;
+
+  /* 默认五列 */
   grid-template-columns: repeat(5, 1fr);
   padding-bottom: 16px;
 }
@@ -243,7 +257,7 @@ async function handleRemove(row: BookVo) {
 .grid-form :deep(.el-date-editor),
 .grid-form :deep(.el-tree-select),
 .grid-form :deep(.el-input-number) {
-  width: 100% !important;
+  width: 100%;
   height: 32px;
 }
 
@@ -255,7 +269,7 @@ async function handleRemove(row: BookVo) {
 /* 按钮容器样式 */
 .search-buttons {
   display: flex;
-  grid-column: 5;
+  grid-column: span 1 / -1;
   align-items: center;
   justify-content: flex-end;
   justify-self: end;
