@@ -214,7 +214,7 @@ export function useHook() {
         payeeName: item.payeeName ? item.payeeName : "-"
       }));
       pagination.total = data.total;
-      const statisticsRes = await getBillStatistics(params.bookId);
+      const statisticsRes = await getBillStatistics(params);
       billStatistics.value = statisticsRes.data;
     } catch (e) {
       message(e.message || "查询失败", { type: "error" });
