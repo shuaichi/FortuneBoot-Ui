@@ -75,7 +75,7 @@ const initChart = () => {
     series: [
       {
         type: "pie",
-        radius: ["40%", "70%"],
+        radius: ["57%", "90%"],
         avoidLabelOverlap: false,
         itemStyle: {
           borderRadius: 10,
@@ -125,6 +125,15 @@ const fetchData = async () => {
     await nextTick();
     initChart();
     chartInstance.setOption({
+      legend: {
+        orient: "vertical",
+        right: 10,
+        top: "center",
+        formatter: (name: any) => {
+          const item = sortedData.find(d => d.name === name);
+          return item ? `${name} ￥${formatNumber(item.value)}` : name;
+        }
+      },
       graphic: [
         {
           // 中心文字容器
