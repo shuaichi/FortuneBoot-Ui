@@ -27,6 +27,7 @@ const loading = ref(true);
 const error = ref(null);
 let chartInstance = null;
 const props = defineProps<{ groupId: number }>();
+let chartData: Array<{ name: string; value: number }> = [];
 
 // 暴露刷新方法给父组件
 const refresh = async () => {
@@ -108,16 +109,43 @@ const initChart = () => {
       }
     ]
   });
+  // 监听图例选中/取消选中事件
+  chartInstance.on("legendselectchanged", params => {
+    // 取出当前被选中的图例名称
+    const selectedNames = Object.keys(params.selected).filter(
+      name => params.selected[name]
+    );
+    console.log(chartData);
+    // 重新计算被选中的总金额
+    const newSum = chartData
+      .filter(item => selectedNames.includes(item.name))
+      .reduce((sum, item) => sum + item.value, 0);
+    // 更新中心显示的文字
+    chartInstance!.setOption({
+      graphic: [
+        {
+          // 这里仅更新 text 字段，其他属性保持不变
+          children: [
+            {
+              style: {
+                text: `${formatNumber(newSum)}元`
+              }
+            }
+          ]
+        }
+      ]
+    });
+  });
 };
 const fetchData = async () => {
   try {
     const res = await getTotalAssets(props.groupId);
     loading.value = false;
     // 对数据进行从大到小排序
-    const sortedData = [...res.data].sort((a, b) => b.value - a.value);
+    chartData = [...res.data].sort((a, b) => b.value - a.value);
     // 计算总值（确保数据结构中包含value字段）
-    const totalValue = sortedData.reduce(
-      (sum: number, item: any) => sum + (item.value || 0),
+    const totalValue = chartData.reduce(
+      (sum, item) => sum + (item.value || 0),
       0
     );
     await nextTick();
@@ -128,7 +156,7 @@ const fetchData = async () => {
         right: 10,
         top: "center",
         formatter: (name: any) => {
-          const item = sortedData.find(d => d.name === name);
+          const item = chartData.find(d => d.name === name);
           return item ? `${name} ￥${formatNumber(item.value)}` : name;
         }
       },
@@ -158,7 +186,7 @@ const fetchData = async () => {
       ],
       series: [
         {
-          data: sortedData
+          data: chartData
         }
       ]
     });
