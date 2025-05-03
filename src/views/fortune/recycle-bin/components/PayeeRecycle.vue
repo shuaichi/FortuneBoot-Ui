@@ -8,12 +8,7 @@
     >
       <!-- 账本表单内容 -->
       <el-form-item label="所属分组：" prop="groupId">
-        <el-select
-          v-model="groupId"
-          placeholder="请选择分组"
-          class="!w-[200px]"
-          filterable
-        >
+        <el-select v-model="groupId" placeholder="请选择分组" filterable>
           <el-option
             v-for="item in groupOptions"
             :key="item.groupId"
@@ -26,7 +21,6 @@
         <el-select
           v-model="searchForm.bookId"
           placeholder="请选择账本"
-          class="!w-[200px]"
           filterable
         >
           <el-option
@@ -42,7 +36,6 @@
           v-model="searchForm.payeeName"
           placeholder="请输入交易对象名称"
           clearable
-          class="!w-[200px]"
         />
       </el-form-item>
       <el-form-item class="search-buttons">
@@ -254,8 +247,24 @@ async function handleRemove(row: PayeeVo) {
 </script>
 
 <style scoped>
+/* 分辨率 <= 1080px 时四列 */
+@media (width <= 1920px) {
+  .grid-form {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* 分辨率 <= 768px 时三列 */
+@media (width <= 1280px) {
+  .grid-form {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .grid-form {
   display: grid;
+
+  /* 默认五列 */
   grid-template-columns: repeat(5, 1fr);
   padding-bottom: 16px;
 }
@@ -284,7 +293,7 @@ async function handleRemove(row: PayeeVo) {
 .grid-form :deep(.el-date-editor),
 .grid-form :deep(.el-tree-select),
 .grid-form :deep(.el-input-number) {
-  width: 100% !important;
+  width: 100%;
   height: 32px;
 }
 
@@ -296,7 +305,7 @@ async function handleRemove(row: PayeeVo) {
 /* 按钮容器样式 */
 .search-buttons {
   display: flex;
-  grid-column: 5;
+  grid-column: span 1 / -1;
   align-items: center;
   justify-content: flex-end;
   justify-self: end;
