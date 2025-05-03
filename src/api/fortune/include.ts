@@ -75,10 +75,13 @@ export interface TagReportQuery {
   tagIds?: Array<number>;
 }
 
-export function getBillStatistics(bookId: number) {
+export function getBillStatistics(params: object) {
   return http.request<ResponseData<BillStatisticsVo>>(
     "get",
-    `/fortune/include/${bookId}/getBillStatistics`
+    `/fortune/include/getBillStatistics`,
+    {
+      params
+    }
   );
 }
 
