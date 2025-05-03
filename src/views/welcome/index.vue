@@ -653,7 +653,7 @@ watch(
   grid-template-rows: repeat(2, 1fr);
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
-  min-height: 400px;
+  min-height: 900px;
 
   .chart-card {
     height: 100%;
