@@ -191,6 +191,23 @@ function openDialog(type: "add" | "edit", row?: TagVo) {
   }
 }
 
+:deep(.full-width-group) {
+  display: flex;
+  width: 100%;
+}
+
+:deep(.quarter-width) {
+  flex: 1; /* 等分剩余空间 */
+
+  /* 调整内部按钮宽度 */
+
+  .el-radio-button__inner {
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
+}
+
 .grid-form {
   display: grid;
   padding-bottom: 16px;
@@ -271,4 +288,6 @@ function openDialog(type: "add" | "edit", row?: TagVo) {
   height: 32px;
   line-height: 32px;
 }
+
+/* 深度选择器覆盖 element 样式 */
 </style>
