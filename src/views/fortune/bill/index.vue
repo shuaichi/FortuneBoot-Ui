@@ -6,7 +6,7 @@
       :model="searchForm"
       class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] grid-form"
     >
-      <el-form-item label="所属分组：" prop="groupId">
+      <el-form-item label="所属分组：" prop="groupId" v-show="isVisible(0)">
         <el-select
           v-model="searchForm.groupId"
           placeholder="请选择账本"
@@ -20,7 +20,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="所属账本：" prop="bookId">
+      <el-form-item label="所属账本：" prop="bookId" v-show="isVisible(1)">
         <el-select
           v-model="searchForm.bookId"
           placeholder="请选择账本"
@@ -34,7 +34,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="所属账户：" prop="accountId">
+      <el-form-item label="所属账户：" prop="accountId" v-show="isVisible(2)">
         <el-select
           v-model="searchForm.accountId"
           placeholder="请选择账户"
@@ -48,14 +48,14 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="标题：" prop="title">
+      <el-form-item label="标题：" prop="title" v-show="isVisible(3)">
         <el-input
           v-model.trim="searchForm.title"
           placeholder="请输入标题"
           clearable
         />
       </el-form-item>
-      <el-form-item label="交易类型：" prop="billType">
+      <el-form-item label="交易类型：" prop="billType" v-show="isVisible(4)">
         <el-select
           v-model="searchForm.billType"
           placeholder="请选择类型"
@@ -69,7 +69,11 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="交易时间：">
+      <el-form-item
+        label="交易时间："
+        prop="tradeTimeRange"
+        v-show="isVisible(5)"
+      >
         <el-date-picker
           v-model="searchForm.tradeTimeRange"
           type="daterange"
@@ -80,7 +84,7 @@
           value-format="YYYY-MM-DD"
         />
       </el-form-item>
-      <el-form-item prop="amountMin" label="金额：">
+      <el-form-item prop="amountMin" label="金额：" v-show="isVisible(6)">
         <div class="number-range-picker">
           <el-input-number
             v-model="searchForm.amountMin"
@@ -99,7 +103,7 @@
           />
         </div>
       </el-form-item>
-      <el-form-item label="分类：" prop="categoryIds">
+      <el-form-item label="分类：" prop="categoryIds" v-show="isVisible(7)">
         <el-tree-select
           v-model="searchForm.categoryIds"
           :data="categoryOptions"
@@ -112,7 +116,7 @@
           clearable
         />
       </el-form-item>
-      <el-form-item prop="tagIds" label="标签：">
+      <el-form-item prop="tagIds" label="标签：" v-show="isVisible(8)">
         <el-tree-select
           v-model="searchForm.tagIds"
           :data="tagOptions"
@@ -125,7 +129,7 @@
           clearable
         />
       </el-form-item>
-      <el-form-item prop="payeeId" label="交易对象：">
+      <el-form-item prop="payeeId" label="交易对象：" v-show="isVisible(9)">
         <el-select
           filterable
           v-model="searchForm.payeeId"
@@ -141,7 +145,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item prop="confirm" label="确认状态：">
+      <el-form-item prop="confirm" label="确认状态：" v-show="isVisible(10)">
         <el-select
           v-model="searchForm.confirm"
           placeholder="请选择确认状态"
@@ -156,7 +160,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item prop="include" label="统计状态：">
+      <el-form-item prop="include" label="统计状态：" v-show="isVisible(11)">
         <el-select
           v-model="searchForm.include"
           placeholder="请选择统计状态"
@@ -171,7 +175,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="备注：" prop="remark">
+      <el-form-item label="备注：" prop="remark" v-show="isVisible(12)">
         <el-input
           v-model="searchForm.remark"
           placeholder="请输入备注"
@@ -189,6 +193,9 @@
         </el-button>
         <el-button :icon="useRenderIcon(Refresh)" @click="resetForm">
           重置
+        </el-button>
+        <el-button type="text" @click="expanded = !expanded">
+          {{ expanded ? "收起" : "展开" }}
         </el-button>
       </el-form-item>
     </el-form>
@@ -263,7 +270,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, onBeforeUnmount, watch } from "vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import { PureTableBar } from "@/components/RePureTableBar";
@@ -304,6 +311,9 @@ const categoryOptions = ref<Array<CategoryVo>>();
 const payeeOptions = ref<Array<PayeeVo>>();
 const tagOptions = ref<Array<TagVo>>();
 
+const expanded = ref(false);
+const width = ref(window.innerWidth);
+
 const route = useRoute();
 
 const trueFalseOptions = ref([
@@ -343,6 +353,7 @@ const {
 } = useHook();
 
 onMounted(async () => {
+  window.addEventListener("resize", onResize);
   // 初始化分组
   await initGroup();
   // 初始化分组下的账本和账户
@@ -352,6 +363,31 @@ onMounted(async () => {
   // 初始化搜索表单下拉框
   await initSearchSelect();
 });
+const onResize = () => {
+  width.value = window.innerWidth;
+};
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", onResize);
+});
+// 计算默认展示条数
+const defaultCount = computed(() => {
+  let base = 3;
+  if (width.value <= 1280) {
+    base = base - 1; // 2
+  } else if (width.value >= 1921) {
+    base = base + 1; // 4
+  }
+  return base;
+});
+// 最终可见条数：展开时展示所有，收起时展示 defaultCount
+const visibleCount = computed(() =>
+  expanded.value ? 100 : defaultCount.value
+);
+
+// 判断第几个项是否可见
+function isVisible(idx: number) {
+  return idx < visibleCount.value;
+}
 
 const initGroup = async () => {
   const groupRes = await getEnableGroupList();
@@ -441,6 +477,12 @@ function openDialog(type: "add" | "edit", row?: any) {
 </script>
 
 <style scoped>
+@media (width > 1920px) {
+  .grid-form {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
 /* 分辨率 <= 1920p 时四列 */
 @media (width <= 1920px) {
   .grid-form {

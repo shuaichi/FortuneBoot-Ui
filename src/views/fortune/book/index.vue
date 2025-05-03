@@ -6,7 +6,7 @@
       :model="searchFormParams"
       class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] grid-form"
     >
-      <el-form-item label="所属分组：" prop="groupId">
+      <el-form-item label="所属分组：" prop="groupId" v-show="isVisible(0)">
         <el-select
           v-model="searchFormParams.groupId"
           placeholder="请选择分组"
@@ -20,14 +20,14 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="账本名称：" prop="bookName">
+      <el-form-item label="账本名称：" prop="bookName" v-show="isVisible(1)">
         <el-input
           v-model="searchFormParams.bookName"
           placeholder="请输入账本名称"
           clearable
         />
       </el-form-item>
-      <el-form-item label="启用状态：" prop="status">
+      <el-form-item label="启用状态：" prop="status" v-show="isVisible(2)">
         <el-select
           v-model="searchFormParams.enable"
           placeholder="请选择状态"
@@ -48,6 +48,13 @@
         </el-button>
         <el-button :icon="useRenderIcon(Refresh)" @click="resetForm()">
           重置
+        </el-button>
+        <el-button
+          type="text"
+          @click="expanded = !expanded"
+          v-show="width <= 1280"
+        >
+          {{ expanded ? "收起" : "展开" }}
         </el-button>
       </el-form-item>
     </el-form>
@@ -144,7 +151,7 @@
 <script setup lang="ts">
 import { PureTableBar } from "@/components/RePureTableBar";
 import PureTable from "@pureadmin/table";
-import { onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import { BookVo } from "@/api/fortune/book";
@@ -188,13 +195,43 @@ const modalVisible = ref(false);
 const groupOptions = ref<Array<GroupVo>>();
 const router = useRouter();
 
+// 展开收起
+const expanded = ref(false);
+const width = ref(window.innerWidth);
+
 onMounted(async () => {
+  window.addEventListener("resize", onResize);
   const groupRes = await getEnableGroupList();
   groupOptions.value = groupRes.data;
   if (groupRes.data.length === 0) {
     message("请先启用或创建分组");
   }
 });
+const onResize = () => {
+  width.value = window.innerWidth;
+};
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", onResize);
+});
+// 计算默认展示条数
+const defaultCount = computed(() => {
+  let base = 3;
+  if (width.value <= 1280) {
+    base = base - 1; // 2
+  } else if (width.value >= 1921) {
+    base = base + 1; // 4
+  }
+  return base;
+});
+// 最终可见条数：展开时展示所有，收起时展示 defaultCount
+const visibleCount = computed(() =>
+  expanded.value ? 100 : defaultCount.value
+);
+
+// 判断第几个项是否可见
+function isVisible(idx: number) {
+  return idx < visibleCount.value;
+}
 
 function openDialog(type: "add" | "edit", row?: BookVo) {
   opType.value = type;
@@ -231,7 +268,13 @@ function openPayee(row?: BookVo) {
 </script>
 
 <style scoped>
-/* 分辨率 <= 1080px 时四列 */
+@media (width > 1920px) {
+  .grid-form {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* 分辨率 <= 1920px 时四列 */
 @media (width <= 1920px) {
   .grid-form {
     grid-template-columns: repeat(4, 1fr);

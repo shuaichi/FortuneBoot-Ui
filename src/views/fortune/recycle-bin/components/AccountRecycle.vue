@@ -6,7 +6,7 @@
       :model="searchForm"
       class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] grid-form"
     >
-      <el-form-item label="所属分组：" prop="groupId">
+      <el-form-item label="所属分组：" prop="groupId" v-show="isVisible(0)">
         <el-select
           v-model="searchForm.groupId"
           placeholder="请选择分组"
@@ -20,7 +20,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="账户类型：" prop="accountType">
+      <el-form-item label="账户类型：" prop="accountType" v-show="isVisible(1)">
         <el-select
           v-model="searchForm.accountType"
           placeholder="请选择分组"
@@ -34,7 +34,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="账户名称：" prop="accountName">
+      <el-form-item label="账户名称：" prop="accountName" v-show="isVisible(2)">
         <el-input
           v-model="searchForm.accountName"
           placeholder="请输入账本名称"
@@ -51,8 +51,15 @@
           搜索
         </el-button>
         <el-button :icon="useRenderIcon(Refresh)" @click="resetForm()">
-          重置</el-button
+          重置
+        </el-button>
+        <el-button
+          type="text"
+          @click="expanded = !expanded"
+          v-show="width <= 1280"
         >
+          {{ expanded ? "收起" : "展开" }}
+        </el-button>
       </el-form-item>
     </el-form>
     <PureTableBar title="账户回收站" :columns="columns" @refresh="onSearch">
@@ -105,7 +112,7 @@ import PureTableBar from "@/components/RePureTableBar/src/bar";
 import Search from "@iconify-icons/ep/search";
 import PureTable from "@pureadmin/table";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-import { onMounted, reactive, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import {
   accountPutBackApi,
   AccountQuery,
@@ -134,6 +141,10 @@ const accountTypeOptions = ref([
 ]);
 const loading = ref(false);
 const dataList = ref<Array<AccountVo>>();
+
+// 展开收起
+const expanded = ref(false);
+const width = ref(window.innerWidth);
 
 const pagination = reactive({
   total: 0,
@@ -226,6 +237,7 @@ const columns: TableColumnList = [
 ];
 
 onMounted(async () => {
+  window.addEventListener("resize", onResize);
   const [groupRes, defaultGroupId] = await Promise.all([
     getEnableGroupList(),
     getDefaultGroupId()
@@ -241,6 +253,31 @@ onMounted(async () => {
   searchForm.groupId = defaultGroup.value;
   await onSearch();
 });
+const onResize = () => {
+  width.value = window.innerWidth;
+};
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", onResize);
+});
+// 计算默认展示条数
+const defaultCount = computed(() => {
+  let base = 3;
+  if (width.value <= 1280) {
+    base = base - 1; // 2
+  } else if (width.value >= 1921) {
+    base = base + 1; // 4
+  }
+  return base;
+});
+// 最终可见条数：展开时展示所有，收起时展示 defaultCount
+const visibleCount = computed(() =>
+  expanded.value ? 100 : defaultCount.value
+);
+
+// 判断第几个项是否可见
+function isVisible(idx: number) {
+  return idx < visibleCount.value;
+}
 
 async function onSearch() {
   try {
@@ -288,7 +325,13 @@ async function handleRemove(row: AccountVo) {
 </script>
 
 <style scoped>
-/* 分辨率 <= 1080px 时四列 */
+@media (width > 1920px) {
+  .grid-form {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* 分辨率 <= 1920px 时四列 */
 @media (width <= 1920px) {
   .grid-form {
     grid-template-columns: repeat(4, 1fr);
