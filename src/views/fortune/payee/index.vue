@@ -16,14 +16,12 @@
           v-model="searchForm.payeeName"
           placeholder="请输入名称"
           clearable
-          class="!w-[200px]"
         />
       </el-form-item>
       <el-form-item label="支出状态：" prop="canExpense">
         <el-select
           v-model="searchForm.canExpense"
           placeholder="请选择支出状态"
-          class="!w-[200px]"
           filterable
         >
           <el-option
@@ -38,7 +36,6 @@
         <el-select
           v-model="searchForm.canIncome"
           placeholder="请选择收入状态"
-          class="!w-[200px]"
           filterable
         >
           <el-option
@@ -53,7 +50,6 @@
         <el-select
           v-model="searchForm.enable"
           placeholder="请选择是否可收入"
-          class="!w-[200px]"
           filterable
         >
           <el-option
