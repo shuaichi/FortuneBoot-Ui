@@ -227,9 +227,6 @@ async function handleRemove(row: BookVo) {
 
 .grid-form {
   display: grid;
-
-  /* 默认五列 */
-  grid-template-columns: repeat(5, 1fr);
   padding-bottom: 16px;
 }
 
