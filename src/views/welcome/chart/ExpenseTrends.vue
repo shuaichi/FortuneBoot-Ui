@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { use } from "echarts/core";
 import { LineChart } from "echarts/charts";
 import {
@@ -43,6 +43,9 @@ const props = defineProps<{
 }>();
 
 const expenseTrendsQuery = reactive<ExpenseTrendsQuery>({});
+onMounted(() => {
+  onSearch();
+});
 watch(
   () => props.bookId,
   () => {

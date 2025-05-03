@@ -443,7 +443,6 @@ watch(
       const currentGroup = groupOptions.value.find(
         group => group.groupId === newGroupId
       );
-
       searchForm.bookId =
         currentGroup?.defaultBookId || bookOptions.value[0].bookId;
 
@@ -471,13 +470,8 @@ watch(
       return;
     }
     // 更新搜索表单
-    incomeSearchForm.bookId = newBookId;
     incomeSearchForm.groupId = searchForm.groupId;
-    expenseSearchForm.bookId = newBookId;
     expenseSearchForm.groupId = searchForm.groupId;
-    await loadData();
-    await refreshAssetsPie();
-    await refreshLiabilitiesPie();
   }
 );
 </script>
