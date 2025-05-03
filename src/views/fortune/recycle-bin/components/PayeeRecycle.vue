@@ -7,7 +7,7 @@
       class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] grid-form"
     >
       <!-- 账本表单内容 -->
-      <el-form-item label="所属分组：" prop="groupId">
+      <el-form-item label="所属分组：" prop="groupId" v-show="isVisible(0)">
         <el-select v-model="groupId" placeholder="请选择分组" filterable>
           <el-option
             v-for="item in groupOptions"
@@ -17,7 +17,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="所属账本：" prop="bookId">
+      <el-form-item label="所属账本：" prop="bookId" v-show="isVisible(1)">
         <el-select
           v-model="searchForm.bookId"
           placeholder="请选择账本"
@@ -31,7 +31,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="名称：" prop="payeeName">
+      <el-form-item label="名称：" prop="payeeName" v-show="isVisible(2)">
         <el-input
           v-model="searchForm.payeeName"
           placeholder="请输入交易对象名称"
@@ -49,6 +49,13 @@
         </el-button>
         <el-button :icon="useRenderIcon(Refresh)" @click="resetForm()">
           重置
+        </el-button>
+        <el-button
+          type="text"
+          @click="expanded = !expanded"
+          v-show="width <= 1280"
+        >
+          {{ expanded ? "收起" : "展开" }}
         </el-button>
       </el-form-item>
     </el-form>
@@ -101,7 +108,14 @@ import PureTableBar from "@/components/RePureTableBar/src/bar";
 import Search from "@iconify-icons/ep/search";
 import PureTable from "@pureadmin/table";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-import { onMounted, reactive, ref, watch } from "vue";
+import {
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  reactive,
+  ref,
+  watch
+} from "vue";
 import Refresh from "@iconify-icons/ep/refresh";
 import {
   getPayeePageApi,
@@ -156,7 +170,12 @@ const columns: TableColumnList = [
   }
 ];
 
+// 展开收起
+const expanded = ref(false);
+const width = ref(window.innerWidth);
+
 onMounted(async () => {
+  window.addEventListener("resize", onResize);
   const [groupRes, defaultGroupId] = await Promise.all([
     getEnableGroupList(),
     getDefaultGroupId()
@@ -203,6 +222,7 @@ watch(
     await onSearch();
   }
 );
+
 async function onSearch() {
   try {
     loading.value = true;
@@ -214,6 +234,32 @@ async function onSearch() {
   } finally {
     loading.value = false;
   }
+}
+
+const onResize = () => {
+  width.value = window.innerWidth;
+};
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", onResize);
+});
+// 计算默认展示条数
+const defaultCount = computed(() => {
+  let base = 3;
+  if (width.value <= 1280) {
+    base = base - 1; // 2
+  } else if (width.value >= 1921) {
+    base = base + 1; // 4
+  }
+  return base;
+});
+// 最终可见条数：展开时展示所有，收起时展示 defaultCount
+const visibleCount = computed(() =>
+  expanded.value ? 100 : defaultCount.value
+);
+
+// 判断第几个项是否可见
+function isVisible(idx: number) {
+  return idx < visibleCount.value;
 }
 
 async function resetForm() {
@@ -247,7 +293,13 @@ async function handleRemove(row: PayeeVo) {
 </script>
 
 <style scoped>
-/* 分辨率 <= 1080px 时四列 */
+@media (width > 1920px) {
+  .grid-form {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* 分辨率 <= 1920px 时四列 */
 @media (width <= 1920px) {
   .grid-form {
     grid-template-columns: repeat(4, 1fr);

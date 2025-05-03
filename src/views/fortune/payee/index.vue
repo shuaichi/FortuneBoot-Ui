@@ -215,7 +215,13 @@ function openDialog(type: "add" | "edit", row?: PayeeVo) {
 </script>
 
 <style scoped>
-/* 分辨率 <= 1080px 时四列 */
+@media (width > 1920px) {
+  .grid-form {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* 分辨率 <= 1920px 时四列 */
 @media (width <= 1920px) {
   .grid-form {
     grid-template-columns: repeat(4, 1fr);

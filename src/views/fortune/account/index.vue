@@ -28,7 +28,7 @@
         :model="searchForm"
         class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] grid-form"
       >
-        <el-form-item label="所属分组：" prop="groupId">
+        <el-form-item label="所属分组：" prop="groupId" v-show="isVisible(0)">
           <el-select
             v-model="searchForm.groupId"
             placeholder="请选择分组"
@@ -42,14 +42,18 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="账户名称：" prop="accountName">
+        <el-form-item
+          label="账户名称："
+          prop="accountName"
+          v-show="isVisible(1)"
+        >
           <el-input
             v-model="searchForm.accountName"
             placeholder="请输入账本名称"
             clearable
           />
         </el-form-item>
-        <el-form-item prop="currencyCode" label="币种：">
+        <el-form-item prop="currencyCode" label="币种：" v-show="isVisible(2)">
           <el-select
             v-model="searchForm.currencyCode"
             placeholder="请选择币种"
@@ -64,7 +68,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item prop="include" label="统计状态：">
+        <el-form-item prop="include" label="统计状态：" v-show="isVisible(3)">
           <el-select
             v-model="searchForm.include"
             placeholder="请选择统计状态"
@@ -79,7 +83,11 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item prop="canExpense" label="支出状态：">
+        <el-form-item
+          prop="canExpense"
+          label="支出状态："
+          v-show="isVisible(4)"
+        >
           <el-select
             v-model="searchForm.canExpense"
             placeholder="请选择支出状态"
@@ -94,7 +102,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item prop="canIncome" label="收入状态：">
+        <el-form-item prop="canIncome" label="收入状态：" v-show="isVisible(5)">
           <el-select
             v-model="searchForm.canIncome"
             placeholder="请选择收入状态"
@@ -109,7 +117,11 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item prop="canTransferOut" label="转出状态：">
+        <el-form-item
+          prop="canTransferOut"
+          label="转出状态："
+          v-show="isVisible(6)"
+        >
           <el-select
             v-model="searchForm.canTransferOut"
             placeholder="请选择转出状态"
@@ -124,7 +136,11 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item prop="canTransferIn" label="转入状态：">
+        <el-form-item
+          prop="canTransferIn"
+          label="转入状态："
+          v-show="isVisible(7)"
+        >
           <el-select
             v-model="searchForm.canTransferIn"
             placeholder="请选择转入状态"
@@ -139,7 +155,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item prop="enable" label="启用状态：">
+        <el-form-item prop="enable" label="启用状态：" v-show="isVisible(8)">
           <el-select
             v-model="searchForm.enable"
             placeholder="请选择启用状态"
@@ -170,6 +186,9 @@
           </el-button>
           <el-button :icon="useRenderIcon(Refresh)" @click="resetForm()">
             重置
+          </el-button>
+          <el-button type="text" @click="expanded = !expanded">
+            {{ expanded ? "收起" : "展开" }}
           </el-button>
         </el-form-item>
       </el-form>
@@ -257,7 +276,7 @@
 <script setup lang="ts">
 import { useHook } from "./utils/hook";
 import PureTable from "@pureadmin/table";
-import { ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import { PureTableBar } from "@/components/RePureTableBar";
@@ -273,6 +292,9 @@ defineOptions({
 
 const formRef = ref();
 const barRef = ref();
+// 展开收起
+const expanded = ref(false);
+const width = ref(window.innerWidth);
 
 const trueFalseOptions = ref([
   {
@@ -305,10 +327,44 @@ const {
   openAdjustDialog,
   openEditDialog
 } = useHook();
+onMounted(async () => {
+  window.addEventListener("resize", onResize);
+});
+const onResize = () => {
+  width.value = window.innerWidth;
+};
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", onResize);
+});
+// 计算默认展示条数
+const defaultCount = computed(() => {
+  let base = 3;
+  if (width.value <= 1280) {
+    base = base - 1; // 2
+  } else if (width.value >= 1921) {
+    base = base + 1; // 4
+  }
+  return base;
+});
+// 最终可见条数：展开时展示所有，收起时展示 defaultCount
+const visibleCount = computed(() =>
+  expanded.value ? 100 : defaultCount.value
+);
+
+// 判断第几个项是否可见
+function isVisible(idx: number) {
+  return idx < visibleCount.value;
+}
 </script>
 
 <style scoped>
-/* 分辨率 <= 1080px 时四列 */
+@media (width > 1920px) {
+  .grid-form {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* 分辨率 <= 1920px 时四列 */
 @media (width <= 1920px) {
   .grid-form {
     grid-template-columns: repeat(4, 1fr);
