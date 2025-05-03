@@ -34,7 +34,6 @@
           v-model="searchForm.categoryName"
           placeholder="请输入名称"
           clearable
-          class="!w-[200px]"
         />
       </el-form-item>
       <el-form-item class="search-buttons">
