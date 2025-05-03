@@ -263,9 +263,6 @@ async function handleRemove(row: PayeeVo) {
 
 .grid-form {
   display: grid;
-
-  /* 默认五列 */
-  grid-template-columns: repeat(5, 1fr);
   padding-bottom: 16px;
 }
 

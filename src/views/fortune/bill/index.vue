@@ -441,7 +441,7 @@ function openDialog(type: "add" | "edit", row?: any) {
 </script>
 
 <style scoped>
-/* 分辨率 <= 1080px 时四列 */
+/* 分辨率 <= 1920p 时四列 */
 @media (width <= 1920px) {
   .grid-form {
     grid-template-columns: repeat(4, 1fr);
@@ -457,9 +457,6 @@ function openDialog(type: "add" | "edit", row?: any) {
 
 .grid-form {
   display: grid;
-
-  /* 默认五列 */
-  grid-template-columns: repeat(5, 1fr);
   padding-bottom: 16px;
 }
 

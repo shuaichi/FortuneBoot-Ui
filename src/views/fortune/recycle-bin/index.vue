@@ -58,10 +58,10 @@ const recycleBinType = ref(1);
 }
 
 :deep(.quarter-width) {
-  flex: 1; /* 等分剩余空间 */
+  /* 等分剩余空间 */
+  flex: 1;
 
   /* 调整内部按钮宽度 */
-
   .el-radio-button__inner {
     display: block;
     width: 100%;
