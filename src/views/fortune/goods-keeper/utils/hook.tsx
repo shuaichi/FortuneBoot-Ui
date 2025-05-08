@@ -3,7 +3,17 @@ import { onMounted, reactive, ref } from "vue";
 import { message } from "@/utils/message";
 import type { PaginationProps } from "@pureadmin/table";
 // import { ElMessageBox } from "element-plus";
-import { GoodsKeeperQuery, GoodsKeeperVo } from "@/api/fortune/goods-keeper";
+import {
+  getFortuneGroupPage,
+  GoodsKeeperQuery,
+  GoodsKeeperVo
+} from "@/api/fortune/goods-keeper";
+import {
+  getDefaultGroupId,
+  getEnableGroupList,
+  GroupVo
+} from "@/api/fortune/group";
+import { BookVo, getEnableBookList } from "@/api/fortune/book";
 
 // const { tagStyle } = usePublicHooks();
 
@@ -16,15 +26,36 @@ export function useHook() {
   // const operationType = ref<"enable" | "disable">();
   const defaultGroupId = ref<number>();
   // const defaultBookId = ref<number>();
+  const groupOptions = ref<Array<GroupVo>>();
+  const bookOptions = ref<Array<BookVo>>();
 
   onMounted(async () => {
+    const [groupRes, defaultGroupRes] = await Promise.all([
+      getEnableGroupList(),
+      getDefaultGroupId()
+    ]);
+    if (groupRes.data.length === 0) {
+      message("请先启用或创建分组");
+    }
+    groupOptions.value = groupRes.data;
+    searchForm.groupId = defaultGroupRes.data;
+    const booksRes = await getEnableBookList(searchForm.groupId);
+    bookOptions.value = booksRes.data;
+    searchForm.bookId = groupOptions.value.find(
+      group => group.groupId === searchForm.groupId
+    ).defaultBookId;
     await onSearch();
   });
 
   async function onSearch() {
     loading.value = true;
-
+    const res = await getFortuneGroupPage(searchForm);
+    dataList.value = res.data.rows;
     loading.value = false;
+  }
+
+  function resetForm() {
+    searchForm.goodsName = "";
   }
 
   const searchForm = reactive<GoodsKeeperQuery>({});
@@ -65,13 +96,28 @@ export function useHook() {
     {
       label: "物品",
       prop: "goodsName",
-      width: 100,
+      width: 150,
       align: "left"
     },
     {
       label: "日均成本",
       prop: "dailyAverageCost",
       width: 100
+    },
+    {
+      label: "价格",
+      prop: "price",
+      minWidth: 100
+    },
+    {
+      label: "持有时间（天）",
+      prop: "holdingTime",
+      minWidth: 140
+    },
+    {
+      label: "购买日期",
+      prop: "purchaseDate",
+      minWidth: 100
     },
     {
       label: "分类",
@@ -84,24 +130,19 @@ export function useHook() {
       minWidth: 100
     },
     {
-      label: "价格",
-      prop: "price",
-      minWidth: 100
-    },
-    {
-      label: "购买日期",
-      prop: "purchaseDate",
-      minWidth: 100
-    },
-    {
       label: "保修日期",
       prop: "warrantyDate",
       minWidth: 100
     },
     {
+      label: "是否过保",
+      prop: "isOverWarranty",
+      minWidth: 100
+    },
+    {
       label: "是否按次使用",
       prop: "useByTimesDesc",
-      minWidth: 100
+      minWidth: 120
     },
     {
       label: "使用次数",
@@ -131,18 +172,22 @@ export function useHook() {
     {
       label: "操作",
       fixed: "right",
-      width: 100,
+      width: 120,
       slot: "operation"
     }
   ];
 
   return {
     loading,
+    groupOptions,
+    bookOptions,
     columns,
     dataList,
     defaultGroupId,
     pagination,
+    searchForm,
     onSearch,
+    resetForm,
     handleRemoveGoodsKeeperApi,
     handleSizeChange,
     handleCurrentChange
