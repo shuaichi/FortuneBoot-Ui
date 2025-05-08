@@ -1,5 +1,53 @@
 <template>
   <div class="main">
+    <el-form
+      ref="formRef"
+      :inline="true"
+      :model="searchForm"
+      class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] grid-form"
+    >
+      <el-form-item label="所属分组：" prop="groupId">
+        <el-select
+          v-model="searchForm.groupId"
+          placeholder="请选择分组"
+          filterable
+        >
+          <el-option
+            v-for="item in groupOptions"
+            :key="item.groupId"
+            :label="item.groupName"
+            :value="item.groupId"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="所属账本：" prop="bookId">
+        <el-select
+          v-model="searchForm.bookId"
+          placeholder="请选择账本"
+          filterable
+        >
+          <el-option
+            v-for="item in bookOptions"
+            :key="item.bookId"
+            :label="item.bookName"
+            :value="item.bookId"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item class="search-buttons">
+        <el-button
+          type="primary"
+          :icon="useRenderIcon(Search)"
+          :loading="loading"
+          @click="onSearch"
+        >
+          搜索
+        </el-button>
+        <el-button :icon="useRenderIcon(Refresh)" @click="resetForm">
+          重置
+        </el-button>
+      </el-form-item>
+    </el-form>
     <PureTableBar title="归物" :columns="columns" @refresh="onSearch">
       <template #buttons>
         <el-button
@@ -66,6 +114,8 @@ import { ElMessage } from "element-plus";
 import { ref } from "vue";
 import { useHook } from "@/views/fortune/goods-keeper/utils/hook";
 import { GoodsKeeperVo } from "@/api/fortune/goods-keeper";
+import Search from "@iconify-icons/ep/search";
+import Refresh from "@iconify-icons/ep/refresh";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -76,11 +126,15 @@ const opType = ref<"add" | "modify">("add");
 const opRow = ref<GoodsKeeperVo>();
 const formVisible = ref<boolean>(false);
 const {
-  columns,
   loading,
+  groupOptions,
+  bookOptions,
+  columns,
   dataList,
   pagination,
+  searchForm,
   onSearch,
+  resetForm,
   handleCurrentChange,
   handleSizeChange,
   handleRemoveGoodsKeeperApi
