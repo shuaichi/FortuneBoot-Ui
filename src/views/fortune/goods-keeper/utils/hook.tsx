@@ -43,6 +43,7 @@ export function useHook() {
     }
     groupOptions.value = groupRes.data;
     searchForm.groupId = defaultGroupRes.data;
+    console.log(searchForm.groupId);
     const booksRes = await getEnableBookList(searchForm.groupId);
     bookOptions.value = booksRes.data;
     searchForm.bookId = groupOptions.value.find(
@@ -201,6 +202,9 @@ export function useHook() {
     defaultGroupId,
     pagination,
     searchForm,
+    formVisible,
+    opRow,
+    opType,
     onSearch,
     openFormDialog,
     resetForm,

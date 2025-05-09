@@ -102,6 +102,15 @@
         </pure-table>
       </template>
     </PureTableBar>
+    <goods-keeper-form
+      v-if="formVisible"
+      :type="opType"
+      v-model="formVisible"
+      :row="opRow"
+      :group-id="searchForm.groupId"
+      :book-id="searchForm.bookId"
+      @success="onSearch"
+    />
   </div>
 </template>
 
@@ -113,6 +122,7 @@ import { PureTableBar } from "@/components/RePureTableBar";
 import { useHook } from "@/views/fortune/goods-keeper/utils/hook";
 import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
+import GoodsKeeperForm from "@/views/fortune/goods-keeper/goods-keeper-form.vue";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -127,6 +137,9 @@ const {
   dataList,
   pagination,
   searchForm,
+  formVisible,
+  opRow,
+  opType,
   onSearch,
   openFormDialog,
   resetForm,

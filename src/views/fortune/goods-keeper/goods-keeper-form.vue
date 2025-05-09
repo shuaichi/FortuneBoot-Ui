@@ -2,15 +2,32 @@
   <v-dialog
     show-full-screen
     :fixed-body-height="false"
-    :title="type === 'add' ? '新增物品' : '修改物品'"
+    :title="type === 'add' ? '新增物品' : '编辑物品'"
     v-model="visible"
     :loading="loading"
     @confirm="handleConfirm"
-    @cancel="visible = false"
+    @close="visible = false"
     @opened="handleOpened"
   >
     <el-form :model="formData" label-width="82px" :rules="rules" ref="formRef">
       <el-row :gutter="30">
+        <re-col :value="12">
+          <el-form-item prop="bookId" label="账本" required>
+            <el-select
+              filterable
+              v-model="formData.bookId"
+              placeholder="请选择账本"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="item in bookOptions"
+                :key="item.bookId"
+                :label="item.bookName"
+                :value="item.bookId"
+              />
+            </el-select>
+          </el-form-item>
+        </re-col>
         <re-col :value="12">
           <el-form-item
             prop="goodsName"
@@ -24,9 +41,117 @@
             />
           </el-form-item>
         </re-col>
+      </el-row>
+      <el-row :gutter="30">
         <re-col :value="12">
           <el-form-item prop="price" label="价格" required>
             <el-input v-model="formData.price" placeholder="请输入分组名称" />
+          </el-form-item>
+        </re-col>
+        <re-col :value="12">
+          <el-form-item prop="categoryId" label="分类">
+            <el-tree-select
+              v-model="formData.categoryId"
+              :data="categoryOptions"
+              check-strictly
+              filterable
+              placeholder="请选择分类"
+              style="width: 100%"
+              :props="categoryTreeProps"
+              clearable
+            />
+          </el-form-item>
+        </re-col>
+      </el-row>
+      <el-row :gutter="30">
+        <re-col :value="12">
+          <el-form-item prop="purchaseDate" label="购买日期" required>
+            <el-date-picker
+              v-model="formData.purchaseDate"
+              type="date"
+              placeholder="选择购买日期"
+              value-format="YYYY-MM-DD"
+              style="width: 100%"
+            />
+          </el-form-item>
+        </re-col>
+        <re-col :value="12">
+          <el-form-item prop="tagId" label="标签">
+            <el-tree-select
+              v-model="formData.tagId"
+              :data="tagOptions"
+              placeholder="请选择标签"
+              style="width: 100%"
+              check-strictly
+              filterable
+              multiple
+              :props="tagTreeProps"
+            />
+          </el-form-item>
+        </re-col>
+      </el-row>
+      <el-row :gutter="30">
+        <re-col :value="12">
+          <el-form-item prop="warrantyDate" label="保修日期">
+            <el-date-picker
+              v-model="formData.warrantyDate"
+              type="date"
+              placeholder="选择保修日期"
+              value-format="YYYY-MM-DD"
+              style="width: 100%"
+            />
+          </el-form-item>
+        </re-col>
+        <re-col :value="12">
+          <el-form-item prop="status" label="状态">
+            <el-select
+              filterable
+              v-model="formData.status"
+              placeholder="请选择状态"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="item in statusOptions"
+                :key="item.status"
+                :label="item.statusDesc"
+                :value="item.status"
+              />
+            </el-select>
+          </el-form-item>
+        </re-col>
+      </el-row>
+      <el-row :gutter="30">
+        <re-col :value="3">
+          <el-form-item prop="useByTimes" label="按次使用">
+            <el-switch
+              v-model="formData.useByTimes"
+              class="ml-2"
+              style="
+                --el-switch-on-color: #13ce66;
+                --el-switch-off-color: #ff4949;
+              "
+            />
+          </el-form-item>
+        </re-col>
+        <re-col :value="9">
+          <el-form-item prop="usageNum" label="使用次数">
+            <el-input-number
+              v-model="formData.usageNum"
+              :disabled="!formData.useByTimes"
+              :precision="0"
+              :min="0"
+              :controls="false"
+              style="width: 100%"
+            />
+          </el-form-item>
+        </re-col>
+        <re-col :value="12">
+          <el-form-item prop="soldPrice" label="出售价格">
+            <el-input
+              v-model="formData.soldPrice"
+              placeholder="请输入二手出售价格"
+              :disabled="formData.status !== 3"
+            />
           </el-form-item>
         </re-col>
       </el-row>
@@ -48,47 +173,47 @@
 
 <script setup lang="ts">
 import VDialog from "@/components/VDialog/VDialog.vue";
-import {
-  addGroupApi,
-  AddGroupCommand,
-  getBookTemplate,
-  getCurrencyTemplate,
-  GroupVo,
-  modifyGroupApi,
-  ModifyGroupCommand
-} from "@/api/fortune/group";
 import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
 import ReCol from "@/components/ReCol";
 import { BookVo, getBookByGroupId } from "@/api/fortune/book";
-// import { usePublicHooks } from "@/views/system/hooks";
 import {
+  addGoodsKeeperApi,
+  modifyGoodsKeeperApi,
   AddGoodsKeeperCommand,
-  ModifyGoodsKeeperCommand
+  ModifyGoodsKeeperCommand,
+  GoodsKeeperVo
 } from "@/api/fortune/goods-keeper";
+import { CategoryVo, getEnableCategoryList } from "@/api/fortune/category";
+import { getEnableTagList, TagVo } from "@/api/fortune/tag";
 
 const props = defineProps<Props>();
 const loading = ref(false);
-// const { switchStyle } = usePublicHooks();
-const bookTemplateOptions = ref();
-const currencyTemplateOptions = ref();
+const categoryOptions = ref<Array<CategoryVo>>([]);
+const statusOptions = ref([]);
+const tagOptions = ref<Array<TagVo>>();
 
 const bookOptions = ref<Array<BookVo>>();
+const fileList = ref([]);
+
 onMounted(async () => {
-  const bookTemplate = await getBookTemplate();
-  bookTemplateOptions.value = bookTemplate.data;
-  const currency = await getCurrencyTemplate();
-  currencyTemplateOptions.value = currency.data;
-  if (props.type !== "add") {
-    const book = await getBookByGroupId(props.row.groupId);
-    bookOptions.value = book.data;
-  }
+  const book = await getBookByGroupId(props.groupId);
+  bookOptions.value = book.data;
+
+  const [categoryRes, tagRes] = await Promise.all([
+    getEnableCategoryList(props.bookId, 1),
+    getEnableTagList(props.bookId, 1)
+  ]);
+  categoryOptions.value = categoryRes.data;
+  tagOptions.value = tagRes.data;
 });
 
 interface Props {
-  type: "add" | "upload";
+  type: "add" | "modify";
   modelValue: boolean;
-  row?: GroupVo;
+  row?: GoodsKeeperVo;
+  groupId: number;
+  bookId: number;
 }
 
 const emits = defineEmits<{
@@ -102,6 +227,18 @@ const visible = computed({
     emits("update:modelValue", v);
   }
 });
+
+const tagTreeProps = {
+  label: "tagName",
+  value: "tagId",
+  children: "children"
+};
+const categoryTreeProps = {
+  label: "categoryName",
+  value: "categoryId",
+  children: "children"
+};
+
 const formData = reactive<AddGoodsKeeperCommand | ModifyGoodsKeeperCommand>({});
 
 function handleOpened() {
@@ -115,12 +252,28 @@ function handleOpened() {
 async function handleConfirm() {
   try {
     loading.value = true;
+    const formDataObj = new FormData();
+    formDataObj.append(
+      "data",
+      new Blob([JSON.stringify({ ...formData })], {
+        type: "application/json"
+      })
+    );
+    // 处理文件列表
+    if (fileList.value.length !== 0) {
+      // 2. 处理文件列表（正确格式）
+      fileList.value.forEach(file => {
+        // 确保上传的是原始文件对象
+        console.log("file ===== ", file);
+        formDataObj.append(`files`, file.raw);
+      });
+    }
     switch (props.type) {
       case "add":
-        await addGroupApi(formData as AddGroupCommand);
+        await addGoodsKeeperApi(formDataObj);
         break;
-      case "upload":
-        await modifyGroupApi(formData as ModifyGroupCommand);
+      case "modify":
+        await modifyGoodsKeeperApi(formDataObj);
         break;
       default:
         break;
@@ -138,10 +291,28 @@ async function handleConfirm() {
 }
 
 const rules: FormRules = {
+  bookId: [
+    {
+      required: true,
+      message: "账本不能为空"
+    }
+  ],
   goodsName: [
     {
       required: true,
       message: "物品名称不能为空"
+    }
+  ],
+  price: [
+    {
+      required: true,
+      message: "价格不能为空"
+    }
+  ],
+  purchaseDate: [
+    {
+      required: true,
+      message: "购买日期不能为空"
     }
   ]
 };

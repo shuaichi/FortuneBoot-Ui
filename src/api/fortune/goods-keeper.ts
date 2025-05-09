@@ -25,16 +25,22 @@ export interface GoodsKeeperVo {
 }
 
 export interface AddGoodsKeeperCommand {
-  groupName?: string;
-  defaultCurrency?: string;
-  bookTemplate?: number;
-  enable?: boolean;
+  bookId?: number;
+  goodsName?: string;
+  categoryId?: number;
+  tagId?: number;
+  price?: number;
+  purchaseDate?: string;
+  warrantyDate?: string;
+  useByTimes?: boolean;
+  usageNum?: number;
+  status?: number;
+  soldPrice?: number;
   remark?: string;
 }
 
 export interface ModifyGoodsKeeperCommand extends AddGoodsKeeperCommand {
-  groupId?: number;
-  defaultBookId?: number;
+  goodsKeeperId?: number;
 }
 
 export function getFortuneGroupPage(params: GoodsKeeperQuery) {
@@ -45,4 +51,21 @@ export function getFortuneGroupPage(params: GoodsKeeperQuery) {
       params
     }
   );
+}
+export function addGoodsKeeperApi(data: FormData) {
+  return http.request("post", "/fortune/goods/keeper/add", {
+    data,
+    headers: {
+      "Content-Type": "multipart/form-data" // 必须设置
+    }
+  });
+}
+
+export function modifyGoodsKeeperApi(data: FormData) {
+  return http.request("put", "/fortune/goods/keeper/modify", {
+    data,
+    headers: {
+      "Content-Type": "multipart/form-data" // 必须设置
+    }
+  });
 }
