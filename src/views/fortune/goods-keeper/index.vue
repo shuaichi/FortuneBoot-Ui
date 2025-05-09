@@ -110,10 +110,7 @@ import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import PureTable from "@pureadmin/table";
 import { PureTableBar } from "@/components/RePureTableBar";
-import { ElMessage } from "element-plus";
-import { ref } from "vue";
 import { useHook } from "@/views/fortune/goods-keeper/utils/hook";
-import { GoodsKeeperVo } from "@/api/fortune/goods-keeper";
 import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
 
@@ -122,9 +119,6 @@ defineOptions({
   name: "FortuneGoodsKeeper"
 });
 
-const opType = ref<"add" | "modify">("add");
-const opRow = ref<GoodsKeeperVo>();
-const formVisible = ref<boolean>(false);
 const {
   loading,
   groupOptions,
@@ -134,20 +128,10 @@ const {
   pagination,
   searchForm,
   onSearch,
+  openFormDialog,
   resetForm,
   handleCurrentChange,
   handleSizeChange,
   handleRemoveGoodsKeeperApi
 } = useHook();
-
-async function openFormDialog(type: "add" | "modify", row?: GoodsKeeperVo) {
-  try {
-    opType.value = type;
-    opRow.value = row;
-    formVisible.value = true;
-  } catch (e) {
-    console.error(e);
-    ElMessage.error((e as Error)?.message || "加载菜单失败");
-  }
-}
 </script>

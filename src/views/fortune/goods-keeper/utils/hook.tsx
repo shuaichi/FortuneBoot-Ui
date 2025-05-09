@@ -2,7 +2,7 @@
 import { onMounted, reactive, ref } from "vue";
 import { message } from "@/utils/message";
 import type { PaginationProps } from "@pureadmin/table";
-// import { ElMessageBox } from "element-plus";
+import { ElMessage } from "element-plus";
 import {
   getFortuneGroupPage,
   GoodsKeeperQuery,
@@ -28,6 +28,10 @@ export function useHook() {
   // const defaultBookId = ref<number>();
   const groupOptions = ref<Array<GroupVo>>();
   const bookOptions = ref<Array<BookVo>>();
+
+  const opType = ref<"add" | "modify">("add");
+  const opRow = ref<GoodsKeeperVo>();
+  const formVisible = ref<boolean>(false);
 
   onMounted(async () => {
     const [groupRes, defaultGroupRes] = await Promise.all([
@@ -90,6 +94,17 @@ export function useHook() {
     pagination.currentPage = currentPage;
     searchForm.pageNum = currentPage;
     await onSearch();
+  }
+
+  async function openFormDialog(type: "add" | "modify", row?: GoodsKeeperVo) {
+    try {
+      opType.value = type;
+      opRow.value = row;
+      formVisible.value = true;
+    } catch (e) {
+      console.error(e);
+      ElMessage.error((e as Error)?.message || "加载菜单失败");
+    }
   }
 
   const columns: TableColumnList = [
@@ -187,6 +202,7 @@ export function useHook() {
     pagination,
     searchForm,
     onSearch,
+    openFormDialog,
     resetForm,
     handleRemoveGoodsKeeperApi,
     handleSizeChange,
