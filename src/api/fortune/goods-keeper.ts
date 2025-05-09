@@ -24,6 +24,19 @@ export interface GoodsKeeperVo {
   dailyAverageCost?: string;
 }
 
+export interface AddGoodsKeeperCommand {
+  groupName?: string;
+  defaultCurrency?: string;
+  bookTemplate?: number;
+  enable?: boolean;
+  remark?: string;
+}
+
+export interface ModifyGoodsKeeperCommand extends AddGoodsKeeperCommand {
+  groupId?: number;
+  defaultBookId?: number;
+}
+
 export function getFortuneGroupPage(params: GoodsKeeperQuery) {
   return http.request<ResponseData<PageDTO<GoodsKeeperVo>>>(
     "get",
