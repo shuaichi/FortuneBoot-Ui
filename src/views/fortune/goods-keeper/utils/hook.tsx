@@ -6,7 +6,8 @@ import { ElMessage } from "element-plus";
 import {
   getFortuneGroupPage,
   GoodsKeeperQuery,
-  GoodsKeeperVo
+  GoodsKeeperVo,
+  removeGoodsKeeperApi
 } from "@/api/fortune/goods-keeper";
 import {
   getDefaultGroupId,
@@ -15,17 +16,12 @@ import {
 } from "@/api/fortune/group";
 import { BookVo, getEnableBookList } from "@/api/fortune/book";
 
-// const { tagStyle } = usePublicHooks();
-
 export function useHook() {
   const loading = ref(true);
   const dataList = ref([]);
 
   // 状态控制
-  // const currentRow = ref<GoodsKeeperVo>();
-  // const operationType = ref<"enable" | "disable">();
   const defaultGroupId = ref<number>();
-  // const defaultBookId = ref<number>();
   const groupOptions = ref<Array<GroupVo>>();
   const bookOptions = ref<Array<BookVo>>();
 
@@ -74,7 +70,7 @@ export function useHook() {
   async function handleRemoveGoodsKeeperApi(row: GoodsKeeperVo) {
     try {
       loading.value = true;
-      // await removeGroupApi(row.groupId);
+      await removeGoodsKeeperApi(row.bookId, row.goodsKeeperId);
       message(`您删除了物品名称为${row.goodsName}的这条数据`, { type: "info" });
       await onSearch();
     } catch (e) {

@@ -9,6 +9,8 @@ export interface GoodsKeeperQuery extends BasePageQuery {
 }
 
 export interface GoodsKeeperVo {
+  goodsKeeperId: number;
+  bookId: number;
   goodsName?: string;
   categoryName?: string;
   tagName?: string;
@@ -35,6 +37,7 @@ export interface AddGoodsKeeperCommand {
   useByTimes?: boolean;
   usageNum?: number;
   status?: number;
+  retiredDate?: string;
   soldPrice?: number;
   remark?: string;
 }
@@ -52,6 +55,7 @@ export function getFortuneGroupPage(params: GoodsKeeperQuery) {
     }
   );
 }
+
 export function addGoodsKeeperApi(data: FormData) {
   return http.request("post", "/fortune/goods/keeper/add", {
     data,
@@ -68,4 +72,11 @@ export function modifyGoodsKeeperApi(data: FormData) {
       "Content-Type": "multipart/form-data" // 必须设置
     }
   });
+}
+
+export function removeGoodsKeeperApi(bookId: number, goodsKeeperId: number) {
+  return http.request(
+    "delete",
+    `/fortune/goods/keeper/${bookId}/${goodsKeeperId}/remove`
+  );
 }

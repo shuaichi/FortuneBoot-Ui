@@ -4,7 +4,7 @@ import { TagVo } from "@/api/fortune/tag";
 export interface AddBillCommand {
   bookId?: number;
   title?: string;
-  tradeTime?: Date;
+  tradeTime?: string;
   accountId?: number;
   amount?: number;
   tagIdList?: Array<number>;

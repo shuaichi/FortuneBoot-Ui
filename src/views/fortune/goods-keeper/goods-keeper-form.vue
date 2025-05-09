@@ -6,7 +6,7 @@
     v-model="visible"
     :loading="loading"
     @confirm="handleConfirm"
-    @close="visible = false"
+    @cancel="visible = false"
     @opened="handleOpened"
   >
     <el-form :model="formData" label-width="82px" :rules="rules" ref="formRef">
@@ -14,6 +14,7 @@
         <re-col :value="12">
           <el-form-item prop="bookId" label="账本" required>
             <el-select
+              :disabled="props.type !== 'add'"
               filterable
               v-model="formData.bookId"
               placeholder="请选择账本"
@@ -49,6 +50,19 @@
           </el-form-item>
         </re-col>
         <re-col :value="12">
+          <el-form-item prop="purchaseDate" label="购买日期" required>
+            <el-date-picker
+              v-model="formData.purchaseDate"
+              type="date"
+              placeholder="选择购买日期"
+              value-format="YYYY-MM-DD"
+              style="width: 100%"
+            />
+          </el-form-item>
+        </re-col>
+      </el-row>
+      <el-row :gutter="30">
+        <re-col :value="12">
           <el-form-item prop="categoryId" label="分类">
             <el-tree-select
               v-model="formData.categoryId"
@@ -62,19 +76,6 @@
             />
           </el-form-item>
         </re-col>
-      </el-row>
-      <el-row :gutter="30">
-        <re-col :value="12">
-          <el-form-item prop="purchaseDate" label="购买日期" required>
-            <el-date-picker
-              v-model="formData.purchaseDate"
-              type="date"
-              placeholder="选择购买日期"
-              value-format="YYYY-MM-DD"
-              style="width: 100%"
-            />
-          </el-form-item>
-        </re-col>
         <re-col :value="12">
           <el-form-item prop="tagId" label="标签">
             <el-tree-select
@@ -84,7 +85,6 @@
               style="width: 100%"
               check-strictly
               filterable
-              multiple
               :props="tagTreeProps"
             />
           </el-form-item>
@@ -102,25 +102,6 @@
             />
           </el-form-item>
         </re-col>
-        <re-col :value="12">
-          <el-form-item prop="status" label="状态">
-            <el-select
-              filterable
-              v-model="formData.status"
-              placeholder="请选择状态"
-              style="width: 100%"
-            >
-              <el-option
-                v-for="item in statusOptions"
-                :key="item.status"
-                :label="item.statusDesc"
-                :value="item.status"
-              />
-            </el-select>
-          </el-form-item>
-        </re-col>
-      </el-row>
-      <el-row :gutter="30">
         <re-col :value="3">
           <el-form-item prop="useByTimes" label="按次使用">
             <el-switch
@@ -141,6 +122,37 @@
               :precision="0"
               :min="0"
               :controls="false"
+              style="width: 100%"
+            />
+          </el-form-item>
+        </re-col>
+      </el-row>
+      <el-row :gutter="30">
+        <re-col :value="12">
+          <el-form-item prop="status" label="状态">
+            <el-select
+              filterable
+              v-model="formData.status"
+              placeholder="请选择状态"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="item in statusOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+        </re-col>
+        <re-col :value="12">
+          <el-form-item prop="retiredDate" label="退役日期">
+            <el-date-picker
+              :disabled="formData.status === 1"
+              v-model="formData.retiredDate"
+              type="date"
+              placeholder="选择退役日期"
+              value-format="YYYY-MM-DD"
               style="width: 100%"
             />
           </el-form-item>
@@ -186,17 +198,35 @@ import {
 } from "@/api/fortune/goods-keeper";
 import { CategoryVo, getEnableCategoryList } from "@/api/fortune/category";
 import { getEnableTagList, TagVo } from "@/api/fortune/tag";
+import dayjs from "dayjs";
 
 const props = defineProps<Props>();
 const loading = ref(false);
+const formRef = ref();
 const categoryOptions = ref<Array<CategoryVo>>([]);
-const statusOptions = ref([]);
+const statusOptions = ref([
+  {
+    label: "在役",
+    value: 1
+  },
+  {
+    label: "退役",
+    value: 2
+  },
+  {
+    label: "已出售",
+    value: 3
+  }
+]);
 const tagOptions = ref<Array<TagVo>>();
 
 const bookOptions = ref<Array<BookVo>>();
 const fileList = ref([]);
 
 onMounted(async () => {
+  formData.bookId = props.bookId;
+  formData.status = 1;
+  formData.purchaseDate = dayjs(new Date()).format("YYYY-MM-DD");
   const book = await getBookByGroupId(props.groupId);
   bookOptions.value = book.data;
 
@@ -251,6 +281,7 @@ function handleOpened() {
 
 async function handleConfirm() {
   try {
+    await formRef.value.validate();
     loading.value = true;
     const formDataObj = new FormData();
     formDataObj.append(
@@ -268,6 +299,7 @@ async function handleConfirm() {
         formDataObj.append(`files`, file.raw);
       });
     }
+    console.log(formDataObj);
     switch (props.type) {
       case "add":
         await addGoodsKeeperApi(formDataObj);
@@ -284,7 +316,9 @@ async function handleConfirm() {
     emits("success");
   } catch (e) {
     console.error(e);
-    ElMessage.error((e as Error)?.message || "提交失败");
+    if (!e.message.includes("validate")) {
+      ElMessage.error((e as Error)?.message || "提交失败");
+    }
   } finally {
     loading.value = false;
   }
@@ -294,25 +328,53 @@ const rules: FormRules = {
   bookId: [
     {
       required: true,
-      message: "账本不能为空"
+      message: "请选择账本"
     }
   ],
   goodsName: [
     {
       required: true,
-      message: "物品名称不能为空"
+      message: "请输入物品名称"
     }
   ],
   price: [
     {
       required: true,
-      message: "价格不能为空"
+      message: "请输入价格"
+    }
+  ],
+  categoryId: [
+    {
+      required: true,
+      message: "请选择分类"
     }
   ],
   purchaseDate: [
     {
       required: true,
-      message: "购买日期不能为空"
+      message: "请选择购买日期"
+    }
+  ],
+  retiredDate: [
+    {
+      validator: (rule, value, callback) => {
+        if ((formData.status === 2 || formData.status === 3) && !value) {
+          callback(new Error("请选择退役日期"));
+        } else {
+          callback();
+        }
+      }
+    }
+  ],
+  usageNum: [
+    {
+      validator: (rule, value, callback) => {
+        if (formData.useByTimes && !value) {
+          callback(new Error("请输入使用次数"));
+        } else {
+          callback();
+        }
+      }
     }
   ]
 };
