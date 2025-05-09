@@ -31,7 +31,7 @@ export interface BookQuery extends BasePageQuery {
 }
 
 export function getBookByGroupId(groupId: number) {
-  return http.request<ResponseData<BookVo>>(
+  return http.request<ResponseData<Array<BookVo>>>(
     "get",
     `/fortune/book/base/${groupId}/getByGroupId`
   );
