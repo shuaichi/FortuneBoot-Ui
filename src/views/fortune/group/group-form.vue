@@ -6,7 +6,7 @@
     v-model="visible"
     :loading="loading"
     @confirm="handleConfirm"
-    @close="visible = false"
+    @cancel="visible = false"
     @opened="handleOpened"
   >
     <el-form :model="formData" label-width="82px" :rules="rules" ref="formRef">
