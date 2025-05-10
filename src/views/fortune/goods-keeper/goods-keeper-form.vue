@@ -19,6 +19,7 @@
               v-model="formData.bookId"
               placeholder="请选择账本"
               style="width: 100%"
+              @change="handleBookChange"
             >
               <el-option
                 v-for="item in bookOptions"
@@ -102,7 +103,7 @@
             />
           </el-form-item>
         </re-col>
-        <re-col :value="3">
+        <re-col :value="4">
           <el-form-item prop="useByTimes" label="按次使用">
             <el-switch
               v-model="formData.useByTimes"
@@ -114,7 +115,7 @@
             />
           </el-form-item>
         </re-col>
-        <re-col :value="9">
+        <re-col :value="8">
           <el-form-item prop="usageNum" label="使用次数">
             <el-input-number
               v-model="formData.usageNum"
@@ -229,13 +230,7 @@ onMounted(async () => {
   formData.purchaseDate = dayjs(new Date()).format("YYYY-MM-DD");
   const book = await getBookByGroupId(props.groupId);
   bookOptions.value = book.data;
-
-  const [categoryRes, tagRes] = await Promise.all([
-    getEnableCategoryList(props.bookId, 1),
-    getEnableTagList(props.bookId, 1)
-  ]);
-  categoryOptions.value = categoryRes.data;
-  tagOptions.value = tagRes.data;
+  await handleBookChange();
 });
 
 interface Props {
@@ -270,6 +265,15 @@ const categoryTreeProps = {
 };
 
 const formData = reactive<AddGoodsKeeperCommand | ModifyGoodsKeeperCommand>({});
+
+async function handleBookChange() {
+  const [categoryRes, tagRes] = await Promise.all([
+    getEnableCategoryList(formData.bookId, 1),
+    getEnableTagList(formData.bookId, 1)
+  ]);
+  categoryOptions.value = categoryRes.data;
+  tagOptions.value = tagRes.data;
+}
 
 function handleOpened() {
   if (props.row) {

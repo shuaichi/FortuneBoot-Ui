@@ -1,11 +1,13 @@
 // import { usePublicHooks } from "@/views/system/hooks";
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { message } from "@/utils/message";
 import type { PaginationProps } from "@pureadmin/table";
 import { ElMessage } from "element-plus";
 import {
-  getFortuneGroupPage,
+  getFortuneGoodsKeeperPage,
+  getGoodsKeeperStatistics,
   GoodsKeeperQuery,
+  goodsKeeperStatistics,
   GoodsKeeperVo,
   removeGoodsKeeperApi
 } from "@/api/fortune/goods-keeper";
@@ -29,6 +31,8 @@ export function useHook() {
   const opRow = ref<GoodsKeeperVo>();
   const formVisible = ref<boolean>(false);
 
+  const goodsKeeperStatistics = ref<goodsKeeperStatistics>();
+
   onMounted(async () => {
     const [groupRes, defaultGroupRes] = await Promise.all([
       getEnableGroupList(),
@@ -48,10 +52,28 @@ export function useHook() {
     await onSearch();
   });
 
+  const tableTitle = computed(() => {
+    // eslint-disable-next-line no-irregular-whitespace
+    return `归物　|　总资产：${
+      goodsKeeperStatistics.value?.allPrice ?? 0
+      // eslint-disable-next-line no-irregular-whitespace
+    }元　|　总日均资产：${
+      goodsKeeperStatistics.value?.allDailyPrice ?? 0
+      // eslint-disable-next-line no-irregular-whitespace
+    }元　|　在役资产：${
+      goodsKeeperStatistics.value?.activePrice ?? 0
+      // eslint-disable-next-line no-irregular-whitespace
+    }元　|　在役日均资产：${
+      goodsKeeperStatistics.value?.activeDailyPrice ?? 0
+    }元`;
+  });
+
   async function onSearch() {
     loading.value = true;
-    const res = await getFortuneGroupPage(searchForm);
+    const res = await getFortuneGoodsKeeperPage(searchForm);
     dataList.value = res.data.rows;
+    const statistics = await getGoodsKeeperStatistics(searchForm.bookId);
+    goodsKeeperStatistics.value = statistics.data;
     loading.value = false;
   }
 
@@ -201,6 +223,7 @@ export function useHook() {
     formVisible,
     opRow,
     opType,
+    tableTitle,
     onSearch,
     openFormDialog,
     resetForm,

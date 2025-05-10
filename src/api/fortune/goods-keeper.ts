@@ -42,17 +42,31 @@ export interface AddGoodsKeeperCommand {
   remark?: string;
 }
 
+export interface goodsKeeperStatistics {
+  allPrice: number;
+  allDailyPrice: number;
+  activePrice: number;
+  activeDailyPrice: number;
+}
+
 export interface ModifyGoodsKeeperCommand extends AddGoodsKeeperCommand {
   goodsKeeperId?: number;
 }
 
-export function getFortuneGroupPage(params: GoodsKeeperQuery) {
+export function getFortuneGoodsKeeperPage(params: GoodsKeeperQuery) {
   return http.request<ResponseData<PageDTO<GoodsKeeperVo>>>(
     "get",
     "/fortune/goods/keeper/getPage",
     {
       params
     }
+  );
+}
+
+export function getGoodsKeeperStatistics(bookId: number) {
+  return http.request<ResponseData<goodsKeeperStatistics>>(
+    "get",
+    `/fortune/goods/keeper/${bookId}/getGoodsKeeperStatistics`
   );
 }
 
