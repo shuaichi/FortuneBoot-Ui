@@ -48,7 +48,7 @@
         </el-button>
       </el-form-item>
     </el-form>
-    <PureTableBar title="归物" :columns="columns" @refresh="onSearch">
+    <PureTableBar :title="tableTitle" :columns="columns" @refresh="onSearch">
       <template #buttons>
         <el-button
           type="primary"
@@ -123,6 +123,9 @@ import { useHook } from "@/views/fortune/goods-keeper/utils/hook";
 import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
 import GoodsKeeperForm from "@/views/fortune/goods-keeper/goods-keeper-form.vue";
+import { watch } from "vue";
+import { getEnableBookList } from "@/api/fortune/book";
+import { message } from "@/utils/message";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -140,6 +143,7 @@ const {
   formVisible,
   opRow,
   opType,
+  tableTitle,
   onSearch,
   openFormDialog,
   resetForm,
@@ -147,4 +151,25 @@ const {
   handleSizeChange,
   handleRemoveGoodsKeeperApi
 } = useHook();
+
+watch(
+  () => searchForm.groupId,
+  async () => {
+    const bookRes = await getEnableBookList(searchForm.groupId);
+    if (bookRes.data.length === 0) {
+      message("请先启用或创建账本");
+      return;
+    }
+    bookOptions.value = bookRes.data;
+    searchForm.bookId = groupOptions.value.find(
+      group => group.groupId === searchForm.groupId
+    ).defaultBookId;
+  }
+);
+watch(
+  () => searchForm.bookId,
+  async () => {
+    await onSearch();
+  }
+);
 </script>
