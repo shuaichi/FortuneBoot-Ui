@@ -39,7 +39,7 @@
           >
             <el-input
               v-model="formData.goodsName"
-              placeholder="请输入分组名称"
+              placeholder="请输入物品名称"
             />
           </el-form-item>
         </re-col>
@@ -47,7 +47,7 @@
       <el-row :gutter="30">
         <re-col :value="12">
           <el-form-item prop="price" label="价格" required>
-            <el-input v-model="formData.price" placeholder="请输入分组名称" />
+            <el-input v-model="formData.price" placeholder="请输入价格" />
           </el-form-item>
         </re-col>
         <re-col :value="12">
