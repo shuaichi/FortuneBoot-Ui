@@ -1,4 +1,3 @@
-// import { usePublicHooks } from "@/views/system/hooks";
 import { computed, onMounted, reactive, ref } from "vue";
 import { message } from "@/utils/message";
 import type { PaginationProps } from "@pureadmin/table";
@@ -57,13 +56,13 @@ export function useHook() {
     return `归物　|　总资产：${
       goodsKeeperStatistics.value?.allPrice ?? 0
       // eslint-disable-next-line no-irregular-whitespace
-    }元　|　总日均资产：${
+    }元　|　总日均成本：${
       goodsKeeperStatistics.value?.allDailyPrice ?? 0
       // eslint-disable-next-line no-irregular-whitespace
     }元　|　在役资产：${
       goodsKeeperStatistics.value?.activePrice ?? 0
       // eslint-disable-next-line no-irregular-whitespace
-    }元　|　在役日均资产：${
+    }元　|　在役日均成本：${
       goodsKeeperStatistics.value?.activeDailyPrice ?? 0
     }元`;
   });
