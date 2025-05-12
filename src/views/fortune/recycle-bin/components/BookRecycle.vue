@@ -118,6 +118,7 @@ const dataList = ref<Array<BookVo>>();
 const pagination = reactive({
   total: 0,
   pageSize: 10,
+  pageSizes: [10, 20, 50, 100],
   currentPage: 1,
   background: true
 });

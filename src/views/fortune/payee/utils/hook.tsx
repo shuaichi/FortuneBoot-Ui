@@ -27,6 +27,8 @@ export function useHook() {
   const pagination = reactive<PaginationProps>({
     total: 0,
     pageSize: 10,
+    pageSizes: [10, 20, 50, 100],
+    pageSizes: [10, 20, 50, 100],
     currentPage: 1,
     background: true
   });
