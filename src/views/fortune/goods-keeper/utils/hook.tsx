@@ -72,6 +72,7 @@ export function useHook() {
     loading.value = true;
     const res = await getFortuneGoodsKeeperPage(searchForm);
     dataList.value = res.data.rows;
+    pagination.total = res.data.total;
     const statistics = await getGoodsKeeperStatistics(searchForm.bookId);
     goodsKeeperStatistics.value = statistics.data;
     loading.value = false;
@@ -85,6 +86,7 @@ export function useHook() {
   const pagination = reactive<PaginationProps>({
     total: 0,
     pageSize: 10,
+    pageSizes: [10, 20, 50, 100],
     currentPage: 1,
     background: true
   });
