@@ -34,7 +34,7 @@
 
 - [valarchie](https://github.com/valarchie)
 
-#### moneynote 维护着
+#### moneynote 维护者
 
 - [getmonetnote](https://github.com/getmoneynote)
 
@@ -121,8 +121,8 @@ npm config set registry https://registry.npmmirror.com
 
 演示地址：
 
-- <http://fortuneboot.com>
-- <http://fortuneboot.cn>
+- <https://fortuneboot.com>
+- <https://www.fortuneboot.com>
   > 管理员账密：admin/admin123  
   > 不定期清理数据，请勿存储真实数据。
 
