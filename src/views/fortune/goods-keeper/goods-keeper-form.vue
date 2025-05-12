@@ -47,7 +47,12 @@
       <el-row :gutter="30">
         <re-col :value="12">
           <el-form-item prop="price" label="价格" required>
-            <el-input v-model="formData.price" placeholder="请输入价格" />
+            <el-input-number
+              v-model="formData.price"
+              :precision="2"
+              :controls="false"
+              style="width: 100%"
+            />
           </el-form-item>
         </re-col>
         <re-col :value="12">
