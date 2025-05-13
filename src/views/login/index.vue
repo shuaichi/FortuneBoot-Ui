@@ -153,8 +153,7 @@ onMounted(async () => {
   const version = await getApiVersion();
   apiVersion.value = version.data;
   const icpRes = await getICP();
-  icp.value = icpRes.data;
-  console.log(icpRes.data);
+  icp.value = icpRes.data ? icpRes.data : "暂未配置ICP备案信息";
 });
 
 onBeforeUnmount(() => {
@@ -342,7 +341,7 @@ onBeforeUnmount(() => {
             type="primary"
             >{{ icp }}
           </el-link>
-          | version： 1.1.1 | api-version： {{ apiVersion }}
+          | version： 1.1.2 | api-version： {{ apiVersion }}
         </span>
       </div>
     </div>
