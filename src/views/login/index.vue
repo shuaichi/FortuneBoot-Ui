@@ -41,7 +41,7 @@ import Lock from "@iconify-icons/ri/lock-fill";
 import User from "@iconify-icons/ri/user-3-fill";
 import * as CommonAPI from "@/api/common/login";
 import { useUserStoreHook } from "@/store/modules/user";
-import { getApiVersion } from "@/api/common/login";
+import { getApiVersion, getICP } from "@/api/common/login";
 
 defineOptions({
   name: "Login"
@@ -59,6 +59,7 @@ const ruleFormRef = ref<FormInstance>();
 // 判断登录页面显示哪个组件（0：登录（默认）、1：手机登录、2：二维码登录、3：注册、4：忘记密码）
 const currentPage = ref(0);
 const apiVersion = ref<string>(null);
+const icp = ref<string>(null);
 
 const { initStorage } = useLayout();
 initStorage();
@@ -151,6 +152,9 @@ onMounted(async () => {
   window.document.addEventListener("keypress", onkeypress);
   const version = await getApiVersion();
   apiVersion.value = version.data;
+  const icpRes = await getICP();
+  icp.value = icpRes.data;
+  console.log(icpRes.data);
 });
 
 onBeforeUnmount(() => {
@@ -336,7 +340,7 @@ onBeforeUnmount(() => {
             rel="external nofollow"
             target="_blank"
             type="primary"
-            >京ICP备2024074449号-1
+            >{{ icp }}
           </el-link>
           | version： 1.1.1 | api-version： {{ apiVersion }}
         </span>
