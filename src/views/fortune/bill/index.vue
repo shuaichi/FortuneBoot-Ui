@@ -238,10 +238,20 @@
           @page-current-change="handleCurrentChange"
         >
           <template #operation="{ row }">
-            <el-button link type="success" @click="openDialog('add', row)">
+            <el-button
+              link
+              type="success"
+              @click="openDialog('add', row)"
+              :disabled="row.billType === 4"
+            >
               复制
             </el-button>
-            <el-button link type="primary" @click="openDialog('edit', row)">
+            <el-button
+              link
+              type="primary"
+              @click="openDialog('edit', row)"
+              :disabled="row.billType === 4"
+            >
               编辑
             </el-button>
             <el-popconfirm
