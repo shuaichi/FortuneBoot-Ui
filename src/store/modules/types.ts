@@ -40,7 +40,9 @@ export type userType = {
   username?: string;
   roles?: Array<string>;
   /** 字典ListMap 用于下拉框直接展示 */
-  dictionaryList: Map<String, Array<DictionaryData>>;
+  dictionaryList: Record<string, Array<DictionaryData>>;
   /** 字典MapMap 用于匹配值展示 */
   dictionaryMap: Record<string, Record<string, DictionaryData>>;
+  /** 当前用户信息 */
+  currentUserInfo?: any;
 };

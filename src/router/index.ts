@@ -109,7 +109,11 @@ router.beforeEach((to: ToRouteType, _from, next) => {
       handleAliveRoute(to);
     }
   }
-  const userInfo = storageSession().getItem<TokenDTO>(sessionKey)?.currentUser;
+  // 从sessionStorage或localStorage中获取用户信息
+  let userInfo = storageSession().getItem<TokenDTO>(sessionKey)?.currentUser;
+  if (!userInfo && localStorage.getItem(sessionKey)) {
+    userInfo = JSON.parse(localStorage.getItem(sessionKey))?.currentUser;
+  }
   NProgress.start();
   const externalLink = isUrl(to?.name as string);
   if (!externalLink) {

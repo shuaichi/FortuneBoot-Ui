@@ -26,11 +26,16 @@ export const isRememberMeKey = "ag-is-remember-me";
 export const passwordKey = "ag-password";
 
 /** 获取`token` */
-export function getToken(): TokenDTO {
+export function getToken(): TokenDTO | null {
   // 此处与`TokenKey`相同，此写法解决初始化时`Cookies`中不存在`TokenKey`报错
-  return Cookies.get(tokenKey)
-    ? JSON.parse(Cookies.get(tokenKey))
-    : storageSession().getItem<TokenDTO>(sessionKey)?.token;
+  if (Cookies.get(tokenKey)) {
+    return JSON.parse(Cookies.get(tokenKey));
+  } else if (storageSession().getItem<TokenDTO>(sessionKey)) {
+    return storageSession().getItem<TokenDTO>(sessionKey);
+  } else if (localStorage.getItem(sessionKey)) {
+    return JSON.parse(localStorage.getItem(sessionKey));
+  }
+  return null;
 }
 
 /**
@@ -43,12 +48,15 @@ export function setTokenFromBackend(data: TokenDTO): void {
   useUserStoreHook().SET_USERNAME(data.currentUser.userInfo.username);
   useUserStoreHook().SET_ROLES([data.currentUser.roleKey]);
   storageSession().setItem(sessionKey, data);
+  // 同时将用户信息存储在localStorage中，以便在不同标签页之间共享
+  localStorage.setItem(sessionKey, JSON.stringify(data));
 }
 
-/** 删除`token`以及key值为`user-info`的session信息 */
+/** 删除`token`以及key值为`user-info`的session信息和localStorage信息 */
 export function removeToken() {
   Cookies.remove(tokenKey);
   sessionStorage.clear();
+  localStorage.removeItem(sessionKey);
 }
 
 /** 将密码加密后 存入cookies中 */
