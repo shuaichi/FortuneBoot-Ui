@@ -50,6 +50,7 @@ import { useRoute } from "vue-router";
 import BillForm from "@/views/fortune/bill/bill-form.vue";
 import { getDefaultGroupId, getGroupByIdApi } from "@/api/fortune/group";
 import { message } from "@/utils/message";
+import { emitter } from "@/utils/mitt";
 
 // 判断是否为登录/注册页
 const route = useRoute();
@@ -161,7 +162,8 @@ async function openAddBillDialog() {
 
 function onAddBillSuccess() {
   addBillDialogVisible.value = false;
-  // 可选：刷新账单列表等
+  // 发出账单创建成功事件，通知账单列表页面刷新
+  emitter.emit("billCreated");
 }
 
 // 默认groupId/bookId
