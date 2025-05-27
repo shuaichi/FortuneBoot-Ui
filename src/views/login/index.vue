@@ -32,7 +32,10 @@ import {
   removePassword,
   saveIsRememberMe,
   savePassword,
-  setTokenFromBackend
+  setTokenFromBackend,
+  saveUsername,
+  getUsername,
+  removeUsername
 } from "@/utils/auth";
 
 import dayIcon from "@/assets/svg/day.svg?component";
@@ -69,7 +72,7 @@ dataThemeChange();
 const { title } = useNav();
 
 const ruleForm = reactive({
-  username: "",
+  username: getUsername(),
   password: getPassword(),
   captchaCode: "",
   captchaCodeKey: ""
@@ -97,6 +100,7 @@ const onLogin = async (formEl: FormInstance | undefined) => {
           });
           if (isRememberMe.value) {
             savePassword(ruleForm.password);
+            saveUsername(ruleForm.username);
           }
         })
         .catch(() => {
@@ -131,6 +135,7 @@ watch(isRememberMe, newVal => {
   saveIsRememberMe(newVal);
   if (newVal === false) {
     removePassword();
+    removeUsername();
   }
 });
 
@@ -145,6 +150,7 @@ onBeforeMount(async () => {
   isRememberMe.value = getIsRememberMe();
   if (isRememberMe.value) {
     ruleForm.password = getPassword();
+    ruleForm.username = getUsername();
   }
 });
 
