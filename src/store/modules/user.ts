@@ -14,26 +14,29 @@ const dictionaryMapKey = "ag-dictionary-map";
 
 export const useUserStore = defineStore({
   id: "ag-user",
-  state: (): userType => ({
-    // 用户名
-    username:
-      storageSession().getItem<TokenDTO>(sessionKey)?.currentUser.userInfo
-        .username ?? "",
-    // 页面级别权限
-    roles: storageSession().getItem<TokenDTO>(sessionKey)?.currentUser.roleKey
-      ? [storageSession().getItem<TokenDTO>(sessionKey)?.currentUser.roleKey]
-      : [],
-    dictionaryList:
-      storageLocal().getItem<Map<String, Array<DictionaryData>>>(
-        dictionaryListKey
-      ) ?? new Map(),
-    dictionaryMap:
-      storageLocal().getItem<Map<String, Map<String, DictionaryData>>>(
-        dictionaryMapKey
-      ) ?? new Map(),
-    currentUserInfo:
-      storageSession().getItem<TokenDTO>(sessionKey)?.currentUser.userInfo ?? {}
-  }),
+  state: (): userType => {
+    // 尝试从sessionStorage或localStorage中获取用户信息
+    let userInfo = storageSession().getItem<TokenDTO>(sessionKey)?.currentUser;
+    if (!userInfo && localStorage.getItem(sessionKey)) {
+      userInfo = JSON.parse(localStorage.getItem(sessionKey))?.currentUser;
+    }
+
+    return {
+      // 用户名
+      username: userInfo?.userInfo.username ?? "",
+      // 页面级别权限
+      roles: userInfo?.roleKey ? [userInfo.roleKey] : [],
+      dictionaryList:
+        storageLocal().getItem<Record<string, Array<DictionaryData>>>(
+          dictionaryListKey
+        ) ?? {},
+      dictionaryMap:
+        storageLocal().getItem<Record<string, Record<string, DictionaryData>>>(
+          dictionaryMapKey
+        ) ?? {},
+      currentUserInfo: userInfo?.userInfo ?? {}
+    };
+  },
   actions: {
     /** 存储用户名 */
     SET_USERNAME(username: string) {
@@ -45,29 +48,46 @@ export const useUserStore = defineStore({
       this.roles = roles;
     },
     /** 存储系统内的字典值 并拆分为Map形式和List形式 */
-    SET_DICTIONARY(dictionary: Map<String, Array<DictionaryData>>) {
+    SET_DICTIONARY(
+      dictionary:
+        | Map<String, Array<DictionaryData>>
+        | Record<string, Array<DictionaryData>>
+    ) {
       /** 由于localStorage不能存储Map对象,所以用Obj来装载数据 */
-      const dictionaryMapTmp = {};
+      const dictionaryMapTmp: Record<
+        string,
+        Record<string, DictionaryData>
+      > = {};
+      const dictionaryObj: Record<string, Array<DictionaryData>> = {};
 
-      for (const obj in dictionary) {
-        dictionaryMapTmp[obj] = dictionary[obj].reduce((map, dict) => {
+      // 将Map转换为Record对象
+      if (dictionary instanceof Map) {
+        dictionary.forEach((value, key) => {
+          dictionaryObj[key as string] = value;
+        });
+      } else {
+        Object.assign(dictionaryObj, dictionary);
+      }
+
+      for (const obj in dictionaryObj) {
+        dictionaryMapTmp[obj] = dictionaryObj[obj].reduce((map, dict) => {
           map[dict.value] = dict;
           return map;
-        }, {});
+        }, {} as Record<string, DictionaryData>);
       }
 
       /** 将字典分成List形式和Map形式 List便于下拉框展示 Map便于匹配值 */
-      this.dictionaryList = dictionary;
+      this.dictionaryList = dictionaryObj;
       this.dictionaryMap = dictionaryMapTmp;
 
-      storageLocal().setItem<Map<String, Array<DictionaryData>>>(
+      storageLocal().setItem<Record<string, Array<DictionaryData>>>(
         dictionaryListKey,
-        dictionary
+        dictionaryObj
       );
 
-      storageLocal().setItem<Map<String, Map<String, DictionaryData>>>(
+      storageLocal().setItem<Record<string, Record<string, DictionaryData>>>(
         dictionaryMapKey,
-        dictionaryMapTmp as Map<String, Map<String, DictionaryData>>
+        dictionaryMapTmp
       );
     },
 
