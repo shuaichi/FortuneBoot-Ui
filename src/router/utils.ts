@@ -83,10 +83,15 @@ function isOneOfArray(a: Array<string>, b: Array<string>) {
     : true;
 }
 
-/** 从sessionStorage里取出当前登陆用户的角色roles，过滤无权限的菜单 */
+/** 从sessionStorage或localStorage里取出当前登陆用户的角色roles，过滤无权限的菜单 */
 function filterNoPermissionTree(data: RouteComponent[]) {
-  const roleKey =
-    storageSession().getItem<TokenDTO>(sessionKey).currentUser.roleKey;
+  // 尝试从sessionStorage或localStorage中获取用户信息
+  let userInfo = storageSession().getItem<TokenDTO>(sessionKey)?.currentUser;
+  if (!userInfo && localStorage.getItem(sessionKey)) {
+    userInfo = JSON.parse(localStorage.getItem(sessionKey))?.currentUser;
+  }
+
+  const roleKey = userInfo?.roleKey;
   const currentRoles = roleKey ? [roleKey] : [];
   const newTree = cloneDeep(data).filter((v: any) =>
     isOneOfArray(v.meta?.roles, currentRoles)
@@ -203,9 +208,14 @@ function handleAsyncRoutes(routeList) {
 /** 初始化路由（`new Promise` 写法防止在异步请求中造成无限循环）*/
 function initRouter() {
   if (getConfig()?.CachingAsyncRoutes) {
-    // 开启动态路由缓存本地sessionStorage
+    // 开启动态路由缓存本地sessionStorage和localStorage
     const key = "async-routes";
-    const asyncRouteList = storageSession().getItem(key) as any;
+    // 尝试从sessionStorage或localStorage中获取路由信息
+    let asyncRouteList = storageSession().getItem(key) as any;
+    if (!asyncRouteList && localStorage.getItem(key)) {
+      asyncRouteList = JSON.parse(localStorage.getItem(key));
+    }
+
     if (asyncRouteList && asyncRouteList?.length > 0) {
       return new Promise(resolve => {
         handleAsyncRoutes(asyncRouteList);
@@ -216,6 +226,8 @@ function initRouter() {
         getAsyncRoutes().then(({ data }) => {
           handleAsyncRoutes(cloneDeep(data));
           storageSession().setItem(key, data);
+          // 同时将路由信息存储在localStorage中，以便在不同标签页之间共享
+          localStorage.setItem(key, JSON.stringify(data));
           resolve(router);
         });
       });
