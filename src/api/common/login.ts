@@ -99,6 +99,10 @@ export const getApiVersion = () => {
   return http.request<ResponseData<string>>("get", "/getApiVersion");
 };
 
+export const getICP = () => {
+  return http.request<ResponseData<string>>("get", "/getIcp");
+};
+
 /** 获取系统配置接口 */
 export const getConfig = () => {
   return http.request<ResponseData<ConfigDTO>>("get", "/getConfig");

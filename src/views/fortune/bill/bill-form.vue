@@ -661,6 +661,8 @@ async function handleConfirm() {
     // 清理非转账类型的字段
     if (formData.billType !== 3) {
       formData.toAccountId = null;
+    } else {
+      formData.categoryAmountPair = [];
     }
     const formDataObj = new FormData();
     formDataObj.append(
