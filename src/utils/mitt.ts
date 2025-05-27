@@ -8,6 +8,7 @@ type Events = {
   tagViewsShowModel: string;
   logoChange: boolean;
   changLayoutRoute: string;
+  billCreated: void; // 添加账单创建成功事件
 };
 
 export const emitter: Emitter<Events> = mitt<Events>();

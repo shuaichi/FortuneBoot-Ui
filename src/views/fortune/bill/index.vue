@@ -271,6 +271,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, onBeforeUnmount, watch } from "vue";
+import { emitter } from "@/utils/mitt";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import { PureTableBar } from "@/components/RePureTableBar";
@@ -362,12 +363,17 @@ onMounted(async () => {
   await onSearch();
   // 初始化搜索表单下拉框
   await initSearchSelect();
+
+  // 监听账单创建成功事件，刷新账单列表
+  emitter.on("billCreated", onSearch);
 });
 const onResize = () => {
   width.value = window.innerWidth;
 };
 onBeforeUnmount(() => {
   window.removeEventListener("resize", onResize);
+  // 移除事件监听
+  emitter.off("billCreated", onSearch);
 });
 // 计算默认展示条数
 const defaultCount = computed(() => {
