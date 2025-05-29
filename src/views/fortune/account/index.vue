@@ -4,7 +4,7 @@
       <el-radio-group
         v-model="searchForm.accountType"
         size="large"
-        class="full-width-group"
+        class="fortune-full-width-group"
         @change="onSearch(barRef)"
       >
         <el-radio-button :label="1" class="quarter-width"
@@ -356,7 +356,3 @@ function isVisible(idx: number) {
   return idx < visibleCount.value;
 }
 </script>
-
-<style scoped>
-/* 页面特有样式可以在这里添加 */
-</style>
