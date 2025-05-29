@@ -9,7 +9,7 @@
       ref="formRef"
       :inline="true"
       :model="searchForm"
-      class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] grid-form"
+      class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] fortune-grid-form"
     >
       <el-form-item label="名称：" prop="tagName" v-show="isVisible(0)">
         <el-input
@@ -74,7 +74,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item class="search-buttons">
+      <el-form-item class="fortune-search-buttons">
         <el-button
           type="primary"
           :icon="useRenderIcon(Search)"
@@ -133,7 +133,7 @@
               编辑
             </el-button>
             <el-popconfirm
-              :title="`确认将【${row.payeeName}】移入回收站？`"
+              :title="`确认将【${row.tagName}】移入回收站？`"
               @confirm="handleMove2RecycleBin(row)"
             >
               <template #reference>
@@ -154,6 +154,7 @@
     />
   </div>
 </template>
+
 <script setup lang="ts">
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import Search from "@iconify-icons/ep/search";
@@ -265,86 +266,5 @@ function openDialog(type: "add" | "edit", row?: TagVo) {
 </script>
 
 <style scoped>
-@media (width > 1920px) {
-  .grid-form {
-    grid-template-columns: repeat(5, 1fr);
-  }
-}
-
-/* 分辨率 <= 1920px 时四列 */
-@media (width <= 1920px) {
-  .grid-form {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-/* 分辨率 <= 768px 时三列 */
-@media (width <= 1280px) {
-  .grid-form {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.grid-form {
-  display: grid;
-  padding-bottom: 16px;
-}
-
-/* 统一标签宽度和对齐方式 */
-.grid-form :deep(.el-form-item__label) {
-  width: 80px;
-  height: 40px;
-  padding-right: 8px;
-  line-height: 40px;
-  text-align: right;
-}
-
-/* 统一表单项内容区域样式 */
-.grid-form :deep(.el-form-item__content) {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: flex-start;
-  height: 40px;
-}
-
-/* 统一所有输入控件的宽度 */
-.grid-form :deep(.el-select),
-.grid-form :deep(.el-input),
-.grid-form :deep(.el-date-editor),
-.grid-form :deep(.el-tree-select),
-.grid-form :deep(.el-input-number) {
-  width: 100%;
-  height: 32px;
-}
-
-/* 确保日期选择器的宽度正确 */
-.grid-form :deep(.el-date-editor.el-input__wrapper) {
-  width: 100% !important;
-}
-
-/* 按钮容器样式 */
-.search-buttons {
-  display: flex;
-  grid-column: span 1 / -1;
-  align-items: center;
-  justify-content: flex-end;
-  justify-self: end;
-  height: 40px;
-  margin-right: 30px;
-}
-
-/* 确保按钮垂直居中 */
-.search-buttons :deep(.el-button) {
-  height: 32px;
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-/* 修复可能的对齐问题 */
-.grid-form :deep(.el-input__wrapper),
-.grid-form :deep(.el-select__wrapper) {
-  height: 32px;
-  line-height: 32px;
-}
+/* 页面特有样式可以在这里添加 */
 </style>
