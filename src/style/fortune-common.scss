@@ -114,3 +114,20 @@
     margin: 0 5px;
   }
 }
+
+/* 深度选择器覆盖 element 样式 */
+.fortune-full-width-group {
+  display: flex;
+  width: 100%;
+
+  .quarter-width {
+    flex: 1; /* 等分剩余空间 */
+
+    /* 调整内部按钮宽度 */
+    .el-radio-button__inner {
+      display: block;
+      width: 100%;
+      text-align: center;
+    }
+  }
+}
