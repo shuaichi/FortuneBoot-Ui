@@ -4,7 +4,7 @@
       ref="formRef"
       :inline="true"
       :model="searchForm"
-      class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] grid-form"
+      class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] fortune-grid-form"
     >
       <el-form-item label="所属分组：" prop="groupId">
         <el-select
@@ -34,7 +34,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item class="search-buttons">
+      <el-form-item class="fortune-search-buttons">
         <el-button
           type="primary"
           :icon="useRenderIcon(Search)"
@@ -173,3 +173,7 @@ watch(
   }
 );
 </script>
+
+<style scoped>
+/* 页面特有样式可以在这里添加 */
+</style>
