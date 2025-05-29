@@ -3,7 +3,8 @@
 /* 搜索表单网格布局 */
 .fortune-grid-form {
   display: grid;
-  padding-bottom: 16px;
+  gap: 8px 16px; /* 添加网格间隙 */
+  padding-bottom: 12px;
 
   /* 响应式网格列数 */
   @media (width > 1920px) {
@@ -18,44 +19,49 @@
     grid-template-columns: repeat(3, 1fr);
   }
 
-  /* 统一标签宽度和对齐方式 */
-  :deep(.el-form-item__label) {
-    width: 80px;
-    height: 40px;
-    padding-right: 8px;
-    line-height: 40px;
-    text-align: right;
-  }
-
-  /* 统一表单项内容区域样式 */
-  :deep(.el-form-item__content) {
+  /* 表单项统一样式 */
+  .el-form-item {
     display: flex;
-    flex: 1;
-    align-items: center;
-    justify-content: flex-start;
-    height: 40px;
+    margin-bottom: 0;
+
+    /* 统一标签宽度和对齐方式 */
+    &__label {
+      flex: none;
+      width: 80px;
+      height: 40px;
+      padding-right: 8px;
+      line-height: 40px;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    /* 统一表单项内容区域样式 */
+    &__content {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      min-width: 0;
+      height: 40px;
+    }
   }
 
-  /* 统一所有输入控件的宽度 */
-  :deep(.el-select),
-  :deep(.el-input),
-  :deep(.el-date-editor),
-  :deep(.el-tree-select),
-  :deep(.el-input-number) {
+  /* 统一所有输入控件的宽度和高度 */
+  .el-select,
+  .el-input,
+  .el-date-editor,
+  .el-tree-select,
+  .el-input-number {
     width: 100%;
-    height: 32px;
+    height: 32px !important;
+
+    .el-input__wrapper {
+      height: 100% !important;
+    }
   }
 
   /* 确保日期选择器的宽度正确 */
-  :deep(.el-date-editor.el-input__wrapper) {
+  .el-date-editor {
     width: 100% !important;
-  }
-
-  /* 修复可能的对齐问题 */
-  :deep(.el-input__wrapper),
-  :deep(.el-select__wrapper) {
-    height: 32px;
-    line-height: 32px;
   }
 }
 
@@ -69,8 +75,18 @@
   height: 40px;
   margin-right: 30px;
 
+  /* 小屏幕优化 */
+  @media (width <= 768px) {
+    justify-content: flex-start;
+    margin-right: 0;
+
+    .el-button {
+      margin-top: 8px;
+    }
+  }
+
   /* 确保按钮垂直居中 */
-  :deep(.el-button) {
+  .el-button {
     height: 32px;
     margin-top: 0;
     margin-bottom: 0;
@@ -87,69 +103,14 @@
   .amount-input {
     flex: 1;
     width: calc(50% - 10px) !important;
+
+    .el-input__wrapper {
+      height: 100% !important;
+    }
   }
 
   .range-separator {
     flex: none;
     margin: 0 5px;
-  }
-}
-
-/* 全宽度单选按钮组样式 */
-.fortune-full-width-container {
-  margin-bottom: 16px;
-
-  :deep(.full-width-group) {
-    display: flex;
-    width: 100%;
-  }
-
-  :deep(.quarter-width) {
-    flex: 1;
-
-    .el-radio-button__inner {
-      display: block;
-      width: 100%;
-      text-align: center;
-    }
-  }
-
-  :deep(.half-width) {
-    flex: 1;
-
-    .el-radio-button__inner {
-      display: block;
-      width: 100%;
-      text-align: center;
-    }
-  }
-}
-
-/* 表格通用样式 */
-.fortune-table {
-  :deep(.pure-table) {
-    .reset-margin {
-      margin: 0;
-    }
-  }
-}
-
-/* 主容器样式 */
-.fortune-main {
-  .main {
-    padding: 0;
-  }
-}
-
-/* 页面头部样式 */
-.fortune-page-header {
-  margin-bottom: 16px;
-
-  .text-large {
-    font-size: 18px;
-  }
-
-  .font-600 {
-    font-weight: 600;
   }
 }
