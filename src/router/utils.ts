@@ -22,13 +22,12 @@ import { buildHierarchyTree } from "@/utils/tree";
 import { sessionKey } from "@/utils/auth";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { usePermissionStoreHook } from "@/store/modules/permission";
-
 const IFrame = () => import("@/layout/frameView.vue");
 // https://cn.vitejs.dev/guide/features.html#glob-import
 const modulesRoutes = import.meta.glob("/src/views/**/*.{vue,tsx}");
 
 // 动态路由
-import { getAsyncRoutes } from "@/api/common/login";
+import { getAsyncRoutes, RouteItem } from "@/api/common/login";
 import { TokenDTO } from "@/api/common/login";
 
 function handRank(routeInfo: any) {
@@ -83,15 +82,10 @@ function isOneOfArray(a: Array<string>, b: Array<string>) {
     : true;
 }
 
-/** 从sessionStorage或localStorage里取出当前登陆用户的角色roles，过滤无权限的菜单 */
+/** 从sessionStorage里取出当前登陆用户的角色roles，过滤无权限的菜单 */
 function filterNoPermissionTree(data: RouteComponent[]) {
-  // 尝试从sessionStorage或localStorage中获取用户信息
-  let userInfo = storageSession().getItem<TokenDTO>(sessionKey)?.currentUser;
-  if (!userInfo && localStorage.getItem(sessionKey)) {
-    userInfo = JSON.parse(localStorage.getItem(sessionKey))?.currentUser;
-  }
-
-  const roleKey = userInfo?.roleKey;
+  const roleKey =
+    storageSession().getItem<TokenDTO>(sessionKey).currentUser.roleKey;
   const currentRoles = roleKey ? [roleKey] : [];
   const newTree = cloneDeep(data).filter((v: any) =>
     isOneOfArray(v.meta?.roles, currentRoles)
@@ -158,64 +152,41 @@ function addPathMatch() {
 }
 
 /** 处理动态路由（后端返回的路由） */
-function handleAsyncRoutes(routeList) {
-  if (routeList.length === 0) {
-    usePermissionStoreHook().handleWholeMenus(routeList);
-  } else {
-    // 处理所有顶层路由，直接挂到 layout 的 children 下
-    const topLevelIframes = routeList.filter(
-      (v: any) => v.meta?.frameSrc && (!v.parentId || v.parentId === 0)
-    );
-    if (topLevelIframes.length > 0) {
-      topLevelIframes.forEach((v: any) => {
-        // 防止重复添加
-        if (
-          !router.options.routes[0].children.some(
-            child => child.path === v.path
-          )
-        ) {
-          router.options.routes[0].children.push(v);
-        }
-      });
-    }
-    formatFlatteningRoutes(addAsyncRoutes(routeList)).map(
-      (v: RouteRecordRaw) => {
-        // 防止重复添加路由
-        if (
-          router.options.routes[0].children.findIndex(
-            value => value.path === v.path
-          ) !== -1
-        ) {
-          return;
-        } else {
-          // 切记将路由push到routes后还需要使用addRoute，这样路由才能正常跳转
-          router.options.routes[0].children.push(v);
-          // 最终路由进行升序
-          ascending(router.options.routes[0].children);
-          if (!router.hasRoute(v?.name)) router.addRoute(v);
-          const flattenRouters: any = router
-            .getRoutes()
-            .find(n => n.path === "/");
-          router.addRoute(flattenRouters);
-        }
+function handleAsyncRoutes(routeList: RouteItem[]) {
+  if (routeList.length) {
+    const normalizedRoutes = normalizeBackendRoutes(routeList);
+    const flattenedRoutes = formatFlatteningRoutes(normalizedRoutes);
+
+    flattenedRoutes.forEach((v: RouteRecordRaw) => {
+      // 防止重复添加路由
+      if (
+        router.options.routes[0].children.findIndex(
+          value => value.path === v.path
+        ) !== -1
+      ) {
+        return;
       }
-    );
-    usePermissionStoreHook().handleWholeMenus(routeList);
+
+      // 切记将路由push到routes后还需要使用addRoute，这样路由才能正常跳转
+      router.options.routes[0].children.push(v);
+      // 最终路由进行升序
+      ascending(router.options.routes[0].children);
+      if (!router.hasRoute(v?.name)) router.addRoute(v);
+      const flattenRouters: any = router.getRoutes().find(n => n.path === "/");
+      router.addRoute(flattenRouters);
+    });
   }
+
+  usePermissionStoreHook().handleWholeMenus(routeList);
   addPathMatch();
 }
 
 /** 初始化路由（`new Promise` 写法防止在异步请求中造成无限循环）*/
 function initRouter() {
   if (getConfig()?.CachingAsyncRoutes) {
-    // 开启动态路由缓存本地sessionStorage和localStorage
+    // 开启动态路由缓存本地sessionStorage
     const key = "async-routes";
-    // 尝试从sessionStorage或localStorage中获取路由信息
-    let asyncRouteList = storageSession().getItem(key) as any;
-    if (!asyncRouteList && localStorage.getItem(key)) {
-      asyncRouteList = JSON.parse(localStorage.getItem(key));
-    }
-
+    const asyncRouteList = storageSession().getItem(key) as any;
     if (asyncRouteList && asyncRouteList?.length > 0) {
       return new Promise(resolve => {
         handleAsyncRoutes(asyncRouteList);
@@ -226,8 +197,6 @@ function initRouter() {
         getAsyncRoutes().then(({ data }) => {
           handleAsyncRoutes(cloneDeep(data));
           storageSession().setItem(key, data);
-          // 同时将路由信息存储在localStorage中，以便在不同标签页之间共享
-          localStorage.setItem(key, JSON.stringify(data));
           resolve(router);
         });
       });
@@ -247,7 +216,7 @@ function initRouter() {
  * @param routesList 传入路由
  * @returns 返回处理后的一维路由
  */
-function formatFlatteningRoutes(routesList: RouteRecordRaw[]) {
+function formatFlatteningRoutes(routesList: RouteItem[]) {
   if (routesList.length === 0) return routesList;
   let hierarchyList = buildHierarchyTree(routesList);
   for (let i = 0; i < hierarchyList.length; i++) {
@@ -322,12 +291,15 @@ function handleAliveRoute({ name }: ToRouteType, mode?: string) {
 }
 
 /** 过滤后端传来的动态路由 重新生成规范路由 */
-function addAsyncRoutes(arrRoutes: Array<RouteRecordRaw>) {
-  if (!arrRoutes || !arrRoutes.length) return;
+function normalizeBackendRoutes(backendRoutes: Array<RouteItem>) {
+  if (!backendRoutes || !backendRoutes.length) return;
+
   const modulesRoutesKeys = Object.keys(modulesRoutes);
-  arrRoutes.forEach((v: RouteRecordRaw) => {
-    // 将backstage属性加入meta，标识此路由为后端返回路由
+
+  backendRoutes.forEach(v => {
+    // 标识此路由为后端返回路由
     v.meta.backstage = true;
+
     // 父级的redirect属性取值：如果子级存在且父级的redirect属性不存在，默认取第一个子级的path；如果子级存在且父级的redirect属性存在，取存在的redirect属性，会覆盖默认值
     if (v?.children && v.children.length && !v.redirect)
       v.redirect = v.children[0].path;
@@ -345,14 +317,15 @@ function addAsyncRoutes(arrRoutes: Array<RouteRecordRaw>) {
       v.component = modulesRoutes[modulesRoutesKeys[index]];
     }
     if (v?.children && v.children.length) {
-      addAsyncRoutes(v.children);
+      normalizeBackendRoutes(v.children);
     }
   });
-  return arrRoutes;
+
+  return backendRoutes;
 }
 
 /** 获取路由历史模式 https://next.router.vuejs.org/zh/guide/essentials/history-mode.html */
-function getHistoryMode(routerHistory): RouterHistory {
+function getHistoryMode(routerHistory: string): RouterHistory {
   // len为1 代表只有历史模式 为2 代表历史模式中存在base参数 https://next.router.vuejs.org/zh/api/#%E5%8F%82%E6%95%B0-1
   const historyMode = routerHistory.split(",");
   const leftMode = historyMode[0];
@@ -408,7 +381,7 @@ export {
   addPathMatch,
   isOneOfArray,
   getHistoryMode,
-  addAsyncRoutes,
+  normalizeBackendRoutes,
   getParentPaths,
   findRouteByPath,
   handleAliveRoute,
