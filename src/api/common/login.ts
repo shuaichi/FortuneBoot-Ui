@@ -195,3 +195,10 @@ export const getAsyncRoutes = async () => {
 export const getRsaPublicKey = () => {
   return http.request<ResponseData<string>>("get", "/getRsaPublicKey");
 };
+export const getApiVersion = () => {
+  return http.request<ResponseData<string>>("get", "/getApiVersion");
+};
+
+export const getICP = () => {
+  return http.request<ResponseData<string>>("get", "/getIcp");
+};
