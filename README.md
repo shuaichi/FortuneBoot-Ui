@@ -61,9 +61,12 @@
 
 ### 开发环境
 
-node 版本应不小于 16 ，pnpm 版本应不小于 6  
-版本请勿过新，有先选择 node=16, pnpm=7.30.5  
-如果您还没安装 pnpm，请执行下面命令进行安装（mac 用户遇到安装报错请在命令前加上 sudo） 如果是 windows 用户 用使用管理员 power shell 来执行
+Node.js 版本要求：16.0+
+pnpm 版本要求：6.0+
+
+优先选择 node=16, pnpm=7.30.5 的环境.
+
+如果您还没安装 pnpm，请执行下面命令进行安装（mac 用户遇到安装报错请在命令前加上 sudo） 如果是 windows 用户，使用 power shell 管理员权限执行
 
 ```
 npm install -g pnpm
@@ -78,7 +81,7 @@ pnpm install
 启动平台
 
 ```
-pnpm dev
+pnpm run dev
 ```
 
 不管是什么源，我们都可以不用管，直接执行下面命令即可
