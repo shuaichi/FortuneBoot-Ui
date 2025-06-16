@@ -22,6 +22,7 @@ import { buildHierarchyTree } from "@/utils/tree";
 import { sessionKey } from "@/utils/auth";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { usePermissionStoreHook } from "@/store/modules/permission";
+
 const IFrame = () => import("@/layout/frameView.vue");
 // https://cn.vitejs.dev/guide/features.html#glob-import
 const modulesRoutes = import.meta.glob("/src/views/**/*.{vue,tsx}");
@@ -82,10 +83,15 @@ function isOneOfArray(a: Array<string>, b: Array<string>) {
     : true;
 }
 
-/** 从sessionStorage里取出当前登陆用户的角色roles，过滤无权限的菜单 */
+/** 从sessionStorage或localStorage里取出当前登陆用户的角色roles，过滤无权限的菜单 */
 function filterNoPermissionTree(data: RouteComponent[]) {
-  const roleKey =
-    storageSession().getItem<TokenDTO>(sessionKey).currentUser.roleKey;
+  // 尝试从sessionStorage或localStorage中获取用户信息
+  let userInfo = storageSession().getItem<TokenDTO>(sessionKey)?.currentUser;
+  if (!userInfo && localStorage.getItem(sessionKey)) {
+    userInfo = JSON.parse(localStorage.getItem(sessionKey))?.currentUser;
+  }
+
+  const roleKey = userInfo?.roleKey;
   const currentRoles = roleKey ? [roleKey] : [];
   const newTree = cloneDeep(data).filter((v: any) =>
     isOneOfArray(v.meta?.roles, currentRoles)
