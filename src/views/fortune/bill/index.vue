@@ -457,21 +457,14 @@ const initSearchSelect = async () => {
 watch(
   () => searchForm.groupId,
   async () => {
-    const bookRes = await getEnableBookList(searchForm.groupId);
-    if (bookRes.data.length === 0) {
-      message("请先启用或创建账本");
-      return;
-    }
-    bookOptions.value = bookRes.data;
-    searchForm.bookId = groupOptions.value.find(
-      group => group.groupId === searchForm.groupId
-    ).defaultBookId;
+    await initBookAndAccount();
   }
 );
 watch(
   () => searchForm.bookId,
   async () => {
     await onSearch();
+    await initSearchSelect();
   }
 );
 const tableTitle = computed(() => {
