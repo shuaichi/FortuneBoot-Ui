@@ -157,11 +157,12 @@
 
       <el-row :gutter="30">
         <re-col :value="12" v-if="formData.billType === 3">
-          <el-form-item prop="amount" label="金额">
+          <el-form-item prop="amount" label="转出金额">
             <el-input-number
               v-model="formData.amount"
               :precision="2"
               :controls="false"
+              placeholder="请输入转出金额"
               style="width: 100%"
             />
           </el-form-item>
@@ -181,6 +182,29 @@
                 :value="item.accountId"
               />
             </el-select>
+          </el-form-item>
+        </re-col>
+        <re-col :value="12" v-if="showConvertedAmount">
+          <el-form-item prop="convertedAmount">
+            <template #label>
+              到账金额
+              <el-tooltip
+                effect="dark"
+                placement="top"
+                content="若不填写，系统将按汇率自动计算"
+              >
+                <el-icon style="margin-left: 4px; cursor: pointer">
+                  <question-filled />
+                </el-icon>
+              </el-tooltip>
+            </template>
+            <el-input-number
+              v-model="formData.convertedAmount"
+              :precision="2"
+              :controls="false"
+              style="width: 100%"
+              placeholder="请输入到账金额"
+            />
           </el-form-item>
         </re-col>
         <re-col :value="12">
@@ -288,6 +312,7 @@ import { getEnableTagList, TagVo } from "@/api/fortune/tag";
 import { Plus as PlusIcon } from "@element-plus/icons-vue";
 import { getFileByBillId } from "@/api/fortune/file";
 import dayjs from "dayjs";
+import { QuestionFilled } from "@element-plus/icons-vue";
 
 const props = defineProps<{
   type: "add" | "edit";
@@ -389,7 +414,19 @@ onMounted(async () => {
     return;
   }
   bookOptions.value = booksRes.data;
-  initAccountOptions();
+  await initAccountOptions();
+});
+// 是否展示转入金额，当类型为转账、币种不一致时显示
+const showConvertedAmount = computed(() => {
+  if (formData.billType !== 3) return false;
+  const outAccount = accountOptions.value?.find(
+    acc => acc.accountId === formData.accountId
+  );
+  const inAccount = toAccountOptions.value?.find(
+    acc => acc.accountId === formData.toAccountId
+  );
+  if (!outAccount || !inAccount) return false;
+  return outAccount.currencyCode !== inAccount.currencyCode;
 });
 
 async function initAccountOptions() {
