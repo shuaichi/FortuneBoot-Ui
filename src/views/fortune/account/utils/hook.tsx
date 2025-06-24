@@ -125,9 +125,13 @@ export function useHook() {
           //泰铢
           THB: "฿"
         };
-        // 默认使用美元符号
-        const symbol = currencySymbols[currencyCode] || currencyCode;
-        return `${symbol}${formattedAmount}`;
+        if (currencySymbols[currencyCode]) {
+          // 主要货币符号和金额之间无空格
+          return `${currencySymbols[currencyCode]}${formattedAmount}`;
+        } else {
+          // 货币编码和金额之间有空格
+          return `${currencyCode} ${formattedAmount}`;
+        }
       }
     },
     {
@@ -176,9 +180,13 @@ export function useHook() {
           //泰铢
           THB: "฿"
         };
-        // 默认使用美元符号
-        const symbol = currencySymbols[currencyCode] || currencyCode;
-        return `${symbol}${formattedAmount}`;
+        if (currencySymbols[currencyCode]) {
+          // 主要货币符号和金额之间无空格
+          return `${currencySymbols[currencyCode]}${formattedAmount}`;
+        } else {
+          // 货币编码和金额之间有空格
+          return `${currencyCode} ${formattedAmount}`;
+        }
       },
       hide: true
     },

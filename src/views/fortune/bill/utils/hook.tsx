@@ -69,51 +69,59 @@ export function useHook() {
       label: "金额",
       prop: "convertedAmount",
       width: 150,
-      formatter: ({ convertedAmount, currencyCode }) => {
-        if (!convertedAmount) {
-          return "-";
-        }
-        const formattedAmount = convertedAmount
-          .toString()
-          .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      formatter: ({
+        amount,
+        convertedAmount,
+        currencyCode,
+        toCurrencyCode,
+        billType
+      }) => {
         // 货币符号映射
         const currencySymbols = {
-          // 人民币
           CNY: "￥",
-          // 美元
           USD: "$",
-          // 欧元
           EUR: "€",
-          // 英镑
           GBP: "£",
-          // 日元
           JPY: "¥",
-          // 澳元
           AUD: "A$",
-          // 加元
           CAD: "C$",
-          // 印度卢比
           INR: "₹",
-          // 港币
           HKD: "HK$",
-          // 新西兰元
           NZD: "NZ$",
-          // 瑞典克朗
           SEK: "Kr",
-          // 韩币
           KRW: "₩",
-          // 新加坡元
           SGD: "S$",
-          // 卢布
           RUB: "₽",
-          // 南非兰特
           ZAR: "R",
-          //泰铢
           THB: "฿"
         };
-        // 默认使用美元符号
-        const symbol = currencySymbols[currencyCode] || currencyCode;
-        return `${symbol}${formattedAmount}`;
+        // 千分位格式化
+        const format = val =>
+          val != null
+            ? val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            : "-";
+
+        // 转账类型且币种不同，展示前后金额
+        if (
+          billType === 3 &&
+          currencyCode &&
+          toCurrencyCode &&
+          currencyCode !== toCurrencyCode
+        ) {
+          const fromSymbol =
+            currencySymbols[currencyCode] || currencyCode + " ";
+          const toSymbol =
+            currencySymbols[toCurrencyCode] || toCurrencyCode + " ";
+          return `${fromSymbol}${format(amount)} -> ${toSymbol}${format(
+            convertedAmount
+          )}`;
+        }
+        // 其他情况，展示原币金额
+        if (currencySymbols[currencyCode]) {
+          return `${currencySymbols[currencyCode]}${format(amount)}`;
+        } else {
+          return `${currencyCode} ${format(amount)}`;
+        }
       }
     },
     {
