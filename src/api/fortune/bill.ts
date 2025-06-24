@@ -7,6 +7,7 @@ export interface AddBillCommand {
   tradeTime?: string;
   accountId?: number;
   amount?: number;
+  convertedAmount?: number;
   tagIdList?: Array<number>;
   payeeId?: number;
   billType?: number;
