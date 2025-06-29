@@ -290,7 +290,8 @@ import {
   BaseQuery,
   ExpenseTrendsQuery,
   getAssetsLiabilities,
-  IncomeTrendsQuery
+  IncomeTrendsQuery,
+  getDisplayConfig
 } from "@/api/fortune/include";
 import {
   getDefaultGroupId,
@@ -351,6 +352,9 @@ const assetsPieRef = ref(null);
 const liabilitiesPieRef = ref(null);
 const expenseTrendsRef = ref(null);
 const incomeTrendsRef = ref(null);
+
+// 全局缓存显示配置
+let cachedDisplayConfig = null;
 
 // 新增控制显示隐藏的变量
 const showAssets = ref(false);
@@ -453,6 +457,17 @@ onMounted(async () => {
     // 加载资产负债数据
     await loadData();
 
+    // 获取显示配置
+    if (!cachedDisplayConfig) {
+      const configRes = await getDisplayConfig();
+      cachedDisplayConfig = JSON.parse(String(configRes.data));
+    }
+    // 设置默认显示状态
+    showAssets.value = cachedDisplayConfig;
+    showLiabilities.value = cachedDisplayConfig;
+    showNetAssets.value = cachedDisplayConfig;
+    showAssetsChart.value = cachedDisplayConfig;
+    showLiabilitiesChart.value = cachedDisplayConfig;
     // 手动触发一次趋势图表的数据更新
     // 这里模拟点击了一下时间粒度按钮，强制触发图表更新
     const currentIncomeGranularity = incomeSearchForm.timeGranularity;
