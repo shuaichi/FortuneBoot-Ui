@@ -169,3 +169,11 @@ export function getTagIncomeApi(params: BillReportQuery) {
     { params }
   );
 }
+
+export function getDisplayConfig() {
+  return http.request<ResponseData<boolean>>(
+    "get",
+    "/fortune/include/getDisplayConfig",
+    {}
+  );
+}

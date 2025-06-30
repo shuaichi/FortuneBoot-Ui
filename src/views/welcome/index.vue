@@ -58,7 +58,12 @@
         <div class="summary-content">
           <div class="summary-label">总资产</div>
           <div class="summary-value">
-            {{ formatCurrency(assetsLiabilities.totalAssets) }}
+            <span v-if="showAssets">
+              {{ formatCurrency(assetsLiabilities.totalAssets) }}
+            </span>
+            <el-icon @click="toggleShowAssets">
+              <View />
+            </el-icon>
           </div>
         </div>
       </el-card>
@@ -72,7 +77,12 @@
         <div class="summary-content">
           <div class="summary-label">总负债</div>
           <div class="summary-value">
-            {{ formatCurrency(assetsLiabilities.totalLiabilities) }}
+            <span v-if="showLiabilities">
+              {{ formatCurrency(assetsLiabilities.totalLiabilities) }}
+            </span>
+            <el-icon @click="toggleShowLiabilities">
+              <View />
+            </el-icon>
           </div>
         </div>
       </el-card>
@@ -86,7 +96,12 @@
         <div class="summary-content">
           <div class="summary-label">净资产</div>
           <div class="summary-value">
-            {{ formatCurrency(assetsLiabilities.netAssets) }}
+            <span v-if="showNetAssets">
+              {{ formatCurrency(assetsLiabilities.netAssets) }}
+            </span>
+            <el-icon @click="toggleShowNetAssets">
+              <View />
+            </el-icon>
           </div>
         </div>
       </el-card>
@@ -102,6 +117,9 @@
                 <PieChart />
               </el-icon>
               <span>资产账户</span>
+              <el-icon @click="toggleShowAssetsChart">
+                <View />
+              </el-icon>
             </div>
             <el-tooltip content="刷新数据">
               <el-button
@@ -122,7 +140,7 @@
           </div>
           <TotalAssetsPie
             ref="assetsPieRef"
-            v-else
+            v-if="showAssetsChart"
             :group-id="searchForm.groupId"
           />
         </div>
@@ -137,6 +155,9 @@
                 <PieChart />
               </el-icon>
               <span>负债账户</span>
+              <el-icon @click="toggleShowLiabilitiesChart">
+                <View />
+              </el-icon>
             </div>
             <el-tooltip content="刷新数据">
               <el-button
@@ -157,7 +178,7 @@
           </div>
           <TotalLiabilitiesPie
             ref="liabilitiesPieRef"
-            v-else
+            v-if="showLiabilitiesChart"
             :group-id="searchForm.groupId"
           />
         </div>
@@ -269,7 +290,8 @@ import {
   BaseQuery,
   ExpenseTrendsQuery,
   getAssetsLiabilities,
-  IncomeTrendsQuery
+  IncomeTrendsQuery,
+  getDisplayConfig
 } from "@/api/fortune/include";
 import {
   getDefaultGroupId,
@@ -284,7 +306,8 @@ import {
   Wallet,
   Money,
   TrendCharts,
-  PieChart
+  PieChart,
+  View
 } from "@element-plus/icons-vue";
 
 defineOptions({
@@ -329,6 +352,37 @@ const assetsPieRef = ref(null);
 const liabilitiesPieRef = ref(null);
 const expenseTrendsRef = ref(null);
 const incomeTrendsRef = ref(null);
+
+// 全局缓存显示配置
+let cachedDisplayConfig = null;
+
+// 新增控制显示隐藏的变量
+const showAssets = ref(false);
+const showLiabilities = ref(false);
+const showNetAssets = ref(false);
+
+// 新增控制图表显示隐藏的变量
+const showAssetsChart = ref(false);
+const showLiabilitiesChart = ref(false);
+
+// 新增切换图表显示隐藏的方法
+const toggleShowAssetsChart = () => {
+  showAssetsChart.value = !showAssetsChart.value;
+};
+const toggleShowLiabilitiesChart = () => {
+  showLiabilitiesChart.value = !showLiabilitiesChart.value;
+};
+
+// 新增切换显示隐藏的方法
+const toggleShowAssets = () => {
+  showAssets.value = !showAssets.value;
+};
+const toggleShowLiabilities = () => {
+  showLiabilities.value = !showLiabilities.value;
+};
+const toggleShowNetAssets = () => {
+  showNetAssets.value = !showNetAssets.value;
+};
 
 // 刷新总收入图表
 const refreshAssetsPie = async () => {
@@ -403,6 +457,17 @@ onMounted(async () => {
     // 加载资产负债数据
     await loadData();
 
+    // 获取显示配置
+    if (!cachedDisplayConfig) {
+      const configRes = await getDisplayConfig();
+      cachedDisplayConfig = JSON.parse(String(configRes.data));
+    }
+    // 设置默认显示状态
+    showAssets.value = cachedDisplayConfig;
+    showLiabilities.value = cachedDisplayConfig;
+    showNetAssets.value = cachedDisplayConfig;
+    showAssetsChart.value = cachedDisplayConfig;
+    showLiabilitiesChart.value = cachedDisplayConfig;
     // 手动触发一次趋势图表的数据更新
     // 这里模拟点击了一下时间粒度按钮，强制触发图表更新
     const currentIncomeGranularity = incomeSearchForm.timeGranularity;
