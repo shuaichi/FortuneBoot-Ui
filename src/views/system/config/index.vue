@@ -96,7 +96,7 @@ const openAddDialog = () => {
 
 const resetAddForm = () => {
   Object.assign(addForm, {
-    type: "",
+    type: "custom",
     configName: "",
     configKey: "",
     configValue: "",
