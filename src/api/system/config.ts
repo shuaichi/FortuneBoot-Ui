@@ -31,6 +31,25 @@ export interface ConfigDTO {
 }
 
 /**
+ * configKeyDTO, 内置参数选项
+ */
+export interface configKeyDTO {
+  value: string;
+  description: string;
+  option?: string | null;
+  required: boolean;
+}
+
+export interface ConfigRequest {
+  configName: String;
+  configKey: String;
+  configValue: String;
+  configOptions: String;
+  isAllowChange: Boolean;
+  remark: String;
+  type: String;
+}
+/**
  * ConfigUpdateCommand
  */
 export interface UpdateConfigRequest {
@@ -41,7 +60,7 @@ export interface UpdateConfigRequest {
 export const getConfigListApi = (params?: ConfigQuery) => {
   return http.request<ResponseData<PageDTO<ConfigDTO>>>(
     "get",
-    "/system/configs",
+    "/system/configs", // 注意：与addConfig的basePath不同
     {
       params
     }
@@ -73,4 +92,29 @@ export const updateConfigApi = (
 /** 刷新配置缓存 */
 export const refreshConfigCacheApi = () => {
   return http.request<ResponseData<void>>("delete", "/system/configs/cache");
+};
+
+// 获取内置参数选项
+export const getParamEnums = () => {
+  return http.request<ResponseData<configKeyDTO[]>>(
+    "get",
+    "/system/config/getSystemConfigOptions"
+  );
+};
+
+/** 新增参数 */
+export const saveSystemConfig = (data: ConfigRequest) => {
+  return http.request<ResponseData<void>>(
+    "post",
+    "/system/config/addSystemConfig",
+    { data }
+  );
+};
+
+/** 删除参数 */
+export const deleteSystemConfig = (configId: string) => {
+  return http.request<ResponseData<void>>(
+    "delete",
+    `/system/config/${configId}`
+  );
 };
