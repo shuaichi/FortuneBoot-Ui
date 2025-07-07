@@ -70,7 +70,7 @@ const configValueOptions = ref([]);
 const configRequiredOptions = ref([]);
 
 const fetchEnumData = async () => {
-  const res = await getParamEnums();
+  const res = (await getParamEnums()) as unknown as { data: { rows: any[] } };
   configDescriptionOptions.value = res.data.rows.map((item: any) => ({
     value: item.description,
     label: item.description
