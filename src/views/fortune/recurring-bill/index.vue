@@ -53,9 +53,6 @@
         <el-button :icon="useRenderIcon(Refresh)" @click="resetForm">
           重置
         </el-button>
-        <el-button type="text" @click="expanded = !expanded">
-          {{ expanded ? "收起" : "展开" }}
-        </el-button>
       </el-form-item>
     </el-form>
 
@@ -66,7 +63,7 @@
           :icon="useRenderIcon(AddFill)"
           @click="openDialog('add', null)"
         >
-          新增账单
+          新增周期记账
         </el-button>
       </template>
       <template v-slot="{ size, dynamicColumns }">
@@ -125,7 +122,6 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
-import { emitter } from "@/utils/mitt";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import { PureTableBar } from "@/components/RePureTableBar";
@@ -157,8 +153,6 @@ const groupOptions = ref<Array<GroupVo>>();
 const bookOptions = ref<Array<BookVo>>();
 const formRef = ref();
 
-const expanded = ref(false);
-
 const route = useRoute();
 
 const {
@@ -181,9 +175,6 @@ onMounted(async () => {
   await initBook();
   // 查询账单数据
   await onSearch();
-
-  // 监听账单创建成功事件，刷新账单列表
-  emitter.on("billCreated", onSearch);
 });
 
 const initGroup = async () => {

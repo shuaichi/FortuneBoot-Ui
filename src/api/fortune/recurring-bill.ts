@@ -1,4 +1,5 @@
 import { http } from "@/utils/http";
+import { AddBillCommand } from "@/api/fortune/bill";
 
 export interface RecurringBillVo {
   ruleName?: string;
@@ -24,10 +25,14 @@ export interface RecurringBillQuery extends BasePageQuery {
   remark?: string;
 }
 
+export interface AddRecurringBillCommand {
+  billRequest?: AddBillCommand;
+}
+
 export const getRecurringBillPageApi = (params: RecurringBillQuery) => {
   return http.request<ResponseData<PageDTO<RecurringBillVo>>>(
     "get",
-    `/fortune/recurring/bill/getPage`,
+    `/fortune/recurring/bill/getRulePage`,
     {
       params
     }

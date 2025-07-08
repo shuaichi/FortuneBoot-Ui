@@ -62,8 +62,8 @@ export function useHook() {
       minWidth: 120
     },
     {
-      label: "endDate",
-      prop: "tradeTime",
+      label: "结束日期",
+      prop: "endDate",
       width: 160
     },
     {
@@ -79,12 +79,12 @@ export function useHook() {
     {
       label: "最后一次执行时间",
       prop: "lastExecutedTime",
-      width: 100
+      width: 158
     },
     {
       label: "下次执行时间",
       prop: "nextExecutionTime",
-      width: 120
+      width: 158
     },
     {
       label: "补偿策略",
@@ -99,7 +99,7 @@ export function useHook() {
     {
       label: "上次补偿时间",
       prop: "lastRecoveryCheck",
-      width: 120
+      width: 158
     },
     {
       label: "备注",
@@ -120,7 +120,17 @@ export function useHook() {
       const { data } = await getRecurringBillPageApi(searchForm);
       dataList.value = data.rows.map((item: any) => ({
         ...item,
-        tradeTime: formatDateTime(item.tradeTime)
+        lastExecutedTime: item.lastExecutedTime
+          ? formatDateTime(item.lastExecutedTime)
+          : null,
+        nextExecutionTime: item.nextExecutionTime
+          ? formatDateTime(item.nextExecutionTime)
+          : null,
+        lastRecoveryCheck: item.lastRecoveryCheck
+          ? formatDateTime(item.lastRecoveryCheck)
+          : null,
+        startDate: item.startDate ? formatDateTime(item.startDate) : null,
+        endDate: item.endDate ? formatDateTime(item.endDate) : null
       }));
       pagination.total = data.total;
     } catch (e) {
