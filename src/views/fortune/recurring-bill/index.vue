@@ -108,7 +108,7 @@
       </template>
     </PureTableBar>
 
-    <bill-form
+    <recurring-bill-form
       v-if="modalVisible"
       v-model="modalVisible"
       :groupId="groupIdProp"
@@ -128,7 +128,7 @@ import { PureTableBar } from "@/components/RePureTableBar";
 import PureTable from "@pureadmin/table";
 import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
-import BillForm from "./bill-form.vue";
+import RecurringBillForm from "./recurring-bill-form.vue";
 import { useHook } from "./utils/hook";
 import { BookVo, getEnableBookList } from "@/api/fortune/book";
 import {
