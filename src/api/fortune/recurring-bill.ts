@@ -40,6 +40,9 @@ export interface AddRecurringBillCommand {
 
 export interface ModifyRecurringBillCommand extends AddRecurringBillCommand {
   ruleId?: number;
+  lastRecoveryCheck?: Date;
+  nextExecutionTime?: Date;
+  lastExecutedTime?: Date;
 }
 
 export interface RecurringBillStrategyVo {
@@ -56,24 +59,24 @@ export const getRecurringBillPageApi = (params: RecurringBillQuery) => {
     }
   );
 };
-export const removeRecurringBillApi = (bookId: number, payeeId: number) => {
+export const removeRecurringBillApi = (bookId: number, ruleId: number) => {
   return http.request<ResponseData<any>>(
     "delete",
-    `/fortune/recurring/bill/${bookId}/${payeeId}/remove`
+    `/fortune/recurring/bill/${bookId}/${ruleId}/removeRule`
   );
 };
 
 export const recurringBillEnableApi = (bookId: number, payeeId: number) => {
   return http.request<ResponseData<any>>(
     "patch",
-    `/fortune/recurring/bill/${bookId}/${payeeId}/enable`
+    `/fortune/recurring/bill/${bookId}/${payeeId}/enableRule`
   );
 };
 
 export const recurringBillDisableApi = (bookId: number, payeeId: number) => {
   return http.request<ResponseData<any>>(
     "patch",
-    `/fortune/recurring/bill/${bookId}/${payeeId}/disable`
+    `/fortune/recurring/bill/${bookId}/${payeeId}/disableRule`
   );
 };
 
@@ -87,26 +90,26 @@ export const getRecoveryStrategy = () => {
 export const checkCronExpression = (cronExpression: string) => {
   return http.request<ResponseData<Boolean>>(
     "post",
-    `/fortune/recurring/bill/checkCronExpression`,
-    {
-      data: cronExpression
-    }
+    `/fortune/recurring/bill/checkCronExpression?cronExpression=${encodeURIComponent(
+      cronExpression
+    )}`
   );
 };
 
 export const addRecurringBillApi = (data: AddRecurringBillCommand) => {
-  return http.request<ResponseData<any>>(
+  return http.request<ResponseData<void>>(
     "post",
-    `/fortune/recurring/bill/add`,
+    `/fortune/recurring/bill/addRule`,
     {
       data
     }
   );
 };
+
 export const modifyRecurringBillApi = (data: ModifyRecurringBillCommand) => {
-  return http.request<ResponseData<any>>(
+  return http.request<ResponseData<void>>(
     "put",
-    `/fortune/recurring/bill/modify`,
+    `/fortune/recurring/bill/modifyRule`,
     {
       data
     }

@@ -63,7 +63,7 @@
           :icon="useRenderIcon(AddFill)"
           @click="openDialog('add', null)"
         >
-          新增周期记账
+          新增规则
         </el-button>
       </template>
       <template v-slot="{ size, dynamicColumns }">
@@ -96,7 +96,7 @@
               编辑
             </el-button>
             <el-popconfirm
-              :title="`确认删除【${row.title}】账单？`"
+              :title="`确认删除【${row.ruleName}】账单？`"
               @confirm="handleDelete(row)"
             >
               <template #reference>
