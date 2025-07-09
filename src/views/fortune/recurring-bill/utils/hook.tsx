@@ -48,11 +48,11 @@ export function useHook() {
       cellRenderer: ({ row, props }) => (
         <el-tag
           size={props.size}
-          style={tagStyle.value(row.confirm ? 1 : 0)}
+          style={tagStyle.value(row.enable ? 1 : 0)}
           onClick={() => handleEnableClick(row)}
           class="cursor-pointer"
         >
-          {row.confirm ? "已确认" : "未确认"}
+          {row.enable ? "启用" : "停用"}
         </el-tag>
       )
     },
@@ -121,16 +121,20 @@ export function useHook() {
       dataList.value = data.rows.map((item: any) => ({
         ...item,
         lastExecutedTime: item.lastExecutedTime
-          ? formatDateTime(item.lastExecutedTime)
+          ? formatDateTime(item.lastExecutedTime, null)
           : null,
         nextExecutionTime: item.nextExecutionTime
-          ? formatDateTime(item.nextExecutionTime)
+          ? formatDateTime(item.nextExecutionTime, null)
           : null,
         lastRecoveryCheck: item.lastRecoveryCheck
-          ? formatDateTime(item.lastRecoveryCheck)
+          ? formatDateTime(item.lastRecoveryCheck, null)
           : null,
-        startDate: item.startDate ? formatDateTime(item.startDate) : null,
-        endDate: item.endDate ? formatDateTime(item.endDate) : null
+        startDate: item.startDate
+          ? formatDateTime(item.startDate, "YYYY-MM-DD")
+          : null,
+        endDate: item.endDate
+          ? formatDateTime(item.endDate, "YYYY-MM-DD")
+          : null
       }));
       pagination.total = data.total;
     } catch (e) {
@@ -140,15 +144,15 @@ export function useHook() {
     }
   }
 
-  function formatDateTime(dateStr: string) {
-    return dayjs(dateStr).format("YYYY-MM-DD HH:mm:ss");
+  function formatDateTime(dateStr: string, template: string) {
+    return dayjs(dateStr).format(template ? template : "YYYY-MM-DD HH:mm:ss");
   }
 
   async function handleDelete(row) {
     try {
       loading.value = true;
       await removeRecurringBillApi(row.bookId, row.ruleId);
-      message(`已删除【${row.title}】账单`, { type: "success" });
+      message(`已删除【${row.title}】周期记账规则`, { type: "success" });
       await onSearch();
     } catch (e) {
       message(e.message || "删除失败", { type: "error" });
@@ -159,17 +163,17 @@ export function useHook() {
 
   async function handleEnableClick(row) {
     try {
-      const action = row.confirm ? "取消确认" : "确认";
+      const action = row.enable ? "停用" : "启用";
       await ElMessageBox.confirm(
-        `确认${action}【${row.title}】账单吗？`,
+        `确认${action}【${row.ruleName}】周期记账规则吗？`,
         `${action}确认`,
         { confirmButtonText: "确定", cancelButtonText: "取消" }
       );
 
-      if (row.confirm) {
-        await recurringBillDisableApi(row.bookId, row.billId);
+      if (row.enable) {
+        await recurringBillDisableApi(row.bookId, row.ruleId);
       } else {
-        await recurringBillEnableApi(row.bookId, row.billId);
+        await recurringBillEnableApi(row.bookId, row.ruleId);
       }
 
       message(`${action}成功`);

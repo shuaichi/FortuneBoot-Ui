@@ -3,7 +3,7 @@
     show-full-screen
     use-body-scrolling
     :fixed-body-height="false"
-    :title="type === 'add' ? '新增周期记账' : '修改周期记账'"
+    :title="type === 'add' ? '新增周期记账规则' : '修改周期记账规则'"
     v-model="visible"
     :loading="loading"
     @confirm="handleConfirm"
@@ -32,8 +32,8 @@
           </el-form-item>
         </re-col>
         <re-col :value="12">
-          <el-form-item prop="ruleName" label="周期记账名称">
-            <el-input v-model="formData.ruleName" placeholder="账单标题" />
+          <el-form-item prop="ruleName" label="规则名称">
+            <el-input v-model="formData.ruleName" placeholder="规则名称" />
           </el-form-item>
         </re-col>
       </el-row>
@@ -307,7 +307,7 @@
             <el-switch
               v-model="formData.enable"
               active-text="启用"
-              inactive-text="禁用"
+              inactive-text="停用"
               inline-prompt
             />
           </el-form-item>
@@ -345,12 +345,12 @@
           </el-form-item>
         </re-col>
         <re-col :value="12">
-          <el-form-item prop="remark" label="周期记账备注">
+          <el-form-item prop="remark" label="规则备注">
             <el-input
               type="textarea"
               v-model="formData.remark"
               rows="5"
-              placeholder="周期记账备注"
+              placeholder="规则备注"
             />
           </el-form-item>
         </re-col>
@@ -413,19 +413,21 @@ const categoryTreeProps = {
   value: "categoryId",
   children: "children"
 };
-const formData = reactive<AddRecurringBillCommand>({
-  recoveryStrategy: 3,
-  enable: true,
-  billRequest: {
-    billType: 1,
-    confirm: true,
-    include: true,
-    categoryAmountPair: [{ categoryId: null, amount: null }]
+const formData = reactive<AddRecurringBillCommand | ModifyRecurringBillCommand>(
+  {
+    recoveryStrategy: 3,
+    enable: true,
+    billRequest: {
+      billType: 1,
+      confirm: true,
+      include: true,
+      categoryAmountPair: [{ categoryId: null, amount: null }]
+    }
   }
-});
+);
 
 const rules: FormRules = {
-  ruleName: [{ required: true, message: "请输入周期记账名称" }],
+  ruleName: [{ required: true, message: "请输入规则名称" }],
   cronExpression: [{ required: true, message: "请输入cron表达式" }],
 
   "billRequest.bookId": [{ required: true, message: "请选择账本" }],
@@ -657,6 +659,9 @@ async function handleConfirm() {
     if (props.type === "add") {
       await addRecurringBillApi(formData);
     } else {
+      formData.lastExecutedTime = null;
+      formData.nextExecutionTime = null;
+      formData.lastRecoveryCheck = null;
       await modifyRecurringBillApi(formData);
     }
 
