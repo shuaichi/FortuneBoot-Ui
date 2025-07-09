@@ -3,7 +3,7 @@
     show-full-screen
     use-body-scrolling
     :fixed-body-height="false"
-    :title="type === 'add' ? '新增账单' : '修改账单'"
+    :title="type === 'add' ? '新增周期记账' : '修改周期记账'"
     v-model="visible"
     :loading="loading"
     @confirm="handleConfirm"
@@ -13,7 +13,7 @@
     <el-form :model="formData" label-width="120px" :rules="rules" ref="formRef">
       <el-row :gutter="30">
         <re-col :value="12">
-          <el-form-item prop="bookId" label="所属账本">
+          <el-form-item prop="billRequest.bookId" label="所属账本">
             <el-select
               :disabled="props.type === 'edit'"
               filterable
@@ -32,9 +32,93 @@
           </el-form-item>
         </re-col>
         <re-col :value="12">
-          <el-form-item prop="billType" label="交易类型">
+          <el-form-item prop="ruleName" label="周期记账名称">
+            <el-input v-model="formData.ruleName" placeholder="账单标题" />
+          </el-form-item>
+        </re-col>
+      </el-row>
+      <el-row :gutter="30">
+        <re-col :value="12">
+          <el-form-item prop="cronExpression" label="cron表达式">
+            <el-input
+              v-model="formData.cronExpression"
+              placeholder="cron表达式"
+              @blur="validateCronExpression"
+            />
+          </el-form-item>
+        </re-col>
+        <re-col :value="12">
+          <el-form-item prop="startDate" label="开始日期">
+            <el-date-picker
+              v-model="formData.startDate"
+              class="w-full"
+              type="date"
+              placeholder="开始日期"
+              style="width: 100%"
+              value-format="YYYY-MM-DD"
+            />
+          </el-form-item>
+        </re-col>
+      </el-row>
+      <el-row :gutter="30">
+        <re-col :value="12">
+          <el-form-item prop="endDate" label="结束日期">
+            <el-date-picker
+              v-model="formData.endDate"
+              class="w-full"
+              type="date"
+              placeholder="结束日期"
+              style="width: 100%"
+              value-format="YYYY-MM-DD"
+            />
+          </el-form-item>
+        </re-col>
+        <re-col :value="12">
+          <el-form-item prop="recoveryStrategy" label="补偿策略">
             <el-select
-              :disabled="props.type === 'edit'"
+              filterable
+              v-model="formData.recoveryStrategy"
+              placeholder="补偿策略"
+              style="width: 100%"
+              @change="handleRecoveryStrategyChange"
+            >
+              <el-option
+                v-for="item in recoveryStrategyOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+        </re-col>
+      </el-row>
+      <el-row :gutter="30">
+        <re-col :value="12">
+          <el-form-item prop="maxRecoveryCount" label="最大补偿次数">
+            <el-input-number
+              v-model="formData.maxRecoveryCount"
+              :precision="0"
+              :controls="false"
+              :min="0"
+              :disabled="formData.recoveryStrategy !== 2"
+              placeholder="请输入最大补偿次数"
+              style="width: 100%"
+            />
+          </el-form-item>
+        </re-col>
+        <re-col :value="12">
+          <el-form-item prop="billRequest.title" label="账单标题">
+            <el-input
+              v-model="formData.billRequest.title"
+              placeholder="账单标题"
+            />
+          </el-form-item>
+        </re-col>
+      </el-row>
+      <el-row :gutter="30">
+        <re-col :value="12">
+          <el-form-item prop="billRequest.billType" label="交易类型">
+            <el-select
               filterable
               v-model="formData.billRequest.billType"
               placeholder="请选择类型"
@@ -50,23 +134,9 @@
             </el-select>
           </el-form-item>
         </re-col>
-      </el-row>
-
-      <el-row :gutter="30">
-        <re-col :value="24">
-          <el-form-item prop="title" label="标题">
-            <el-input
-              v-model="formData.billRequest.title"
-              placeholder="请输入标题"
-            />
-          </el-form-item>
-        </re-col>
-      </el-row>
-
-      <el-row :gutter="30">
         <re-col :value="12">
           <el-form-item
-            prop="accountId"
+            prop="billRequest.accountId"
             :label="formData.billRequest.billType === 3 ? '转出账户' : '账户'"
           >
             <el-select
@@ -93,7 +163,7 @@
         <el-row :gutter="30" v-if="formData.billRequest.billType !== 3">
           <re-col :value="12">
             <el-form-item
-              :prop="'categoryAmountPair.' + index + '.amount'"
+              :prop="'billRequest.categoryAmountPair.' + index + '.amount'"
               label="金额"
               :rules="rules[`categoryAmountPair.${index}.amount`]"
             >
@@ -108,7 +178,7 @@
           <re-col :value="9">
             <el-form-item
               label="分类"
-              :prop="'categoryAmountPair.' + index + '.categoryId'"
+              :prop="'billRequest.categoryAmountPair.' + index + '.categoryId'"
               :rules="rules[`categoryAmountPair.${index}.categoryId`]"
             >
               <el-tree-select
@@ -149,7 +219,7 @@
 
       <el-row :gutter="30">
         <re-col :value="12" v-if="formData.billRequest.billType === 3">
-          <el-form-item prop="amount" label="转出金额">
+          <el-form-item prop="billRequest.amount" label="转出金额">
             <el-input-number
               v-model="formData.billRequest.amount"
               :precision="2"
@@ -160,7 +230,7 @@
           </el-form-item>
         </re-col>
         <re-col :value="12" v-if="formData.billRequest.billType === 3">
-          <el-form-item prop="toAccountId" label="转入账户">
+          <el-form-item prop="billRequest.toAccountId" label="转入账户">
             <el-select
               filterable
               v-model="formData.billRequest.toAccountId"
@@ -177,7 +247,7 @@
           </el-form-item>
         </re-col>
         <re-col :value="12" v-if="showConvertedAmount">
-          <el-form-item prop="convertedAmount">
+          <el-form-item prop="billRequest.convertedAmount">
             <template #label>
               到账金额
               <el-tooltip
@@ -200,7 +270,7 @@
           </el-form-item>
         </re-col>
         <re-col :value="12">
-          <el-form-item prop="tagIdList" label="标签">
+          <el-form-item prop="billRequest.tagIdList" label="标签">
             <el-tree-select
               v-model="formData.billRequest.tagIdList"
               :data="tagOptions"
@@ -214,7 +284,7 @@
           </el-form-item>
         </re-col>
         <re-col :value="12" v-if="formData.billRequest.billType !== 3">
-          <el-form-item prop="payeeId" label="交易对象">
+          <el-form-item prop="billRequest.payeeId" label="交易对象">
             <el-select
               filterable
               v-model="formData.billRequest.payeeId"
@@ -232,8 +302,18 @@
         </re-col>
       </el-row>
       <el-row :gutter="30">
-        <re-col :value="12">
-          <el-form-item prop="confirm" label="确认状态">
+        <re-col :value="8">
+          <el-form-item prop="enable" label="启用状态">
+            <el-switch
+              v-model="formData.enable"
+              active-text="启用"
+              inactive-text="禁用"
+              inline-prompt
+            />
+          </el-form-item>
+        </re-col>
+        <re-col :value="8">
+          <el-form-item prop="billRequest.confirm" label="确认状态">
             <el-switch
               v-model="formData.billRequest.confirm"
               active-text="已确认"
@@ -242,8 +322,8 @@
             />
           </el-form-item>
         </re-col>
-        <re-col :value="12">
-          <el-form-item prop="include" label="统计状态">
+        <re-col :value="8">
+          <el-form-item prop="billRequest.include" label="统计状态">
             <el-switch
               v-model="formData.billRequest.include"
               active-text="统计"
@@ -253,15 +333,28 @@
           </el-form-item>
         </re-col>
       </el-row>
-
-      <el-form-item prop="remark" label="备注">
-        <el-input
-          type="textarea"
-          v-model="formData.billRequest.remark"
-          rows="4"
-          placeholder="请输入备注"
-        />
-      </el-form-item>
+      <el-row :gutter="30">
+        <re-col :value="12">
+          <el-form-item prop="remark" label="账单备注">
+            <el-input
+              type="textarea"
+              v-model="formData.billRequest.remark"
+              rows="5"
+              placeholder="账单备注"
+            />
+          </el-form-item>
+        </re-col>
+        <re-col :value="12">
+          <el-form-item prop="remark" label="周期记账备注">
+            <el-input
+              type="textarea"
+              v-model="formData.remark"
+              rows="5"
+              placeholder="周期记账备注"
+            />
+          </el-form-item>
+        </re-col>
+      </el-row>
     </el-form>
   </v-dialog>
 </template>
@@ -271,7 +364,6 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
 import VDialog from "@/components/VDialog/VDialog.vue";
 import ReCol from "@/components/ReCol";
-import { BillVo } from "@/api/fortune/bill";
 import { BookVo, getBookById, getEnableBookList } from "@/api/fortune/book";
 import { AccountVo, getEnableAccountList } from "@/api/fortune/account";
 import { getEnableGroupList } from "@/api/fortune/group";
@@ -279,14 +371,21 @@ import { message } from "@/utils/message";
 import { CategoryVo, getEnableCategoryList } from "@/api/fortune/category";
 import { getEnablePayeeList, PayeeVo } from "@/api/fortune/payee";
 import { getEnableTagList, TagVo } from "@/api/fortune/tag";
-import dayjs from "dayjs";
 import { QuestionFilled } from "@element-plus/icons-vue";
-import { AddRecurringBillCommand } from "@/api/fortune/recurring-bill";
+import {
+  addRecurringBillApi,
+  AddRecurringBillCommand,
+  checkCronExpression,
+  getRecoveryStrategy,
+  modifyRecurringBillApi,
+  ModifyRecurringBillCommand,
+  RecurringBillStrategyVo
+} from "@/api/fortune/recurring-bill";
 
 const props = defineProps<{
   type: "add" | "edit";
   modelValue: boolean;
-  row?: BillVo;
+  row?: ModifyRecurringBillCommand;
   groupId: number;
   bookId: number;
 }>();
@@ -315,6 +414,8 @@ const categoryTreeProps = {
   children: "children"
 };
 const formData = reactive<AddRecurringBillCommand>({
+  recoveryStrategy: 3,
+  enable: true,
   billRequest: {
     billType: 1,
     confirm: true,
@@ -324,29 +425,31 @@ const formData = reactive<AddRecurringBillCommand>({
 });
 
 const rules: FormRules = {
-  bookId: [{ required: true, message: "请选择账本" }],
-  billType: [{ required: true, message: "请选择交易类型" }],
-  title: [{ required: true, message: "请输入标题" }],
-  tradeTime: [{ required: true, message: "请选择交易时间" }],
-  accountId: [
+  ruleName: [{ required: true, message: "请输入周期记账名称" }],
+  cronExpression: [{ required: true, message: "请输入cron表达式" }],
+
+  "billRequest.bookId": [{ required: true, message: "请选择账本" }],
+  "billRequest.billType": [{ required: true, message: "请选择交易类型" }],
+  "billRequest.title": [{ required: true, message: "请输入标题" }],
+  "billRequest.accountId": [
     { required: formData.billRequest.billType === 3, message: "请选择账户" }
   ],
   // 动态规则：categoryAmountPair 校验
-  "categoryAmountPair.0.categoryId": [
+  "billRequest.categoryAmountPair.0.categoryId": [
     {
       required: true,
       message: "请选择分类",
       trigger: "change"
     }
   ],
-  "categoryAmountPair.0.amount": [
+  "billRequest.categoryAmountPair.0.amount": [
     {
       required: true,
       message: "金额不能为空",
       trigger: "change"
     }
   ],
-  toAccountId: [
+  "billRequest.toAccountId": [
     {
       required: true,
       message: "请选择转入账户",
@@ -371,6 +474,7 @@ const toAccountOptions = ref<Array<AccountVo>>();
 const categoryOptions = ref<Array<CategoryVo>>([]);
 const payeeOptions = ref<Array<PayeeVo>>();
 const tagOptions = ref<Array<TagVo>>();
+const recoveryStrategyOptions = ref<Array<RecurringBillStrategyVo>>();
 
 onMounted(async () => {
   const [groupRes, booksRes] = await Promise.all([
@@ -387,6 +491,7 @@ onMounted(async () => {
   }
   bookOptions.value = booksRes.data;
   await initAccountOptions();
+  await initRecoveryStrategy();
 });
 // 是否展示转入金额，当类型为转账、币种不一致时显示
 const showConvertedAmount = computed(() => {
@@ -403,16 +508,21 @@ const showConvertedAmount = computed(() => {
 
 async function initAccountOptions() {
   const accountsRes = await getEnableAccountList(props.groupId);
-  if (!props.row || props.row.billType === 1) {
+  if (!props.row || props.row.billRequest.billType === 1) {
     accountOptions.value = accountsRes.data.filter(item => item.canExpense);
-  } else if (props.row.billType === 2) {
+  } else if (props.row.billRequest.billType === 2) {
     accountOptions.value = accountsRes.data.filter(item => item.canIncome);
-  } else if (props.row.billType === 3) {
+  } else if (props.row.billRequest.billType === 3) {
     accountOptions.value = accountsRes.data.filter(item => item.canTransferOut);
     toAccountOptions.value = accountsRes.data.filter(
       item => item.canTransferIn
     );
   }
+}
+
+async function initRecoveryStrategy() {
+  const recoveryStrategy = await getRecoveryStrategy();
+  recoveryStrategyOptions.value = recoveryStrategy.data;
 }
 
 async function handleBillTypeChange(type: number) {
@@ -455,6 +565,10 @@ function handleBookOrBillTypeChange() {
   handleCategoryPayeeTagRefresh();
 }
 
+function handleRecoveryStrategyChange() {
+  formData.maxRecoveryCount = null;
+}
+
 async function handleCategoryPayeeTagRefresh() {
   const [categoryRes, payeeRes, tagRes] = await Promise.all([
     getEnableCategoryList(
@@ -478,17 +592,10 @@ async function handleOpened() {
     const billRequestObj = JSON.parse(props.row.billRequest);
     console.log(billRequestObj.tagIdList);
     formData.billRequest = billRequestObj;
-    // formData.billRequest.tagIdList = billRequestObj.tagIdList
-    //   ? billRequestObj.tagIdList.map((item: any) => item.tagId)
-    //   : [];
     handleCategoryPayeeTagRefresh();
   } else {
     formRef.value?.resetFields();
     formData.billRequest.bookId = props.bookId;
-    // 设置默认交易时间为当前时间
-    formData.billRequest.tradeTime = dayjs(new Date()).format(
-      "YYYY-MM-DD HH:mm:ss"
-    );
     const bookRes = await getBookById(props.bookId);
     formData.billRequest.accountId = bookRes.data.defaultExpenseAccountId;
     handleCategoryPayeeTagRefresh();
@@ -546,10 +653,11 @@ async function handleConfirm() {
     } else {
       formData.billRequest.categoryAmountPair = [];
     }
+    formData.bookId = formData.billRequest.bookId;
     if (props.type === "add") {
-      // await addBillApi(formDataObj);
+      await addRecurringBillApi(formData);
     } else {
-      // await modifyBillApi(formDataObj);
+      await modifyRecurringBillApi(formData);
     }
 
     ElMessage.success("操作成功");
@@ -561,6 +669,19 @@ async function handleConfirm() {
     }
   } finally {
     loading.value = false;
+  }
+}
+
+// 添加 cron 表达式校验函数
+async function validateCronExpression() {
+  if (!formData.cronExpression) {
+    ElMessage.warning("请输入cron表达式");
+    return;
+  }
+  // 后端接口校验cron表达式
+  const checkCronRes = await checkCronExpression(formData.cronExpression);
+  if (!checkCronRes.data) {
+    ElMessage.warning("cron表达式格式不正确");
   }
 }
 </script>
