@@ -12,7 +12,7 @@ import Delete from "@iconify-icons/ep/delete";
 import { useUserStoreHook } from "@/store/modules/user";
 import { deleteSystemConfig } from "@/api/system/config";
 
-import AddConfigDialog from "@/views/system/config/AddConfigDialog.vue"; // 引入新增弹窗组件
+import AddConfigForm from "@/views/system/config/add-config-form.vue"; // 引入新增弹窗组件
 
 defineOptions({
   name: "SystemConfig"
@@ -182,7 +182,7 @@ const handleDelete = async (row: any) => {
     </PureTableBar>
 
     <!-- 弹窗组件 -->
-    <AddConfigDialog v-model="addDialogVisible" @success="getList" />
+    <AddConfigForm v-model="addDialogVisible" @success="getList" />
   </div>
 </template>
 

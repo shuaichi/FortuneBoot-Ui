@@ -1,4 +1,3 @@
-<!-- components/AddConfigDialog.vue -->
 <template>
   <el-dialog
     v-model="visible"
@@ -12,6 +11,7 @@
           v-model="form.type"
           placeholder="请选择"
           @change="onTypeChange"
+          class="!w-full"
         >
           <el-option label="内置参数" value="builtin" />
           <el-option label="自定义参数" value="custom" />
@@ -20,6 +20,7 @@
 
       <el-form-item label="参数名称" prop="configName">
         <component
+          class="!w-full"
           :is="form.type === 'builtin' ? 'el-select' : 'el-input'"
           v-model="form.configName"
           placeholder="请输入/选择"
@@ -37,9 +38,11 @@
 
       <el-form-item label="参数键名" prop="configKey">
         <component
+          class="!w-full"
           :is="form.type === 'builtin' ? 'el-select' : 'el-input'"
           v-model="form.configKey"
           placeholder="请输入/选择"
+          :disabled="form.type === 'builtin'"
         >
           <template v-if="form.type === 'builtin'">
             <el-option
@@ -53,14 +56,20 @@
       </el-form-item>
 
       <el-form-item label="参数值" prop="configValue">
-        <el-input v-model="form.configValue" placeholder="请输入参数值" />
+        <el-input
+          v-model="form.configValue"
+          placeholder="请输入参数值"
+          :disabled="form.isAllowChange"
+        />
       </el-form-item>
 
       <el-form-item label="参数选项" prop="configOptions">
         <component
+          class="!w-full"
           :is="form.type === 'builtin' ? 'el-select' : 'el-input'"
           v-model="form.configOptions"
           placeholder="请输入/选择,如果多个值以逗号间隔"
+          :disabled="form.type === 'builtin'"
         >
           <template v-if="form.type === 'builtin'">
             <el-option
@@ -78,6 +87,7 @@
           v-model="form.isAllowChange"
           placeholder="请选择"
           class="!w-full"
+          :disabled="form.type === 'builtin'"
         >
           <el-option label="是" value="true" />
           <el-option label="否" value="false" />
@@ -89,6 +99,7 @@
           v-model="form.remark"
           type="textarea"
           placeholder="请输入备注"
+          :disabled="form.type === 'builtin'"
         />
       </el-form-item>
     </el-form>
@@ -115,13 +126,6 @@ const emit = defineEmits<{
 }>();
 
 const visible = ref(props.modelValue);
-watch(
-  () => props.modelValue,
-  val => (visible.value = val)
-);
-watch(visible, val => emit("update:modelValue", val));
-
-// form & validation
 const formRef = ref();
 const form = reactive({
   type: "custom",
@@ -132,6 +136,29 @@ const form = reactive({
   isAllowChange: "",
   remark: ""
 });
+
+watch(
+  () => props.modelValue,
+  val => (visible.value = val)
+);
+watch(visible, val => emit("update:modelValue", val));
+
+watch(
+  () => form.configName,
+  async () => {
+    if (form.type !== "builtin") {
+      return;
+    }
+    const configKey = configKeyDTOList.value.find(
+      (item: any) => item.description === form.configName
+    );
+    form.configKey = configKey.value;
+    form.configValue = configKey.defaultValue;
+    form.configOptions = configKey.option;
+    form.isAllowChange = configKey.isAllowChange;
+    form.remark = configKey.remark;
+  }
+);
 
 const rules = {
   type: [{ required: true, message: "请选择参数类型", trigger: "change" }],
@@ -150,11 +177,12 @@ const rules = {
 const descriptionOptions = ref([]);
 const optionOptions = ref([]);
 const valueOptions = ref([]);
+const configKeyDTOList = ref([]);
 
 const fetchEnumData = async () => {
-  const res = (await getParamEnums()) as unknown as { data: { rows: any[] } };
-  const rows = res.data.rows || [];
-
+  const res = await getParamEnums();
+  const rows = res.data;
+  configKeyDTOList.value = rows;
   descriptionOptions.value = rows.map(item => ({
     value: item.description,
     label: item.description
@@ -202,18 +230,7 @@ const handleSubmit = () => {
         ...form,
         isAllowChange: form.isAllowChange === "true",
         configOptions: (() => {
-          const opt = form.configOptions;
-          if (!opt) return "[]";
-          if (Array.isArray(opt)) return JSON.stringify(opt.map(String));
-          if (typeof opt === "string") {
-            return JSON.stringify(
-              opt
-                .split(/[,，]/)
-                .map(v => v.trim())
-                .filter(v => !!v)
-            );
-          }
-          return JSON.stringify([String(opt)]);
+          return formatConfigOptions(form.configOptions);
         })()
       };
       await saveSystemConfig(payload);
@@ -224,5 +241,19 @@ const handleSubmit = () => {
       ElMessage.error("新增失败");
     }
   });
+};
+
+const formatConfigOptions = (options: any): string => {
+  if (!options) return "[]";
+  if (Array.isArray(options)) return JSON.stringify(options.map(String));
+  if (typeof options === "string") {
+    return JSON.stringify(
+      options
+        .split(/[,，]/)
+        .map(v => v.trim())
+        .filter(v => !!v)
+    );
+  }
+  return JSON.stringify([String(options)]);
 };
 </script>
