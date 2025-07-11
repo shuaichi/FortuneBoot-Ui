@@ -1,4 +1,4 @@
-import editForm from "../form.vue";
+import editForm from "../edit-config-form.vue";
 import { message } from "@/utils/message";
 import { addDialog } from "@/components/ReDialog";
 import { type PaginationProps } from "@pureadmin/table";
@@ -76,7 +76,7 @@ export function useHook() {
     {
       label: "操作",
       fixed: "right",
-      width: 120,
+      width: 200,
       slot: "operation"
     }
   ];

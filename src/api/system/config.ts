@@ -41,13 +41,13 @@ export interface configKeyDTO {
 }
 
 export interface ConfigRequest {
-  configName: String;
-  configKey: String;
-  configValue: String;
-  configOptions: String;
-  isAllowChange: Boolean;
-  remark: String;
-  type: String;
+  configName: string;
+  configKey: string;
+  configValue: string;
+  configOptions: string;
+  isAllowChange: boolean;
+  remark: string;
+  type: string;
 }
 /**
  * ConfigUpdateCommand
