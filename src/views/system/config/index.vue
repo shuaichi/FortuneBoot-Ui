@@ -3,22 +3,26 @@ import { ref } from "vue";
 import { useHook } from "./utils/hook";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-
+import { ElMessage, ElMessageBox } from "element-plus";
 import EditPen from "@iconify-icons/ep/edit-pen";
 import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
 import AddFill from "@iconify-icons/ri/add-circle-line";
+import Delete from "@iconify-icons/ep/delete";
 import { useUserStoreHook } from "@/store/modules/user";
+import { deleteSystemConfig } from "@/api/system/config";
 
-/** !!!重要!!! 组件name最好和菜单表中的router_name一致, copy的时候记得更改这个名字*/
+import AddConfigForm from "@/views/system/config/add-config-form.vue"; // 引入新增弹窗组件
+
 defineOptions({
   name: "SystemConfig"
 });
 
 const yesOrNoList = useUserStoreHook().dictionaryList["common.yesOrNo"];
 const tableRef = ref();
-
 const searchFormRef = ref();
+const addDialogVisible = ref(false);
+
 const {
   searchFormParams,
   pageLoading,
@@ -31,11 +35,31 @@ const {
   handleRefresh,
   getList
 } = useHook();
+
+const handleDelete = async (row: any) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定删除参数 [${row.configName}] 吗？`,
+      "提示",
+      {
+        type: "warning",
+        confirmButtonText: "删除",
+        cancelButtonText: "取消"
+      }
+    );
+
+    await deleteSystemConfig(row.configId);
+    ElMessage.success("删除成功");
+    await getList();
+  } catch (err) {
+    if (err !== "cancel") ElMessage.error("删除失败");
+  }
+};
 </script>
 
 <template>
   <div class="main">
-    <!-- 搜索栏 -->
+    <!-- 搜索表单 -->
     <el-form
       ref="searchFormRef"
       :inline="true"
@@ -58,7 +82,6 @@ const {
           class="!w-[200px]"
         />
       </el-form-item>
-
       <el-form-item label="允许修改：" prop="isAllowChange">
         <el-select
           v-model="searchFormParams.isAllowChange"
@@ -92,20 +115,26 @@ const {
       </el-form-item>
     </el-form>
 
-    <!-- table bar 包裹  table -->
+    <!-- 表格区域 -->
     <PureTableBar title="通知列表" :columns="columns" @refresh="onSearch">
-      <!-- 表格操作栏 -->
       <template #buttons>
         <el-button
-          type="warning"
+          type="primary"
           :icon="useRenderIcon(AddFill)"
+          @click="addDialogVisible = true"
+        >
+          新增参数
+        </el-button>
+        <el-button
+          type="warning"
+          :icon="useRenderIcon(Refresh)"
           @click="handleRefresh()"
         >
           刷新缓存
         </el-button>
       </template>
+
       <template v-slot="{ size, dynamicColumns }">
-        <!-- TODO sort-change 有其他好的处理方式吗？ -->
         <pure-table
           border
           ref="tableRef"
@@ -118,7 +147,7 @@ const {
           :data="dataList"
           :columns="dynamicColumns"
           :pagination="pagination"
-          :paginationSmall="size === 'small' ? true : false"
+          :paginationSmall="size === 'small'"
           :header-cell-style="{
             background: 'var(--el-table-row-hover-bg-color)',
             color: 'var(--el-text-color-primary)'
@@ -127,20 +156,33 @@ const {
           @page-current-change="getList"
         >
           <template #operation="{ row }">
-            <el-button
-              class="reset-margin"
-              link
-              type="primary"
-              :size="size"
-              :icon="useRenderIcon(EditPen)"
-              @click="openDialog(row)"
-            >
-              修改
-            </el-button>
+            <div class="btn-group">
+              <el-button
+                type="primary"
+                plain
+                size="small"
+                :icon="useRenderIcon(EditPen)"
+                @click="openDialog(row)"
+              >
+                修改
+              </el-button>
+              <el-button
+                type="danger"
+                plain
+                size="small"
+                :icon="useRenderIcon(Delete)"
+                @click="handleDelete(row)"
+              >
+                删除
+              </el-button>
+            </div>
           </template>
         </pure-table>
       </template>
     </PureTableBar>
+
+    <!-- 弹窗组件 -->
+    <AddConfigForm v-model="addDialogVisible" @success="getList" />
   </div>
 </template>
 
@@ -153,5 +195,11 @@ const {
   :deep(.el-form-item) {
     margin-bottom: 12px;
   }
+}
+
+.btn-group {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
 }
 </style>
