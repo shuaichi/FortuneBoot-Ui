@@ -49,6 +49,9 @@ class PureHttp {
   /** 防止重复刷新token */
   private static isRefreshing = false;
 
+  /** 避免401/403重复弹窗 */
+  private static hasShownAuthModal = false;
+
   /** 初始化配置对象 */
   private static initConfig: PureHttpRequestConfig = {};
 
@@ -92,11 +95,21 @@ class PureHttp {
           "/register",
           "/getRsaPublicKey"
         ];
-        return whiteList.some(v => config.url.endsWith(v))
+        return whiteList.some(v => config.url?.endsWith(v))
           ? config
           : new Promise(resolve => {
               const data = getToken();
-              config.headers["Authorization"] = formatToken(data.token);
+              if (data && data.token) {
+                config.headers["Authorization"] = formatToken(data.token);
+              } else {
+                // 无token，跳转登录避免后续请求报错
+                try {
+                  removeToken();
+                  router.push("/login");
+                } catch (e) {
+                  // ignore
+                }
+              }
               resolve(config);
             });
       },
@@ -185,6 +198,36 @@ class PureHttp {
       (error: PureHttpError) => {
         const $error = error;
         $error.isCancelRequest = Axios.isCancel($error);
+
+        // 处理鉴权失败（如后端直接返回HTTP 401/403 的情况）
+        if (error?.response) {
+          const status = error.response.status;
+          if (status === 401 || status === 403) {
+            if (!PureHttp.hasShownAuthModal) {
+              PureHttp.hasShownAuthModal = true;
+              ElMessageBox.confirm(
+                "登录状态已过期，您可以继续留在该页面，或者重新登录",
+                "系统提示",
+                {
+                  confirmButtonText: "重新登录",
+                  cancelButtonText: "取消",
+                  type: "warning"
+                }
+              )
+                .then(() => {
+                  removeToken();
+                  router.push("/login");
+                })
+                .catch(() => {
+                  message("取消重新登录", { type: "info" });
+                })
+                .finally(() => {
+                  PureHttp.hasShownAuthModal = false;
+                });
+            }
+          }
+        }
+
         // 关闭进度条动画
         NProgress.done();
         // 所有的响应异常 区分来源为取消请求/非取消请求
@@ -225,7 +268,11 @@ class PureHttp {
             error.response.status >= 400 &&
             error.response.status < 500
           ) {
-            message("请求接口不存在", { type: "error" });
+            const status = error.response.status;
+            // 401/403 由响应拦截器的鉴权逻辑统一处理，这里不再额外提示“请求接口不存在”
+            if (status !== 401 && status !== 403) {
+              message("请求接口不存在", { type: "error" });
+            }
           }
 
           reject(error);
