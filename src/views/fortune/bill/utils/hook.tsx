@@ -15,6 +15,7 @@ import {
 } from "@/api/fortune/bill";
 import dayjs from "dayjs";
 import { BillStatisticsVo, getBillStatistics } from "@/api/fortune/include";
+import { getCurrencySymbol } from "@/utils/currency";
 
 export function useHook() {
   const { tagStyle } = usePublicHooks();
@@ -76,25 +77,6 @@ export function useHook() {
         toCurrencyCode,
         billType
       }) => {
-        // 货币符号映射
-        const currencySymbols = {
-          CNY: "￥",
-          USD: "$",
-          EUR: "€",
-          GBP: "£",
-          JPY: "¥",
-          AUD: "A$",
-          CAD: "C$",
-          INR: "₹",
-          HKD: "HK$",
-          NZD: "NZ$",
-          SEK: "Kr",
-          KRW: "₩",
-          SGD: "S$",
-          RUB: "₽",
-          ZAR: "R",
-          THB: "฿"
-        };
         // 千分位格式化
         const format = val =>
           val != null
@@ -102,26 +84,31 @@ export function useHook() {
             : "-";
 
         // 转账类型且币种不同，展示前后金额
+        // 使用全局工具函数获取币种符号
         if (
           billType === 3 &&
           currencyCode &&
           toCurrencyCode &&
           currencyCode !== toCurrencyCode
         ) {
-          const fromSymbol =
-            currencySymbols[currencyCode] || currencyCode + " ";
-          const toSymbol =
-            currencySymbols[toCurrencyCode] || toCurrencyCode + " ";
-          return `${fromSymbol}${format(amount)} -> ${toSymbol}${format(
+          const fromSym = getCurrencySymbol(currencyCode);
+          const toSym = getCurrencySymbol(toCurrencyCode);
+          const withSymbol = (sym, code, val) =>
+            sym && sym !== code
+              ? `${sym}${format(val)}`
+              : `${code} ${format(val)}`;
+          return `${withSymbol(fromSym, currencyCode, amount)} -> ${withSymbol(
+            toSym,
+            toCurrencyCode,
             convertedAmount
           )}`;
         }
+
         // 其他情况，展示原币金额
-        if (currencySymbols[currencyCode]) {
-          return `${currencySymbols[currencyCode]}${format(amount)}`;
-        } else {
-          return `${currencyCode} ${format(amount)}`;
-        }
+        const sym = getCurrencySymbol(currencyCode);
+        return sym && sym !== currencyCode
+          ? `${sym} ${format(amount)}`
+          : `${currencyCode} ${format(amount)}`;
       }
     },
     {
