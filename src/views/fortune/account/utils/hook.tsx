@@ -28,6 +28,7 @@ import {
 } from "@/api/fortune/group";
 import dayjs from "dayjs";
 import { useRouter } from "vue-router";
+import { getCurrencySymbol } from "@/utils/currency";
 
 export function useHook() {
   const { tagStyle } = usePublicHooks();
@@ -90,47 +91,16 @@ export function useHook() {
         const formattedAmount = balance
           .toString()
           .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        // 货币符号映射
-        const currencySymbols = {
-          // 人民币
-          CNY: "￥",
-          // 美元
-          USD: "$",
-          // 欧元
-          EUR: "€",
-          // 英镑
-          GBP: "£",
-          // 日元
-          JPY: "¥",
-          // 澳元
-          AUD: "A$",
-          // 加元
-          CAD: "C$",
-          // 印度卢比
-          INR: "₹",
-          // 港币
-          HKD: "HK$",
-          // 新西兰元
-          NZD: "NZ$",
-          // 瑞典克朗
-          SEK: "Kr",
-          // 韩币
-          KRW: "₩",
-          // 新加坡元
-          SGD: "S$",
-          // 卢布
-          RUB: "₽",
-          // 南非兰特
-          ZAR: "R",
-          //泰铢
-          THB: "฿"
-        };
-        if (currencySymbols[currencyCode]) {
+        // 通过全局工具获取币种符号
+        const symbol = getCurrencySymbol(currencyCode);
+        if (symbol && symbol !== currencyCode) {
           // 主要货币符号和金额之间无空格
-          return `${currencySymbols[currencyCode]}${formattedAmount}`;
-        } else {
+          return `${symbol}${formattedAmount}`;
+        } else if (currencyCode) {
           // 货币编码和金额之间有空格
           return `${currencyCode} ${formattedAmount}`;
+        } else {
+          return formattedAmount;
         }
       }
     },
@@ -145,47 +115,16 @@ export function useHook() {
         const formattedAmount = creditLimit
           .toString()
           .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        // 货币符号映射
-        const currencySymbols = {
-          // 人民币
-          CNY: "￥",
-          // 美元
-          USD: "$",
-          // 欧元
-          EUR: "€",
-          // 英镑
-          GBP: "£",
-          // 日元
-          JPY: "¥",
-          // 澳元
-          AUD: "A$",
-          // 加元
-          CAD: "C$",
-          // 印度卢比
-          INR: "₹",
-          // 港币
-          HKD: "HK$",
-          // 新西兰元
-          NZD: "NZ$",
-          // 瑞典克朗
-          SEK: "Kr",
-          // 韩币
-          KRW: "₩",
-          // 新加坡元
-          SGD: "S$",
-          // 卢布
-          RUB: "₽",
-          // 南非兰特
-          ZAR: "R",
-          //泰铢
-          THB: "฿"
-        };
-        if (currencySymbols[currencyCode]) {
+        // 通过全局工具获取币种符号
+        const symbol = getCurrencySymbol(currencyCode);
+        if (symbol && symbol !== currencyCode) {
           // 主要货币符号和金额之间无空格
-          return `${currencySymbols[currencyCode]}${formattedAmount}`;
-        } else {
+          return `${symbol}${formattedAmount}`;
+        } else if (currencyCode) {
           // 货币编码和金额之间有空格
           return `${currencyCode} ${formattedAmount}`;
+        } else {
+          return formattedAmount;
         }
       },
       hide: true
