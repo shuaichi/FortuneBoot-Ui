@@ -11,7 +11,7 @@ export interface AddBookCommand {
   sort: number;
   remark?: string;
   enable?: boolean;
-  bookTemplate: string;
+  bookTemplate: number;
 }
 
 export interface ModifyBookCommand extends AddBookCommand {
