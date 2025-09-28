@@ -111,12 +111,13 @@ import {
   addGroupApi,
   AddGroupCommand,
   getBookTemplate,
+  getBookTemplateRemarkById,
   getCurrencyTemplate,
   GroupVo,
   modifyGroupApi,
   ModifyGroupCommand
 } from "@/api/fortune/group";
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { ElMessage, FormRules } from "element-plus";
 import ReCol from "@/components/ReCol";
 import { BookVo, getBookByGroupId } from "@/api/fortune/book";
@@ -162,7 +163,15 @@ const formData = reactive<AddGroupCommand | ModifyGroupCommand>({
   defaultBookId: null,
   enable: true
 });
-
+watch(
+  () => formData.bookTemplate,
+  async () => {
+    const templateRemark = await getBookTemplateRemarkById(
+      formData.bookTemplate
+    );
+    formData.remark = templateRemark.data;
+  }
+);
 function handleOpened() {
   if (props.row) {
     Object.assign(formData, props.row);
