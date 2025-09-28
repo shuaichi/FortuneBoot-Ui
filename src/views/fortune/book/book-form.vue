@@ -202,6 +202,7 @@ import {
 } from "@/api/fortune/book";
 import {
   getBookTemplate,
+  getBookTemplateRemarkById,
   getCurrencyTemplate,
   GroupVo
 } from "@/api/fortune/group";
@@ -283,6 +284,17 @@ watch(
     );
   }
 );
+
+watch(
+  () => formData.bookTemplate,
+  async () => {
+    const templateRemark = await getBookTemplateRemarkById(
+      formData.bookTemplate
+    );
+    formData.remark = templateRemark.data;
+  }
+);
+
 function handleOpened() {
   if (props.row) {
     Object.assign(formData, props.row);

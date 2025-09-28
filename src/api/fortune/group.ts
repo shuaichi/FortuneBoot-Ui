@@ -67,6 +67,13 @@ export function getBookTemplate() {
   );
 }
 
+export function getBookTemplateRemarkById(bookTemplateId: number) {
+  return http.request<ResponseData<Array<GroupVo>>>(
+    "get",
+    `/fortune/group/${bookTemplateId}/getBookTemplateRemarkById`
+  );
+}
+
 export function getCurrencyTemplate() {
   return http.request<ResponseData<any>>(
     "get",
