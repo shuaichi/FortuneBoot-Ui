@@ -68,7 +68,7 @@ export function getBookTemplate() {
 }
 
 export function getBookTemplateRemarkById(bookTemplateId: number) {
-  return http.request<ResponseData<Array<GroupVo>>>(
+  return http.request<ResponseData<string>>(
     "get",
     `/fortune/group/${bookTemplateId}/getBookTemplateRemarkById`
   );
