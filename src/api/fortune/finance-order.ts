@@ -43,6 +43,14 @@ export const getFinanceOrderPage = (params?: FinanceOrderQuery) => {
   );
 };
 
+// 查询使用中的单据
+export const getUsingFinanceOrderApi = (bookId: number) => {
+  return http.request<ResponseData<PageDTO<FinanceOrderVo>>>(
+    "get",
+    `/fortune/finance/order/${bookId}/getUsingFinanceOrderList`
+  );
+};
+
 // 新增单据
 export const addFinanceOrderApi = (data: FinanceOrderAddCommand) => {
   return http.request<ResponseData<Boolean>>(
