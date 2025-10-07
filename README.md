@@ -15,7 +15,7 @@
 [//]: # '<img alt="logo" height="200" src="">'
 
 </p>
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">FortuneBoot v1.2.0</h1>
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">FortuneBoot v1.3.0</h1>
 
 <h4 align="center">基于SpringBoot3+Vue3前后端分离的记账管理系统</h4>
 <p align="center">
