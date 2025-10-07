@@ -34,6 +34,27 @@
           />
         </el-select>
       </el-form-item>
+      <el-form-item label="标题：" prop="title">
+        <el-input
+          v-model="searchForm.title"
+          placeholder="请选择账本"
+          filterable
+        />
+      </el-form-item>
+      <el-form-item label="状态：" prop="status">
+        <el-select
+          v-model="searchForm.status"
+          placeholder="请选择状态"
+          filterable
+        >
+          <el-option
+            v-for="item in statusOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item class="fortune-search-buttons">
         <el-button
           type="primary"
@@ -183,7 +204,11 @@ const {
   handleSizeChange,
   handleRemoveFinanceOrderApi
 } = useHook();
-
+const statusOptions = [
+  { value: 100, label: "初始化" },
+  { value: 200, label: "使用中" },
+  { value: 1000, label: "已关闭" }
+];
 watch(
   () => searchForm.groupId,
   async () => {
