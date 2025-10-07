@@ -59,6 +59,8 @@ export function useHook() {
 
   function resetForm() {
     searchForm.title = "";
+    searchForm.status = "";
+    onSearch();
   }
 
   const searchForm = reactive<FinanceOrderQuery>({});
