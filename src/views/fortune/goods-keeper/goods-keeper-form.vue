@@ -194,7 +194,7 @@ import VDialog from "@/components/VDialog/VDialog.vue";
 import { computed, onMounted, reactive, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
 import ReCol from "@/components/ReCol";
-import { BookVo, getBookByGroupId } from "@/api/fortune/book";
+import { BookVo, getEnableBookList } from "@/api/fortune/book";
 import {
   addGoodsKeeperApi,
   modifyGoodsKeeperApi,
@@ -233,7 +233,7 @@ onMounted(async () => {
   formData.bookId = props.bookId;
   formData.status = 1;
   formData.purchaseDate = dayjs(new Date()).format("YYYY-MM-DD");
-  const book = await getBookByGroupId(props.groupId);
+  const book = await getEnableBookList(props.groupId);
   bookOptions.value = book.data;
   await handleBookChange();
 });
