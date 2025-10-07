@@ -589,6 +589,8 @@ async function handleOpened() {
       ? props.row.tagList.map(item => item.tagId)
       : [];
     handleCategoryPayeeTagRefresh();
+    const financeOrderRes = await getUsingFinanceOrderApi(formData.bookId);
+    financeOrderOptions.value = financeOrderRes.data;
     const fileRes = await getFileByBillId(props.row.billId);
     fileList.value = fileRes.data.map(file => ({
       // 使用后端返回的fileId作为唯一标识
