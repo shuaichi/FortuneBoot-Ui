@@ -53,9 +53,45 @@
       </el-row>
 
       <el-row :gutter="30">
-        <re-col :value="24">
+        <re-col
+          :value="24"
+          v-if="formData.billType !== 7 && formData.billType !== 8"
+        >
           <el-form-item prop="title" label="标题">
             <el-input v-model="formData.title" placeholder="请输入标题" />
+          </el-form-item>
+        </re-col>
+        <re-col
+          :value="12"
+          v-if="formData.billType === 7 || formData.billType === 8"
+        >
+          <el-form-item prop="title" label="标题">
+            <el-input v-model="formData.title" placeholder="请输入标题" />
+          </el-form-item>
+        </re-col>
+        <re-col
+          :value="12"
+          v-if="formData.billType === 7 || formData.billType === 8"
+        >
+          <el-form-item
+            prop="orderId"
+            label="单据"
+            :required="formData.billType === 7 || formData.billType === 8"
+          >
+            <el-select
+              filterable
+              v-model="formData.orderId"
+              placeholder="请选择单据"
+              style="width: 100%"
+              clearable
+            >
+              <el-option
+                v-for="item in financeOrderOptions"
+                :key="item.orderId"
+                :label="item.title"
+                :value="item.orderId"
+              />
+            </el-select>
           </el-form-item>
         </re-col>
       </el-row>
@@ -76,6 +112,7 @@
           <el-form-item
             prop="accountId"
             :label="formData.billType === 3 ? '转出账户' : '账户'"
+            :required="formData.billType === 3"
           >
             <el-select
               filterable
@@ -318,6 +355,10 @@ import { Plus as PlusIcon } from "@element-plus/icons-vue";
 import { getFileByBillId } from "@/api/fortune/file";
 import dayjs from "dayjs";
 import { QuestionFilled } from "@element-plus/icons-vue";
+import {
+  FinanceOrderVo,
+  getUsingFinanceOrderApi
+} from "@/api/fortune/finance-order";
 
 const props = defineProps<{
   type: "add" | "edit";
@@ -338,7 +379,9 @@ const formRef = ref();
 const billTypeOptions = [
   { value: 1, label: "支出" },
   { value: 2, label: "收入" },
-  { value: 3, label: "转账" }
+  { value: 3, label: "转账" },
+  { value: 7, label: "垫付" },
+  { value: 8, label: "报销" }
 ];
 const tagTreeProps = {
   label: "tagName",
@@ -362,7 +405,33 @@ const rules: FormRules = {
   billType: [{ required: true, message: "请选择交易类型" }],
   title: [{ required: true, message: "请输入标题" }],
   tradeTime: [{ required: true, message: "请选择交易时间" }],
-  accountId: [{ required: formData.billType === 3, message: "请选择账户" }],
+  orderId: [
+    {
+      message: "请选择单据",
+      trigger: "change",
+      validator: (rule, value, callback) => {
+        if ((formData.billType !== 7 || formData.billType !== 8) && !value) {
+          callback(new Error(rule.message as string));
+        } else {
+          callback();
+        }
+      }
+    }
+  ],
+  accountId: [
+    {
+      message: "请选择账户",
+      trigger: "change",
+      validator: (rule, value, callback) => {
+        if (formData.billType === 3 && !value) {
+          callback(new Error(rule.message as string));
+        } else {
+          callback();
+        }
+      }
+    }
+  ],
+
   // 动态规则：categoryAmountPair 校验
   "categoryAmountPair.0.categoryId": [
     {
@@ -404,7 +473,7 @@ const categoryOptions = ref<Array<CategoryVo>>([]);
 const payeeOptions = ref<Array<PayeeVo>>();
 const tagOptions = ref<Array<TagVo>>();
 const fileList = ref([]);
-
+const financeOrderOptions = ref(Array<FinanceOrderVo>());
 onMounted(async () => {
   const [groupRes, booksRes] = await Promise.all([
     getEnableGroupList(),
@@ -423,14 +492,18 @@ onMounted(async () => {
 });
 // 是否展示转入金额，当类型为转账、币种不一致时显示
 const showConvertedAmount = computed(() => {
-  if (formData.billType !== 3) return false;
+  if (formData.billType !== 3) {
+    return false;
+  }
   const outAccount = accountOptions.value?.find(
     acc => acc.accountId === formData.accountId
   );
   const inAccount = toAccountOptions.value?.find(
     acc => acc.accountId === formData.toAccountId
   );
-  if (!outAccount || !inAccount) return false;
+  if (!outAccount || !inAccount) {
+    return false;
+  }
   return outAccount.currencyCode !== inAccount.currencyCode;
 });
 
@@ -471,6 +544,12 @@ async function handleBillTypeChange(type: number) {
     formData.payeeId = null;
     formData.accountId = bookRes.data.defaultTransferOutAccountId;
     formData.toAccountId = bookRes.data.defaultTransferInAccountId;
+  } else if (type === 7 || type === 8) {
+    accountOptions.value = accountsRes.data.filter(item => item.canExpense);
+    handleBookOrBillTypeChange();
+    formData.accountId = bookRes.data.defaultExpenseAccountId;
+    const financeOrderRes = await getUsingFinanceOrderApi(bookRes.data.bookId);
+    financeOrderOptions.value = financeOrderRes.data;
   }
 }
 
@@ -480,14 +559,23 @@ function handleBookOrBillTypeChange() {
   formData.tagIdList = [];
   formData.amount = null;
   formData.toAccountId = null;
+  categoryOptions.value = [];
+  payeeOptions.value = [];
+  tagOptions.value = [];
   handleCategoryPayeeTagRefresh();
 }
 
 async function handleCategoryPayeeTagRefresh() {
+  let billType = formData.billType;
+  if (formData.billType === 7) {
+    billType = 1;
+  } else if (formData.billType === 8) {
+    billType = 2;
+  }
   const [categoryRes, payeeRes, tagRes] = await Promise.all([
-    getEnableCategoryList(formData.bookId, formData.billType),
-    getEnablePayeeList(formData.bookId, formData.billType),
-    getEnableTagList(formData.bookId, formData.billType)
+    getEnableCategoryList(formData.bookId, billType),
+    getEnablePayeeList(formData.bookId, billType),
+    getEnableTagList(formData.bookId, billType)
   ]);
   categoryOptions.value = categoryRes.data;
   payeeOptions.value = payeeRes.data;

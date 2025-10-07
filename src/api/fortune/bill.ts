@@ -5,6 +5,7 @@ export interface AddBillCommand {
   bookId?: number;
   title?: string;
   tradeTime?: string;
+  accountId?: orderId;
   accountId?: number;
   amount?: number;
   convertedAmount?: number;

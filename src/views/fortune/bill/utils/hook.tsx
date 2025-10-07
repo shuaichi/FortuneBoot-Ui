@@ -34,7 +34,9 @@ export function useHook() {
     { value: 1, label: "支出" },
     { value: 2, label: "收入" },
     { value: 3, label: "转账" },
-    { value: 4, label: "余额调整" }
+    { value: 4, label: "余额调整" },
+    { value: 7, label: "垫付" },
+    { value: 8, label: "报销" }
   ];
 
   const columns: TableColumnList = [
@@ -56,9 +58,9 @@ export function useHook() {
       cellRenderer: ({ row }) => {
         const type = billTypeOptions.find(t => t.value === row.billType);
         let color = "";
-        if (row.billType === 1) {
+        if (row.billType === 1 || row.billType === 7) {
           color = "#67C23A"; // 支出-绿色
-        } else if (row.billType === 2) {
+        } else if (row.billType === 2 || row.billType === 8) {
           color = "#F56C6C"; // 收入-红色
         } else {
           color = "#000000"; // 转账和余额调整-黑色
