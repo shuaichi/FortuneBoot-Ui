@@ -28,7 +28,7 @@ export function useHook() {
   const bookOptions = ref<Array<BookVo>>();
 
   const opType = ref<"add" | "modify">("add");
-  const opRow = ref<GoodsKeeperVo>();
+  const opRow = ref<FinanceOrderVo>();
   const formVisible = ref<boolean>(false);
 
   onMounted(async () => {
@@ -59,7 +59,7 @@ export function useHook() {
 
   function resetForm() {
     searchForm.title = "";
-    searchForm.status = "";
+    searchForm.status = null;
     onSearch();
   }
 
@@ -140,7 +140,7 @@ export function useHook() {
     await onSearch();
   }
 
-  async function openFormDialog(type: "add" | "modify", row?: GoodsKeeperVo) {
+  async function openFormDialog(type: "add" | "modify", row?: FinanceOrderVo) {
     try {
       opType.value = type;
       opRow.value = row;

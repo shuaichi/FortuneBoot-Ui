@@ -1,7 +1,8 @@
 import { http } from "@/utils/http";
 
-export interface FinanceOrderQuery {
-  bookId: number;
+export interface FinanceOrderQuery extends BasePageQuery {
+  groupId?: number;
+  bookId?: number;
   title?: string;
   type?: number;
   status?: number;
