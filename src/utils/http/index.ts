@@ -154,28 +154,34 @@ class PureHttp {
         // 请求返回失败时，有业务错误时，弹出错误提示
         if (response.data.code !== 0) {
           // token失效时弹出过期提示
-          if (response.data.code === 106) {
-            ElMessageBox.confirm(
-              "登录状态已过期，您可以继续留在该页面，或者重新登录",
-              "系统提示",
-              {
-                confirmButtonText: "重新登录",
-                cancelButtonText: "取消",
-                type: "warning"
-              }
-            )
-              .then(() => {
-                removeToken();
-                router.push("/login");
-              })
-              .catch(() => {
-                message("取消重新登录", { type: "info" });
-              });
-            NProgress.done();
-            return Promise.reject(msg);
-          } else {
-            // 其余情况弹出错误提示框
-            message(msg, { type: "error" });
+          if (
+            response.data.code === 106 ||
+            response.data.code === 107 ||
+            response.data.code === 108
+          ) {
+            if (!PureHttp.hasShownAuthModal) {
+              PureHttp.hasShownAuthModal = true;
+              ElMessageBox.confirm(
+                "登录状态已过期，您可以继续留在该页面，或者重新登录",
+                "系统提示",
+                {
+                  confirmButtonText: "重新登录",
+                  cancelButtonText: "取消",
+                  type: "warning"
+                }
+              )
+                .then(() => {
+                  removeToken();
+                  router.push("/login");
+                })
+                .catch(() => {
+                  message("取消重新登录", { type: "info" });
+                })
+                .finally(() => {
+                  // 允许下次再次弹出（如果需要长期不弹可以移除此行）
+                  PureHttp.hasShownAuthModal = false;
+                });
+            }
             NProgress.done();
             return Promise.reject(msg);
           }
@@ -274,6 +280,7 @@ class PureHttp {
               message("请求接口不存在", { type: "error" });
             }
           }
+          console.log("error ::: " + error);
 
           reject(error);
         });
