@@ -82,6 +82,7 @@
               v-model="formData.accountId"
               placeholder="请选择账户"
               style="width: 100%"
+              clearable
             >
               <el-option
                 v-for="item in accountOptions"
@@ -174,6 +175,7 @@
               v-model="formData.toAccountId"
               placeholder="请选择转入账户"
               style="width: 100%"
+              clearable
             >
               <el-option
                 v-for="item in toAccountOptions"
@@ -204,6 +206,7 @@
               :controls="false"
               style="width: 100%"
               placeholder="请输入到账金额"
+              clearable
             />
           </el-form-item>
         </re-col>
@@ -217,6 +220,7 @@
               check-strictly
               filterable
               multiple
+              clearable
               :props="tagTreeProps"
             />
           </el-form-item>
@@ -227,6 +231,7 @@
               filterable
               v-model="formData.payeeId"
               placeholder="请选择交易对象"
+              clearable
               style="width: 100%"
             >
               <el-option
