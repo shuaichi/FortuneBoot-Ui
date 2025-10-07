@@ -182,6 +182,9 @@ class PureHttp {
                   PureHttp.hasShownAuthModal = false;
                 });
             }
+          } else {
+            // 其余情况弹出错误提示框
+            message(msg, { type: "error" });
             NProgress.done();
             return Promise.reject(msg);
           }
@@ -280,7 +283,6 @@ class PureHttp {
               message("请求接口不存在", { type: "error" });
             }
           }
-          console.log("error ::: " + error);
 
           reject(error);
         });
