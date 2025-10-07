@@ -99,7 +99,7 @@
               编辑
             </el-button>
             <el-popconfirm
-              :title="`确认删除【${row.goodsName}】这条数据？数据一旦删除，将不可恢复！`"
+              :title="`确认删除【${row.title}】这条数据？数据一旦删除，将不可恢复！`"
               @confirm="handleRemoveFinanceOrderApi(row)"
             >
               <template #reference>
