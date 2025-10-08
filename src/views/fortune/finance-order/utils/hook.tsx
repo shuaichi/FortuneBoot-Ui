@@ -118,7 +118,7 @@ export function useHook() {
     try {
       loading.value = true;
       await reopenFinanceOrderApi(row.bookId, row.orderId);
-      message(`您关闭了标题为${row.title}的这条单据`, { type: "info" });
+      message(`您重开了标题为${row.title}的这条单据`, { type: "info" });
       await onSearch();
     } catch (e) {
       console.error(e);
