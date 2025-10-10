@@ -522,6 +522,21 @@ async function initAccountOptions() {
   }
 }
 
+// 为编辑模式添加专门的账户选项初始化函数
+async function initAccountOptionsForEdit(billType: number) {
+  const accountsRes = await getEnableAccountList(props.groupId);
+  if (billType === 1) {
+    accountOptions.value = accountsRes.data.filter(item => item.canExpense);
+  } else if (billType === 2) {
+    accountOptions.value = accountsRes.data.filter(item => item.canIncome);
+  } else if (billType === 3) {
+    accountOptions.value = accountsRes.data.filter(item => item.canTransferOut);
+    toAccountOptions.value = accountsRes.data.filter(
+      item => item.canTransferIn
+    );
+  }
+}
+
 async function initRecoveryStrategy() {
   const recoveryStrategy = await getRecoveryStrategy();
   recoveryStrategyOptions.value = recoveryStrategy.data;
@@ -594,14 +609,16 @@ async function handleOpened() {
     const billRequestObj = JSON.parse(props.row.billRequest);
     console.log(billRequestObj.tagIdList);
     formData.billRequest = billRequestObj;
-    handleCategoryPayeeTagRefresh();
+
+    // 根据编辑数据的交易类型初始化账户选项
+    initAccountOptionsForEdit(formData.billRequest.billType);
   } else {
     formRef.value?.resetFields();
     formData.billRequest.bookId = props.bookId;
     const bookRes = await getBookById(props.bookId);
     formData.billRequest.accountId = bookRes.data.defaultExpenseAccountId;
-    handleCategoryPayeeTagRefresh();
   }
+  handleCategoryPayeeTagRefresh();
 }
 
 function insertCategory(index: number) {
