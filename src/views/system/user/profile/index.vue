@@ -18,9 +18,12 @@ onMounted(async () => {
 });
 /** 用户名 */
 const currentUserInfo = ref<UserDTO>({});
-
-state.user = currentUserInfo;
-console.log(currentUserInfo);
+// 刷新用户信息（保存成功后或需要时调用）
+const refreshProfile = async () => {
+  const userRes = await getUserProfileApi();
+  currentUserInfo.value = userRes.data.user;
+  state.user = userRes.data.user;
+};
 </script>
 <template>
   <div class="app-container">
@@ -68,7 +71,10 @@ console.log(currentUserInfo);
           </template>
           <el-tabs v-model="activeTab">
             <el-tab-pane label="基本资料" name="userinfo">
-              <userInfo :user="currentUserInfo" />
+              <userInfo
+                :user="currentUserInfo"
+                @profile-updated="refreshProfile"
+              />
             </el-tab-pane>
             <el-tab-pane label="修改密码" name="resetPwd">
               <resetPwd :user="state.user" />
