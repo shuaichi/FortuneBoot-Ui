@@ -73,6 +73,7 @@ export interface UserProfileRequest {
  */
 export interface ResetPasswordRequest {
   newPassword?: string;
+  confirmPassword?: string;
   oldPassword?: string;
   userId?: number;
 }

@@ -4,6 +4,7 @@ import userInfo from "./userInfo.vue";
 import userAvatar from "./userAvatar.vue";
 import { onMounted, reactive, ref } from "vue";
 import { getUserProfileApi, UserDTO } from "@/api/system/user";
+import type { UserProfileRequest } from "@/api/system/user";
 
 const activeTab = ref("userinfo");
 const state = reactive({
@@ -19,7 +20,12 @@ onMounted(async () => {
 /** 用户名 */
 const currentUserInfo = ref<UserDTO>({});
 // 刷新用户信息（保存成功后或需要时调用）
-const refreshProfile = async () => {
+const refreshProfile = async (payload?: UserProfileRequest) => {
+  if (payload) {
+    currentUserInfo.value = { ...currentUserInfo.value, ...payload };
+    state.user = { ...state.user, ...payload };
+    return;
+  }
   const userRes = await getUserProfileApi();
   currentUserInfo.value = userRes.data.user;
   state.user = userRes.data.user;
@@ -42,19 +48,19 @@ const refreshProfile = async () => {
 
             <el-row>
               <el-descriptions :column="1">
-                <el-descriptions-item label="用户名称">{{
+                <el-descriptions-item label="账户：">{{
                   currentUserInfo.username
                 }}</el-descriptions-item>
-                <el-descriptions-item label="用户昵称">{{
+                <el-descriptions-item label="昵称：">{{
                   currentUserInfo.nickname
                 }}</el-descriptions-item>
-                <el-descriptions-item label="手机号码">{{
+                <el-descriptions-item label="手机：">{{
                   currentUserInfo.phoneNumber
                 }}</el-descriptions-item>
-                <el-descriptions-item label="用户邮箱">{{
+                <el-descriptions-item label="邮箱：">{{
                   currentUserInfo.email
                 }}</el-descriptions-item>
-                <el-descriptions-item label="角色">
+                <el-descriptions-item label="角色：">
                   {{ currentUserInfo.roleName }}
                 </el-descriptions-item>
               </el-descriptions>
