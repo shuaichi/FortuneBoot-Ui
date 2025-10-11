@@ -35,10 +35,11 @@ export function useNav() {
     };
   });
 
-  /** 昵称 */
-  const nickname = computed(() => {
-    return useUserStoreHook()?.nickname;
-  });
+  /** 昵称：使用全局 Store，接口请求在 Store 内统一保证单次 */
+  const userStore = useUserStoreHook();
+  // 触发一次性资料初始化（内部含单例Promise与缓存，避免重复请求）
+  userStore.ensureUserProfile();
+  const nickname = computed(() => userStore.nickname);
 
   const avatarsStyle = computed(() => {
     return nickname.value ? { marginRight: "10px" } : "";

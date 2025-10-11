@@ -8,9 +8,12 @@ import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { removeToken, sessionKey } from "@/utils/auth";
 import { DictionaryData, TokenDTO } from "@/api/common/login";
 import { storageLocal } from "@pureadmin/utils";
+import { getUserProfileApi } from "@/api/system/user";
 
 const dictionaryListKey = "ag-dictionary-list";
 const dictionaryMapKey = "ag-dictionary-map";
+
+let __ensureProfilePromise: Promise<void> | null = null;
 
 export const useUserStore = defineStore({
   id: "ag-user",
@@ -45,6 +48,20 @@ export const useUserStore = defineStore({
       this.username = username;
     },
     /** 存储角色 */
+    /** 存储昵称（即时更新，供导航展示） */
+    SET_NICKNAME(nickname: string) {
+      if (process.env.NODE_ENV !== "production") {
+        console.debug("[UserStore] SET_NICKNAME", {
+          before: this.nickname,
+          after: nickname
+        });
+      }
+      this.nickname = nickname ?? "";
+      // 保持 currentUserInfo 内的昵称一致
+      if (this.currentUserInfo) {
+        this.currentUserInfo.nickname = this.nickname;
+      }
+    },
     SET_ROLES(roles: Array<string>) {
       this.roles = roles;
     },
@@ -91,15 +108,34 @@ export const useUserStore = defineStore({
         dictionaryMapTmp
       );
     },
+    /** 获取并缓存用户资料（接口优先，单例Promise防抖） */
+    ensureUserProfile(force = false) {
+      if (!force && __ensureProfilePromise) {
+        return __ensureProfilePromise;
+      }
+      __ensureProfilePromise = (async () => {
+        const res = await getUserProfileApi();
+        const apiUser = res?.data?.user;
+        const nick = apiUser?.nickname ?? "";
+        const uname = apiUser?.username ?? this.username;
+        this.currentUserInfo = apiUser;
+        this.nickname = nick;
+        this.username = uname;
+      })();
+      return __ensureProfilePromise;
+    },
 
     /** 前端登出（不调用接口） */
     logOut() {
       this.username = "";
+      this.nickname = "";
       this.roles = [];
       removeToken();
       useMultiTagsStoreHook().handleTags("equal", [...routerArrays]);
       resetRouter();
       router.push("/login");
+      // 重置用户资料单例Promise，避免登出后下次登录复用旧Promise
+      __ensureProfilePromise = null;
     }
   }
 });

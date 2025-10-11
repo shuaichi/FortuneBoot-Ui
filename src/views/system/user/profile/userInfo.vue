@@ -3,12 +3,13 @@ import { ref, reactive, watch } from "vue";
 import { updateUserProfileApi, UserProfileRequest } from "@/api/system/user";
 import { message } from "@/utils/message";
 import { FormInstance } from "element-plus";
+import { useUserStoreHook } from "@/store/modules/user";
 
 defineOptions({
   name: "SystemUserProfile"
 });
 
-const emit = defineEmits(["profile-updated"]);
+const emit = defineEmits<{ "profile-updated": [UserProfileRequest] }>();
 const userRef = ref<FormInstance>();
 
 const props = defineProps({
@@ -69,7 +70,16 @@ function submit() {
         message("修改成功", {
           type: "success"
         });
-        emit("profile-updated");
+        // 零额外请求，直接同步到全局Store，驱动右上角昵称立即更新
+        const store = useUserStoreHook();
+        store.SET_NICKNAME(userModel.nickname);
+        if (process.env.NODE_ENV !== "production") {
+          console.debug("[Profile] update nickname -> store", {
+            nickname: userModel.nickname
+          });
+        }
+        // 同时向父组件派发事件，携带最新资料以便本页局部刷新（避免再次请求）
+        emit("profile-updated", { ...userModel });
       });
     }
   });
@@ -78,10 +88,10 @@ function submit() {
 
 <template>
   <el-form ref="userRef" :model="userModel" :rules="rules" label-width="80px">
-    <el-form-item label="用户昵称">
+    <el-form-item label="昵称">
       <el-input v-model="userModel.nickname" maxlength="30" />
     </el-form-item>
-    <el-form-item label="手机号码">
+    <el-form-item label="手机">
       <el-input v-model="userModel.phoneNumber" maxlength="11" />
     </el-form-item>
     <el-form-item label="邮箱">
