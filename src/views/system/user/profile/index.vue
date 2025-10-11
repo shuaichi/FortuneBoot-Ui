@@ -2,12 +2,8 @@
 import resetPwd from "./resetPwd.vue";
 import userInfo from "./userInfo.vue";
 import userAvatar from "./userAvatar.vue";
-// import userAvatar from "./userAvatar";
-// import { getUserProfile } from '@/api/system/user';
-// import * as userApi from "@/api/system/userApi";
-import { reactive, ref } from "vue";
-import dayjs from "dayjs";
-import { useUserStoreHook } from "@/store/modules/user";
+import { onMounted, reactive, ref } from "vue";
+import { getUserProfileApi, UserDTO } from "@/api/system/user";
 
 const activeTab = ref("userinfo");
 const state = reactive({
@@ -15,22 +11,16 @@ const state = reactive({
   roleName: {},
   postName: {}
 });
-
+onMounted(async () => {
+  const userRes = await getUserProfileApi();
+  currentUserInfo.value = userRes.data.user;
+  state.user = userRes.data.user;
+});
 /** 用户名 */
-const currentUserInfo = useUserStoreHook()?.currentUserInfo;
+const currentUserInfo = ref<UserDTO>({});
 
 state.user = currentUserInfo;
 console.log(currentUserInfo);
-
-function getUser() {
-  // userApi.getUserProfile().then(response => {
-  //   state.user = response.user;
-  //   state.roleName = response.roleName;
-  //   state.postName = response.postName;
-  // });
-}
-
-getUser();
 </script>
 <template>
   <div class="app-container">
@@ -44,13 +34,16 @@ getUser();
           </template>
           <div>
             <div class="text-center">
-              <userAvatar :user="state.user" />
+              <userAvatar :user="currentUserInfo" />
             </div>
 
             <el-row>
               <el-descriptions :column="1">
                 <el-descriptions-item label="用户名称">{{
                   currentUserInfo.username
+                }}</el-descriptions-item>
+                <el-descriptions-item label="用户昵称">{{
+                  currentUserInfo.nickname
                 }}</el-descriptions-item>
                 <el-descriptions-item label="手机号码">{{
                   currentUserInfo.phoneNumber
@@ -60,13 +53,6 @@ getUser();
                 }}</el-descriptions-item>
                 <el-descriptions-item label="角色">
                   {{ currentUserInfo.roleName }}
-                </el-descriptions-item>
-                <el-descriptions-item label="创建日期">
-                  {{
-                    dayjs(currentUserInfo.createTime).format(
-                      "YYYY-MM-DD HH:mm:ss"
-                    )
-                  }}
                 </el-descriptions-item>
               </el-descriptions>
             </el-row>
@@ -82,7 +68,7 @@ getUser();
           </template>
           <el-tabs v-model="activeTab">
             <el-tab-pane label="基本资料" name="userinfo">
-              <userInfo :user="state.user" />
+              <userInfo :user="currentUserInfo" />
             </el-tab-pane>
             <el-tab-pane label="修改密码" name="resetPwd">
               <resetPwd :user="state.user" />

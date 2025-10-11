@@ -24,6 +24,7 @@ export const useUserStore = defineStore({
     return {
       // 用户名
       username: userInfo?.userInfo.username ?? "",
+      nickname: userInfo?.userInfo.nickname ?? "",
       // 页面级别权限
       roles: userInfo?.roleKey ? [userInfo.roleKey] : [],
       dictionaryList:

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 // import { updateUserProfile } from '@/api/system/userApi';
 // import * as userApi from "@/api/system/userApi";
-import { ref, reactive } from "vue";
-import { updateUserProfileApi, UserProfileRequest } from "@/api/system/user";
+import { ref, computed } from "vue";
+import { updateUserProfileApi } from "@/api/system/user";
 import { message } from "@/utils/message";
 import { FormInstance } from "element-plus";
 
@@ -18,12 +18,12 @@ const props = defineProps({
   }
 });
 
-const userModel = reactive<UserProfileRequest>({
+const userModel = computed(() => ({
   nickname: props.user.nickname,
   phoneNumber: props.user.phoneNumber,
   email: props.user.email,
   sex: props.user.sex
-});
+}));
 
 console.log(userModel);
 console.log(props.user);
