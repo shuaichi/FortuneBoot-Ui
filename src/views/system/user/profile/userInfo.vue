@@ -1,8 +1,6 @@
 <script setup lang="ts">
-// import { updateUserProfile } from '@/api/system/userApi';
-// import * as userApi from "@/api/system/userApi";
-import { ref, computed } from "vue";
-import { updateUserProfileApi } from "@/api/system/user";
+import { ref, reactive, watch } from "vue";
+import { updateUserProfileApi, UserProfileRequest } from "@/api/system/user";
 import { message } from "@/utils/message";
 import { FormInstance } from "element-plus";
 
@@ -10,6 +8,7 @@ defineOptions({
   name: "SystemUserProfile"
 });
 
+const emit = defineEmits(["profile-updated"]);
 const userRef = ref<FormInstance>();
 
 const props = defineProps({
@@ -18,17 +17,27 @@ const props = defineProps({
   }
 });
 
-const userModel = computed(() => ({
-  nickname: props.user.nickname,
-  phoneNumber: props.user.phoneNumber,
-  email: props.user.email,
-  sex: props.user.sex
-}));
+const userModel = reactive<UserProfileRequest>({
+  nickname: "",
+  phoneNumber: "",
+  email: "",
+  sex: 0
+});
 
-console.log(userModel);
-console.log(props.user);
-
-// const { proxy } = getCurrentInstance();
+watch(
+  () => props.user,
+  n => {
+    if (!n) {
+      return;
+    }
+    // 将最新的用户信息同步到表单模型
+    userModel.nickname = n.nickname ?? "";
+    userModel.phoneNumber = n.phoneNumber ?? "";
+    userModel.email = n.email ?? "";
+    userModel.sex = typeof n.sex === "number" ? n.sex : userModel.sex;
+  },
+  { immediate: true, deep: true }
+);
 
 const rules = ref({
   nickname: [{ required: true, message: "用户昵称不能为空", trigger: "blur" }],
@@ -52,13 +61,15 @@ const rules = ref({
 
 /** 提交按钮 */
 function submit() {
-  console.log(userRef.value);
-  userRef.value.validate(valid => {
+  const form = userRef.value;
+  if (!form) return;
+  form.validate(valid => {
     if (valid) {
       updateUserProfileApi(userModel).then(() => {
         message("修改成功", {
           type: "success"
         });
+        emit("profile-updated");
       });
     }
   });
