@@ -7,6 +7,11 @@ export interface UserQuery extends BasePageQuery {
   username?: string;
 }
 
+export interface UserProfileDTO {
+  user?: UserDTO;
+  roleName?: string;
+}
+
 /**
  * UserDTO
  */
@@ -168,5 +173,12 @@ export const updateCurrentUserPasswordApi = (data?: ResetPasswordRequest) => {
     {
       data
     }
+  );
+};
+
+export const getUserProfileApi = () => {
+  return http.request<ResponseData<UserProfileDTO>>(
+    "get",
+    "/system/user/profile"
   );
 };

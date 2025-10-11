@@ -38,6 +38,7 @@ export type setType = {
 
 export type userType = {
   username?: string;
+  nickname?: string;
   roles?: Array<string>;
   /** 字典ListMap 用于下拉框直接展示 */
   dictionaryList: Record<string, Array<DictionaryData>>;

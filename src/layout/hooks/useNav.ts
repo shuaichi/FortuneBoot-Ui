@@ -35,13 +35,13 @@ export function useNav() {
     };
   });
 
-  /** 用户名 */
-  const username = computed(() => {
-    return useUserStoreHook()?.username;
+  /** 昵称 */
+  const nickname = computed(() => {
+    return useUserStoreHook()?.nickname;
   });
 
   const avatarsStyle = computed(() => {
-    return username.value ? { marginRight: "10px" } : "";
+    return nickname.value ? { marginRight: "10px" } : "";
   });
 
   const isCollapse = computed(() => {
@@ -139,7 +139,7 @@ export function useNav() {
     resolvePath,
     isCollapse,
     pureApp,
-    username,
+    nickname,
     userAvatar,
     avatarsStyle,
     tooltipEffect
