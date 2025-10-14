@@ -410,7 +410,7 @@ const rules: FormRules = {
       message: "请选择单据",
       trigger: "change",
       validator: (rule, value, callback) => {
-        if ((formData.billType !== 7 || formData.billType !== 8) && !value) {
+        if (formData.billType !== 7 && formData.billType !== 8 && !value) {
           callback(new Error(rule.message as string));
         } else {
           callback();

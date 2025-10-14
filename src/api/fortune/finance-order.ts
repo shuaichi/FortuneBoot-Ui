@@ -46,7 +46,7 @@ export const getFinanceOrderPage = (params?: FinanceOrderQuery) => {
 
 // 查询使用中的单据
 export const getUsingFinanceOrderApi = (bookId: number) => {
-  return http.request<ResponseData<PageDTO<FinanceOrderVo>>>(
+  return http.request<ResponseData<Array<FinanceOrderVo>>>(
     "get",
     `/fortune/finance/order/${bookId}/getUsingFinanceOrderList`
   );
