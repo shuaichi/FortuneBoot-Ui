@@ -59,6 +59,7 @@ export interface BillVo {
   tagList?: Array<TagVo>;
   currencyCode?: string;
   payeeName?: string;
+  hasFile?: boolean;
 }
 
 // 分页查询

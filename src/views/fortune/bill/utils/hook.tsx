@@ -175,6 +175,11 @@ export function useHook() {
       )
     },
     {
+      label: "包含附件",
+      prop: "hasFileDesc",
+      width: 90
+    },
+    {
       label: "备注",
       prop: "remark",
       minWidth: 200
@@ -208,7 +213,8 @@ export function useHook() {
               .map(category => category.categoryName)
               .join(", ")
           : "-",
-        payeeName: item.payeeName ? item.payeeName : "-"
+        payeeName: item.payeeName ? item.payeeName : "-",
+        hasFileDesc: item.hasFile ? "是" : "否"
       }));
       pagination.total = data.total;
       const statisticsRes = await getBillStatistics(params);
