@@ -60,6 +60,8 @@ export interface BillVo {
   currencyCode?: string;
   payeeName?: string;
   hasFile?: boolean;
+  confirm?: boolean;
+  include?: boolean;
 }
 
 // 分页查询

@@ -101,6 +101,16 @@
         >
           <template #operation="{ row }">
             <el-button
+              v-if="row.status !== 100"
+              class="reset-margin"
+              link
+              type="primary"
+              :size="size"
+              @click="openOrderBillDialog(row)"
+            >
+              查看账单
+            </el-button>
+            <el-button
               v-if="row.status === 100"
               class="reset-margin"
               link
@@ -162,6 +172,11 @@
       :book-id="searchForm.bookId"
       @success="onSearch"
     />
+    <order-bill
+      v-if="orderBillVisible"
+      v-model="orderBillVisible"
+      :op-row="row"
+    />
   </div>
 </template>
 
@@ -172,17 +187,20 @@ import PureTable from "@pureadmin/table";
 import { PureTableBar } from "@/components/RePureTableBar";
 import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
-import { watch } from "vue";
+import { ref, watch } from "vue";
 import { getEnableBookList } from "@/api/fortune/book";
 import { message } from "@/utils/message";
 import { useHook } from "@/views/fortune/finance-order/utils/hook";
 import OrderForm from "@/views/fortune/finance-order/order-form.vue";
+import OrderBill from "@/views/fortune/finance-order/order-bill.vue";
+import { FinanceOrderVo } from "@/api/fortune/finance-order";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
   name: "FortuneFinanceOrder"
 });
-
+const row = ref<FinanceOrderVo>();
+const orderBillVisible = ref<boolean>(false);
 const {
   loading,
   groupOptions,
@@ -229,6 +247,10 @@ watch(
     await onSearch();
   }
 );
+function openOrderBillDialog(opRow?: FinanceOrderVo) {
+  row.value = opRow;
+  orderBillVisible.value = true;
+}
 </script>
 
 <style scoped>
