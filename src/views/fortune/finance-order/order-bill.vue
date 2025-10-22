@@ -20,7 +20,10 @@
           :size="size"
           :data="dataList"
           :columns="dynamicColumns"
+          :pagination="pagination"
           :paginationSmall="size === 'small'"
+          @page-size-change="handleSizeChange"
+          @page-current-change="handleCurrentChange"
           :header-cell-style="{
             background: 'var(--el-table-row-hover-bg-color)',
             color: 'var(--el-text-color-primary)'
@@ -32,17 +35,18 @@
 </template>
 <script setup lang="ts">
 import { PureTableBar } from "@/components/RePureTableBar";
-import PureTable from "@pureadmin/table";
+import PureTable, { type PaginationProps } from "@pureadmin/table";
 import VDialog from "@/components/VDialog/VDialog.vue";
-import { computed, ref, h } from "vue";
+import { computed, ref, h, reactive } from "vue";
 import { getCurrencySymbol } from "@/utils/currency";
-import { getBillPage } from "@/api/fortune/bill";
+import { BillQuery, getBillPage } from "@/api/fortune/bill";
 import { message } from "@/utils/message";
 import dayjs from "dayjs";
 import { FinanceOrderVo } from "@/api/fortune/finance-order";
 
 const loading = ref<boolean>(false);
 const dataList = ref([]);
+const searchForm = reactive<BillQuery>({});
 
 const props = defineProps<{
   modelValue: boolean;
@@ -55,6 +59,13 @@ const emits = defineEmits<{
 const visible = computed({
   get: () => props.modelValue,
   set: v => emits("update:modelValue", v)
+});
+const pagination = reactive<PaginationProps>({
+  total: 0,
+  pageSize: 10,
+  pageSizes: [10, 20, 50, 100],
+  currentPage: 1,
+  background: true
 });
 const billTypeOptions = [
   { value: 1, label: "支出" },
@@ -194,8 +205,8 @@ async function onSearch() {
   try {
     loading.value = true;
     const params = {
-      pageNum: 1,
-      pageSize: 500,
+      pageNum: searchForm.pageNum,
+      pageSize: searchForm.pageSize,
       orderId: props.opRow.orderId,
       bookId: props.opRow.bookId
     };
@@ -217,11 +228,21 @@ async function onSearch() {
       confirmDesc: item.confirm ? "已确认" : "未确认",
       includeDesc: item.include ? "已统计" : "未统计"
     }));
-    // pagination.total = data.total;
+    pagination.total = data.total;
   } catch (e) {
     message(e.message || "查询失败", { type: "error" });
   } finally {
     loading.value = false;
   }
+}
+async function handleSizeChange(pageSize: number) {
+  pagination.pageSize = pageSize;
+  searchForm.pageSize = pageSize;
+  await onSearch();
+}
+async function handleCurrentChange(currentPage: number) {
+  pagination.currentPage = currentPage;
+  searchForm.pageNum = currentPage;
+  await onSearch();
 }
 </script>
