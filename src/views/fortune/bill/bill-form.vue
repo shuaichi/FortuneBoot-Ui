@@ -548,21 +548,22 @@ async function handleBillTypeChange(type: number) {
     accountOptions.value = accountsRes.data.filter(item => item.canExpense);
     handleBookOrBillTypeChange();
     formData.accountId = bookRes.data.defaultExpenseAccountId;
-    const financeOrderRes = await getUsingFinanceOrderApi(bookRes.data.bookId);
-    financeOrderOptions.value = financeOrderRes.data;
   }
 }
 
-function handleBookOrBillTypeChange() {
+async function handleBookOrBillTypeChange() {
   formData.categoryAmountPair = [{ categoryId: null, amount: null }];
   formData.payeeId = null;
   formData.tagIdList = [];
   formData.amount = null;
   formData.toAccountId = null;
+  formData.orderId = null;
   categoryOptions.value = [];
   payeeOptions.value = [];
   tagOptions.value = [];
   handleCategoryPayeeTagRefresh();
+  const financeOrderRes = await getUsingFinanceOrderApi(formData.bookId);
+  financeOrderOptions.value = financeOrderRes.data;
 }
 
 async function handleCategoryPayeeTagRefresh() {
