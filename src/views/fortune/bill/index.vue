@@ -82,6 +82,7 @@
           start-placeholder="开始日期"
           end-placeholder="结束日期"
           value-format="YYYY-MM-DD"
+          :shortcuts="shortcuts"
         />
       </el-form-item>
       <el-form-item prop="amountMin" label="金额：" v-show="isVisible(6)">
@@ -303,6 +304,7 @@ import { getEnablePayeeList, PayeeVo } from "@/api/fortune/payee";
 import { getEnableTagList, TagVo } from "@/api/fortune/tag";
 import { useRoute } from "vue-router";
 import Download from "@iconify-icons/ep/download";
+import dayjs from "dayjs";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -483,6 +485,56 @@ function openDialog(type: "add" | "edit", row?: any) {
   currentRow.value = row;
   modalVisible.value = true;
 }
+const shortcuts = [
+  {
+    text: "最近一周",
+    value: () => {
+      const end = dayjs();
+      const start = end.subtract(7, "day");
+      return [start.toDate(), end.toDate()];
+    }
+  },
+  {
+    text: "本周",
+    value: () => {
+      const start = dayjs().startOf("week");
+      const end = dayjs().endOf("week");
+      return [start.toDate(), end.toDate()];
+    }
+  },
+  {
+    text: "最近一月",
+    value: () => {
+      const end = dayjs();
+      const start = end.subtract(1, "month");
+      return [start.toDate(), end.toDate()];
+    }
+  },
+  {
+    text: "本月",
+    value: () => {
+      const start = dayjs().startOf("month");
+      const end = dayjs().endOf("month");
+      return [start.toDate(), end.toDate()];
+    }
+  },
+  {
+    text: "最近一年",
+    value: () => {
+      const end = dayjs();
+      const start = end.subtract(1, "year");
+      return [start.toDate(), end.toDate()];
+    }
+  },
+  {
+    text: "今年",
+    value: () => {
+      const start = dayjs().startOf("year");
+      const end = dayjs().endOf("year");
+      return [start.toDate(), end.toDate()];
+    }
+  }
+];
 </script>
 
 <style scoped>
