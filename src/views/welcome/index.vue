@@ -546,7 +546,8 @@ watch(
 @media (width <= 1200px) {
   .charts-container {
     grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: minmax(300px, auto);
+    grid-auto-rows: minmax(350px, auto);
+    min-height: 750px;
   }
 }
 
@@ -563,6 +564,29 @@ watch(
 
   .charts-container {
     grid-template-columns: 1fr;
+    grid-auto-rows: minmax(400px, auto);
+    min-height: 1600px;
+
+    .chart-content {
+      padding: 12px;
+
+      .chart-container {
+        min-height: 350px;
+      }
+    }
+  }
+}
+
+/* 针对更小屏幕的优化 */
+@media (width <= 480px) {
+  .charts-container {
+    .chart-content {
+      padding: 8px;
+
+      .chart-container {
+        min-height: 320px;
+      }
+    }
   }
 }
 
@@ -716,6 +740,7 @@ watch(
 
   .chart-card {
     height: 100%;
+    overflow: hidden; /* 确保内容不溢出 */
     border-radius: 8px;
     box-shadow: 0 2px 12px 0 rgb(0 0 0 / 5%);
     transition: box-shadow 0.3s;
@@ -727,6 +752,7 @@ watch(
     :deep(.el-card__body) {
       height: calc(100% - 60px);
       padding: 0;
+      overflow: hidden; /* 防止内容溢出 */
     }
   }
 
@@ -756,8 +782,18 @@ watch(
   }
 
   .chart-content {
+    position: relative;
     height: 100%;
     padding: 16px;
+    overflow: hidden; /* 确保图表内容不溢出容器 */
+
+    /* 为饼图组件提供足够的显示空间 */
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 300px;
+    }
   }
 
   .chart-loading,

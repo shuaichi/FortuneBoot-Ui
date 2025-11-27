@@ -71,7 +71,16 @@ const initChart = () => {
     legend: {
       orient: "vertical",
       right: 10,
-      top: "center"
+      top: 20,
+      bottom: 20,
+      type: "scroll",
+      pageIconColor: "#409eff",
+      pageIconInactiveColor: "#c0c4cc",
+      pageTextStyle: {
+        color: "#666"
+      },
+      animation: true,
+      animationDurationUpdate: 800
     },
     series: [
       {
@@ -156,7 +165,16 @@ const fetchData = async () => {
       legend: {
         orient: "vertical",
         right: 10,
-        top: "center",
+        top: 20,
+        bottom: 20,
+        type: "scroll",
+        pageIconColor: "#409eff",
+        pageIconInactiveColor: "#c0c4cc",
+        pageTextStyle: {
+          color: "#666"
+        },
+        animation: true,
+        animationDurationUpdate: 800,
         formatter: (name: any) => {
           const item = chartData.find(d => d.name === name);
           return item ? `${name} ￥${formatNumber(item.value)}` : name;
@@ -209,15 +227,39 @@ const formatNumber = (num: number) => {
 };
 </script>
 <style scoped>
+/* 响应式优化 */
+@media (width <= 768px) {
+  .chart-container {
+    min-height: 350px;
+  }
+
+  .pie-chart {
+    min-height: 350px;
+  }
+}
+
+@media (width <= 480px) {
+  .chart-container {
+    min-height: 320px;
+  }
+
+  .pie-chart {
+    min-height: 320px;
+  }
+}
+
 .chart-container {
   position: relative;
   width: 100%;
   height: 100%;
+  min-height: 300px;
+  overflow: hidden;
 }
 
 .pie-chart {
   width: 100%;
   height: 100%;
+  min-height: 300px;
 }
 
 .loading,
