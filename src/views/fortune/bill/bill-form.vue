@@ -509,9 +509,9 @@ const showConvertedAmount = computed(() => {
 
 async function initAccountOptions() {
   const accountsRes = await getEnableAccountList(props.groupId);
-  if (!props.row || props.row.billType === 1) {
+  if (!props.row || props.row.billType === 1 || props.row.billType === 7) {
     accountOptions.value = accountsRes.data.filter(item => item.canExpense);
-  } else if (props.row.billType === 2) {
+  } else if (props.row.billType === 2 || props.row.billType === 8) {
     accountOptions.value = accountsRes.data.filter(item => item.canIncome);
   } else if (props.row.billType === 3) {
     accountOptions.value = accountsRes.data.filter(item => item.canTransferOut);
