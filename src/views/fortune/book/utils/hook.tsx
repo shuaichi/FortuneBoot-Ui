@@ -46,22 +46,22 @@ export function useHook() {
     },
     {
       label: "默认支出账户",
-      prop: "defaultExpenseAccount",
+      prop: "defaultExpenseAccountName",
       width: 150
     },
     {
       label: "默认收入账户",
-      prop: "defaultIncomeAccount",
+      prop: "defaultIncomeAccountName",
       width: 150
     },
     {
       label: "默认转出账户",
-      prop: "defaultTransferOutAccount",
+      prop: "defaultTransferOutAccountName",
       width: 150
     },
     {
       label: "默认转入账户",
-      prop: "defaultTransferInAccount",
+      prop: "defaultTransferInAccountName",
       width: 150
     },
     {
