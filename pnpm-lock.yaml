@@ -9,10 +9,10 @@ importers:
     dependencies:
       "@pureadmin/descriptions":
         specifier: ^1.1.1
-        version: 1.2.1(echarts@5.6.0)(element-plus@2.3.6(vue@3.5.25(typescript@5.0.4)))(typescript@5.0.4)
+        version: 1.2.1(echarts@5.6.0)(element-plus@2.11.3(vue@3.5.25(typescript@5.0.4)))(typescript@5.0.4)
       "@pureadmin/table":
         specifier: ^2.3.2
-        version: 2.4.7(element-plus@2.3.6(vue@3.5.25(typescript@5.0.4)))(typescript@5.0.4)
+        version: 2.4.7(element-plus@2.11.3(vue@3.5.25(typescript@5.0.4)))(typescript@5.0.4)
       "@pureadmin/utils":
         specifier: ^1.9.6
         version: 1.18.0(echarts@5.6.0)(vue@3.5.25(typescript@5.0.4))
@@ -41,8 +41,8 @@ importers:
         specifier: ^5.6.0
         version: 5.6.0
       element-plus:
-        specifier: 2.3.6
-        version: 2.3.6(vue@3.5.25(typescript@5.0.4))
+        specifier: 2.11.3
+        version: 2.11.3(vue@3.5.25(typescript@5.0.4))
       js-cookie:
         specifier: ^3.0.5
         version: 3.0.5
@@ -74,8 +74,8 @@ importers:
         specifier: ^1.5.3
         version: 1.5.4
       qs:
-        specifier: ^6.11.2
-        version: 6.14.0
+        specifier: 6.14.1
+        version: 6.14.1
       responsive-storage:
         specifier: ^2.2.0
         version: 2.2.0
@@ -3083,10 +3083,10 @@ packages:
         integrity: sha512-DrqJ11Knd+lo+dv+lltvfMDLU27g14LMdH2b0O3Pio4uk0x+z7OR+JrmyacTPN2M8w3BrZ7/RTwG3R9B7irPlg==
       }
 
-  element-plus@2.3.6:
+  element-plus@2.11.3:
     resolution:
       {
-        integrity: sha512-GLz0pXUYI2zRfIgyI6W7SWmHk6dSEikP9yR++hsQUyy63+WjutoiGpA3SZD4cGPSXUzRFeKfVr8CnYhK5LqXZw==
+        integrity: sha512-769xsjLR4B9Vf9cl5PDXnwTEdmFJvMgAkYtthdJKPhjVjU3hdAwTJ+gXKiO+PUyo2KWFwOYKZd4Ywh6PHfkbJg==
       }
     peerDependencies:
       vue: ^3.2.0
@@ -5725,10 +5725,10 @@ packages:
     engines: { node: ">=10.13.0" }
     hasBin: true
 
-  qs@6.14.0:
+  qs@6.14.1:
     resolution:
       {
-        integrity: sha512-YWWTjgABSKcvs/nWBi9PycY/JiPJqOD4JA6o9Sej2AtvSGarXxKC3OQSk4pAarbdQlKAh5D4FCQkJNkW+GAn3w==
+        integrity: sha512-4EK3+xJl8Ts67nLYNwqw/dsFVnCf+qR7RgXSK9jEEm9unao3njwMDdmsdvoKBKHzxd7tCYz5e5M+SnMjdtXGQQ==
       }
     engines: { node: ">=0.6" }
 
@@ -7855,19 +7855,19 @@ snapshots:
 
   "@popperjs/core@2.11.8": {}
 
-  "@pureadmin/descriptions@1.2.1(echarts@5.6.0)(element-plus@2.3.6(vue@3.5.25(typescript@5.0.4)))(typescript@5.0.4)":
+  "@pureadmin/descriptions@1.2.1(echarts@5.6.0)(element-plus@2.11.3(vue@3.5.25(typescript@5.0.4)))(typescript@5.0.4)":
     dependencies:
       "@element-plus/icons-vue": 2.3.2(vue@3.5.25(typescript@5.0.4))
       "@pureadmin/utils": 2.6.3(echarts@5.6.0)(vue@3.5.25(typescript@5.0.4))
-      element-plus: 2.3.6(vue@3.5.25(typescript@5.0.4))
+      element-plus: 2.11.3(vue@3.5.25(typescript@5.0.4))
       vue: 3.5.25(typescript@5.0.4)
     transitivePeerDependencies:
       - echarts
       - typescript
 
-  "@pureadmin/table@2.4.7(element-plus@2.3.6(vue@3.5.25(typescript@5.0.4)))(typescript@5.0.4)":
+  "@pureadmin/table@2.4.7(element-plus@2.11.3(vue@3.5.25(typescript@5.0.4)))(typescript@5.0.4)":
     dependencies:
-      element-plus: 2.3.6(vue@3.5.25(typescript@5.0.4))
+      element-plus: 2.11.3(vue@3.5.25(typescript@5.0.4))
       vue: 3.5.25(typescript@5.0.4)
     transitivePeerDependencies:
       - typescript
@@ -9060,7 +9060,7 @@ snapshots:
 
   electron-to-chromium@1.5.263: {}
 
-  element-plus@2.3.6(vue@3.5.25(typescript@5.0.4)):
+  element-plus@2.11.3(vue@3.5.25(typescript@5.0.4)):
     dependencies:
       "@ctrl/tinycolor": 3.6.1
       "@element-plus/icons-vue": 2.3.2(vue@3.5.25(typescript@5.0.4))
@@ -10564,7 +10564,7 @@ snapshots:
       pngjs: 5.0.0
       yargs: 15.4.1
 
-  qs@6.14.0:
+  qs@6.14.1:
     dependencies:
       side-channel: 1.1.0
 
