@@ -180,7 +180,7 @@ export function accountPutBackApi(groupId: number, accountId: number) {
 
 export function accountRemoveApi(groupId: number, accountId: number) {
   return http.request<ResponseData<any>>(
-    "patch",
+    "delete",
     `/fortune/account/${groupId}/${accountId}/remove`
   );
 }
