@@ -1,6 +1,6 @@
 import { reactive, ref } from "vue";
 import { message } from "@/utils/message";
-import { ElMessageBox } from "element-plus";
+import { ElMessageBox, Sort } from "element-plus";
 import { usePublicHooks } from "@/views/system/hooks";
 import {
   BillQuery,
@@ -21,7 +21,14 @@ export function useHook() {
   const { tagStyle } = usePublicHooks();
   const loading = ref(false);
   const dataList = ref<BillVo[]>([]);
-  const searchForm = reactive<BillQuery>({});
+  const defaultSort: Sort = {
+    prop: "tradeTime",
+    order: "descending"
+  };
+  const searchForm = reactive<BillQuery>({
+    orderColumn: defaultSort.prop,
+    orderDirection: defaultSort.order
+  });
   const pagination = reactive({
     total: 0,
     pageSize: 10,
@@ -72,6 +79,7 @@ export function useHook() {
       label: "金额",
       prop: "convertedAmount",
       width: 150,
+      sortable: "custom",
       formatter: ({
         amount,
         convertedAmount,
@@ -127,7 +135,8 @@ export function useHook() {
     {
       label: "交易时间",
       prop: "tradeTime",
-      width: 160
+      width: 160,
+      sortable: "custom"
     },
     {
       label: "分类",
@@ -192,9 +201,19 @@ export function useHook() {
     }
   ];
 
-  async function onSearch() {
+  async function onSearch(sort: Sort = defaultSort) {
     try {
       loading.value = true;
+      if (sort && sort.prop && sort.order) {
+        searchForm.orderColumn = sort.prop;
+        searchForm.orderDirection = sort.order;
+      } else {
+        // 如果 sort 为 null (用户取消排序)，恢复默认排序或清除排序参数
+        // 根据需求，这里可以恢复默认排序
+        searchForm.orderColumn = defaultSort.prop;
+        searchForm.orderDirection = defaultSort.order;
+      }
+
       const params = {
         ...searchForm,
         tradeTimeStartTime: searchForm.tradeTimeRange?.[0],
@@ -312,6 +331,8 @@ export function useHook() {
     searchForm.confirm = null;
     searchForm.include = null;
     searchForm.remark = null;
+    searchForm.orderColumn = defaultSort.prop;
+    searchForm.orderDirection = defaultSort.order;
     await onSearch();
   }
 
@@ -332,6 +353,7 @@ export function useHook() {
     columns,
     loading,
     pagination,
+    defaultSort,
     billTypeOptions,
     billStatistics,
     onSearch,

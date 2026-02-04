@@ -230,6 +230,7 @@
           :data="dataList"
           :columns="dynamicColumns"
           :pagination="pagination"
+          :default-sort="defaultSort"
           :paginationSmall="size === 'small'"
           :header-cell-style="{
             background: 'var(--el-table-row-hover-bg-color)',
@@ -237,6 +238,7 @@
           }"
           @page-size-change="handleSizeChange"
           @page-current-change="handleCurrentChange"
+          @sort-change="onSearch"
         >
           <template #operation="{ row }">
             <el-button
@@ -355,6 +357,7 @@ const {
   columns,
   loading,
   pagination,
+  defaultSort,
   billTypeOptions,
   billStatistics,
   onSearch,
