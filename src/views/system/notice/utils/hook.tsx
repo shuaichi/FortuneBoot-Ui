@@ -148,9 +148,15 @@ export function useNoticeHook() {
     onSearch();
   }
 
-  async function getNoticeList(sort: Sort = defaultSort) {
-    if (sort != null) {
-      CommonUtils.fillSortParams(searchFormParams, sort);
+  async function getNoticeList(sort?: Sort) {
+    if (sort) {
+      if (sort.prop && sort.order) {
+        searchFormParams.orderColumn = sort.prop;
+        searchFormParams.orderDirection = sort.order;
+      } else {
+        searchFormParams.orderColumn = defaultSort.prop;
+        searchFormParams.orderDirection = defaultSort.order;
+      }
     }
     CommonUtils.fillPaginationParams(searchFormParams, pagination);
 

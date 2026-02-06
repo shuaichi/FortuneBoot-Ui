@@ -201,17 +201,19 @@ export function useHook() {
     }
   ];
 
-  async function onSearch(sort: Sort = defaultSort) {
+  async function onSearch(sort?: Sort) {
     try {
       loading.value = true;
-      if (sort && sort.prop && sort.order) {
-        searchForm.orderColumn = sort.prop;
-        searchForm.orderDirection = sort.order;
-      } else {
-        // 如果 sort 为 null (用户取消排序)，恢复默认排序或清除排序参数
-        // 根据需求，这里可以恢复默认排序
-        searchForm.orderColumn = defaultSort.prop;
-        searchForm.orderDirection = defaultSort.order;
+      // 只有当 sort 参数存在（非 undefined）时，才处理排序逻辑
+      if (sort) {
+        if (sort.prop && sort.order) {
+          searchForm.orderColumn = sort.prop;
+          searchForm.orderDirection = sort.order;
+        } else {
+          // 如果 sort 为 null (用户取消排序)，恢复默认排序
+          searchForm.orderColumn = defaultSort.prop;
+          searchForm.orderDirection = defaultSort.order;
+        }
       }
 
       const params = {

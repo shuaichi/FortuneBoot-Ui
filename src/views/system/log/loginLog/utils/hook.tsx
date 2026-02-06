@@ -139,10 +139,16 @@ export function useLoginLogHook() {
     onSearch();
   }
 
-  async function getLoginLogList(sort: Sort = defaultSort) {
+  async function getLoginLogList(sort?: Sort) {
     pageLoading.value = true;
-    if (sort != null) {
-      CommonUtils.fillSortParams(searchFormParams, sort);
+    if (sort) {
+      if (sort.prop && sort.order) {
+        searchFormParams.orderColumn = sort.prop;
+        searchFormParams.orderDirection = sort.order;
+      } else {
+        searchFormParams.orderColumn = defaultSort.prop;
+        searchFormParams.orderDirection = defaultSort.order;
+      }
     }
     CommonUtils.fillPaginationParams(searchFormParams, pagination);
     CommonUtils.fillTimeRangeParams(searchFormParams, timeRange.value);
