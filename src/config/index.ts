@@ -1,4 +1,4 @@
-import { App } from "vue";
+import type { App } from "vue";
 import axios from "axios";
 import { configConver } from "@/utils/rootConver";
 

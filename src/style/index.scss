@@ -1,13 +1,24 @@
-@import "./transition";
-@import "./element-plus";
-@import "./sidebar";
-@import "./dark";
-@import "./fortune-common";
+@use "./transition";
+@use "./element-plus";
+@use "./sidebar";
+@use "./dark";
+@use "./fortune-common";
 
 /* 自定义全局 CssVar */
 :root {
   /* 左侧菜单展开、收起动画时长 */
   --pure-transition-duration: 0.3s;
+
+  /* 导航主题色默认值（default 主题） */
+  --sub-menu-active-text: #fff;
+  --menu-bg: #001529;
+  --menu-hover: #4091f7;
+  --sub-menu-bg: #0f0303;
+  --sub-menu-active-bg: #4091f7;
+  --menu-text: rgb(254 254 254 / 65%);
+  --sidebar-logo: #002140;
+  --menu-title-hover: #fff;
+  --menu-active-before: #4091f7;
 }
 
 /* 灰色模式 */

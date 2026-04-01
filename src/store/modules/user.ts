@@ -1,12 +1,12 @@
 import { defineStore } from "pinia";
 import { store } from "@/store";
-import { userType } from "./types";
+import type { userType } from "./types";
 import { routerArrays } from "@/layout/types";
 import { router, resetRouter } from "@/router";
 import { storageSession } from "@pureadmin/utils";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { removeToken, sessionKey } from "@/utils/auth";
-import { DictionaryData, TokenDTO } from "@/api/common/login";
+import type { DictionaryData, TokenDTO } from "@/api/common/login";
 import { storageLocal } from "@pureadmin/utils";
 import { getUserProfileApi } from "@/api/system/user";
 
@@ -15,8 +15,7 @@ const dictionaryMapKey = "ag-dictionary-map";
 
 let __ensureProfilePromise: Promise<void> | null = null;
 
-export const useUserStore = defineStore({
-  id: "ag-user",
+export const useUserStore = defineStore("ag-user", {
   state: (): userType => {
     // 尝试从sessionStorage或localStorage中获取用户信息
     let userInfo = storageSession().getItem<TokenDTO>(sessionKey)?.currentUser;
@@ -68,7 +67,7 @@ export const useUserStore = defineStore({
     /** 存储系统内的字典值 并拆分为Map形式和List形式 */
     SET_DICTIONARY(
       dictionary:
-        | Map<String, Array<DictionaryData>>
+        | Map<string, Array<DictionaryData>>
         | Record<string, Array<DictionaryData>>
     ) {
       /** 由于localStorage不能存储Map对象,所以用Obj来装载数据 */
@@ -88,10 +87,13 @@ export const useUserStore = defineStore({
       }
 
       for (const obj in dictionaryObj) {
-        dictionaryMapTmp[obj] = dictionaryObj[obj].reduce((map, dict) => {
-          map[dict.value] = dict;
-          return map;
-        }, {} as Record<string, DictionaryData>);
+        dictionaryMapTmp[obj] = dictionaryObj[obj].reduce(
+          (map, dict) => {
+            map[dict.value] = dict;
+            return map;
+          },
+          {} as Record<string, DictionaryData>
+        );
       }
 
       /** 将字典分成List形式和Map形式 List便于下拉框展示 Map便于匹配值 */

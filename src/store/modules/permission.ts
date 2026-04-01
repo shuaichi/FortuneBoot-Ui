@@ -1,13 +1,12 @@
 import { defineStore } from "pinia";
 import { store } from "@/store";
-import { cacheType } from "./types";
+import type { cacheType } from "./types";
 import { constantMenus } from "@/router";
 import { useMultiTagsStoreHook } from "./multiTags";
 import { debounce, getKeyList } from "@pureadmin/utils";
 import { ascending, filterTree, filterNoPermissionTree } from "@/router/utils";
 
-export const usePermissionStore = defineStore({
-  id: "ag-permission",
+export const usePermissionStore = defineStore("ag-permission", {
   state: () => ({
     // 静态路由生成的菜单
     constantMenus,

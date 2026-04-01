@@ -3,8 +3,7 @@ import { defineStore } from "pinia";
 import { storageLocal } from "@pureadmin/utils";
 import { getConfig, responsiveStorageNameSpace } from "@/config";
 
-export const useEpThemeStore = defineStore({
-  id: "pure-epTheme",
+export const useEpThemeStore = defineStore("pure-epTheme", {
   state: () => ({
     epThemeColor:
       storageLocal().getItem<StorageConfigs>(

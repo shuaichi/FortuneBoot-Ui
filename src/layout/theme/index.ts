@@ -1,8 +1,6 @@
 /**
- * @description ⚠️：此文件仅供主题插件使用，请不要在此文件中导出别的工具函数（仅在页面加载前运行）
+ * @description 主题配置 - 使用纯 CSS 变量方案（替代原 @pureadmin/theme 的 SCSS scope 方案）
  */
-
-import { type multipleScopeVarsOptions } from "@pureadmin/theme";
 
 /** 预设主题色 */
 const themeColors = {
@@ -107,26 +105,67 @@ const themeColors = {
   }
 };
 
-/**
- * @description 将预设主题色处理成主题插件所需格式
- */
-export const genScssMultipleScopeVars = (): multipleScopeVarsOptions[] => {
-  const result = [] as multipleScopeVarsOptions[];
-  Object.keys(themeColors).forEach(key => {
-    result.push({
-      scopeName: `layout-theme-${key}`,
-      varsContent: `
-        $subMenuActiveText: ${themeColors[key].subMenuActiveText} !default;
-        $menuBg: ${themeColors[key].menuBg} !default;
-        $menuHover: ${themeColors[key].menuHover} !default;
-        $subMenuBg: ${themeColors[key].subMenuBg} !default;
-        $subMenuActiveBg: ${themeColors[key].subMenuActiveBg} !default;
-        $menuText: ${themeColors[key].menuText} !default;
-        $sidebarLogo: ${themeColors[key].sidebarLogo} !default;
-        $menuTitleHover: ${themeColors[key].menuTitleHover} !default;
-        $menuActiveBefore: ${themeColors[key].menuActiveBefore} !default;
-      `
-    } as multipleScopeVarsOptions);
-  });
-  return result;
+/** CSS 变量名映射 */
+const cssVarMap: Record<string, string> = {
+  subMenuActiveText: "--sub-menu-active-text",
+  menuBg: "--menu-bg",
+  menuHover: "--menu-hover",
+  subMenuBg: "--sub-menu-bg",
+  subMenuActiveBg: "--sub-menu-active-bg",
+  menuText: "--menu-text",
+  sidebarLogo: "--sidebar-logo",
+  menuTitleHover: "--menu-title-hover",
+  menuActiveBefore: "--menu-active-before"
 };
+
+/**
+ * @description 切换导航主题 - 通过设置 CSS 变量实现
+ */
+export function toggleTheme(options: { scopeName: string }) {
+  const { scopeName } = options;
+  const themeName = scopeName.replace("layout-theme-", "");
+  const colors = themeColors[themeName];
+  if (!colors) return;
+
+  const root = document.documentElement;
+  Object.keys(colors).forEach(key => {
+    const cssVar = cssVarMap[key];
+    if (cssVar) {
+      root.style.setProperty(cssVar, colors[key]);
+    }
+  });
+
+  // 设置当前激活的主题 scope class
+  Object.keys(themeColors).forEach(key => {
+    root.classList.remove(`layout-theme-${key}`);
+  });
+  root.classList.add(scopeName);
+}
+
+/**
+ * @description 颜色加深
+ */
+export function darken(color: string, amount: number): string {
+  return adjustColor(color, -amount);
+}
+
+/**
+ * @description 颜色减淡
+ */
+export function lighten(color: string, amount: number): string {
+  return adjustColor(color, amount);
+}
+
+function adjustColor(color: string, amount: number): string {
+  const hex = color.replace("#", "");
+  const num = parseInt(hex, 16);
+  let r = (num >> 16) + Math.round(255 * amount);
+  let g = ((num >> 8) & 0x00ff) + Math.round(255 * amount);
+  let b = (num & 0x0000ff) + Math.round(255 * amount);
+  r = Math.min(255, Math.max(0, r));
+  g = Math.min(255, Math.max(0, g));
+  b = Math.min(255, Math.max(0, b));
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
+}
+
+export { themeColors };

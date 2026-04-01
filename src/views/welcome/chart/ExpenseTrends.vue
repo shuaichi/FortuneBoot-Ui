@@ -23,7 +23,7 @@ import {
   LineVo
 } from "@/api/fortune/include";
 import { message } from "@/utils/message";
-import moment from "moment/moment";
+import dayjs from "dayjs";
 
 use([
   SVGRenderer,
@@ -67,8 +67,8 @@ watch(
 
 async function onSearch() {
   expenseTrendsQuery.bookId = props.bookId;
-  expenseTrendsQuery.timePoint = moment(props.timePoint).format(
-    "yyyy-MM-DD HH:mm:ss"
+  expenseTrendsQuery.timePoint = dayjs(props.timePoint).format(
+    "YYYY-MM-DD HH:mm:ss"
   );
   expenseTrendsQuery.timeGranularity = props.timeGranularity;
   try {

@@ -1,10 +1,5 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-. "$(dirname "$0")/common.sh"
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+nvm use 22 > /dev/null 2>&1 || true
 
-[ -n "$CI" ] && exit 0
-
-# Format and submit code according to lintstagedrc.js configuration
-npm run lint:lint-staged
-
-npm run lint:pretty
+pnpm exec lint-staged --concurrent false

@@ -169,7 +169,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="select-none">
-    <img :src="bg" class="wave" />
+    <img :src="bg" class="wave" alt="" />
     <div class="absolute flex-c right-5 top-3">
       <!-- 主题 -->
       <el-switch
@@ -347,7 +347,7 @@ onBeforeUnmount(() => {
             type="primary"
             >{{ icp }}
           </el-link>
-          | version： 1.4.5 | api-version： {{ apiVersion }}
+          | version： 1.5.0 | api-version： {{ apiVersion }}
         </span>
       </div>
     </div>

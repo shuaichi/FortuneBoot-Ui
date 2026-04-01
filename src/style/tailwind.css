@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 @layer components {
   .flex-c {
@@ -18,4 +16,12 @@
   .navbar-bg-hover {
     @apply dark:text-white dark:hover:!bg-[#242424];
   }
+}
+
+/* 自定义 Tailwind 主题扩展 */
+@theme {
+  --color-bg_color: var(--el-bg-color);
+  --color-primary: var(--el-color-primary);
+  --color-text_color_primary: var(--el-text-color-primary);
+  --color-text_color_regular: var(--el-text-color-regular);
 }

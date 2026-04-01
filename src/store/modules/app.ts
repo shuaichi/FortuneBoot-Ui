@@ -1,11 +1,10 @@
 import { store } from "@/store";
-import { appType } from "./types";
+import type { appType } from "./types";
 import { defineStore } from "pinia";
 import { getConfig, responsiveStorageNameSpace } from "@/config";
 import { deviceDetection, storageLocal } from "@pureadmin/utils";
 
-export const useAppStore = defineStore({
-  id: "pure-app",
+export const useAppStore = defineStore("pure-app", {
   state: (): appType => ({
     sidebar: {
       opened:

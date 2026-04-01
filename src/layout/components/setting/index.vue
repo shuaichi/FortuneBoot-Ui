@@ -24,7 +24,7 @@ import { removeToken } from "@/utils/auth";
 import { routerArrays } from "@/layout/types";
 import { useNav } from "@/layout/hooks/useNav";
 import { useAppStoreHook } from "@/store/modules/app";
-import { toggleTheme } from "@pureadmin/theme/dist/browser-utils";
+import { toggleTheme } from "@/layout/theme";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
 
@@ -251,8 +251,8 @@ onBeforeMount(() => {
         popper-class="pure-tooltip"
       >
         <li
-          :class="layoutTheme.layout === 'vertical' ? 'is-select' : ''"
           ref="verticalRef"
+          :class="layoutTheme.layout === 'vertical' ? 'is-select' : ''"
           @click="setLayoutModel('vertical')"
         >
           <div />
@@ -269,8 +269,8 @@ onBeforeMount(() => {
         popper-class="pure-tooltip"
       >
         <li
-          :class="layoutTheme.layout === 'horizontal' ? 'is-select' : ''"
           ref="horizontalRef"
+          :class="layoutTheme.layout === 'horizontal' ? 'is-select' : ''"
           @click="setLayoutModel('horizontal')"
         >
           <div />
@@ -287,8 +287,8 @@ onBeforeMount(() => {
         popper-class="pure-tooltip"
       >
         <li
-          :class="layoutTheme.layout === 'mix' ? 'is-select' : ''"
           ref="mixRef"
+          :class="layoutTheme.layout === 'mix' ? 'is-select' : ''"
           @click="setLayoutModel('mix')"
         >
           <div />
@@ -301,8 +301,8 @@ onBeforeMount(() => {
     <ul class="theme-color">
       <li
         v-for="(item, index) in themeColors"
-        :key="index"
         v-show="showThemeColors(item.themeColor)"
+        :key="index"
         :style="getThemeColorStyle(item.color)"
         @click="setLayoutThemeColor(item.themeColor)"
       >
