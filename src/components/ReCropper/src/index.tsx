@@ -10,7 +10,7 @@ import {
   ref,
   unref,
   computed,
-  PropType,
+  type PropType,
   onMounted,
   onUnmounted,
   defineComponent
@@ -32,29 +32,13 @@ import {
   DownloadIcon
 } from "./svg";
 
-type Options = Cropper.Options;
-
-const defaultOptions: Options = {
+// CropperJS v2: 选项通过 template 上的 Web Component 属性设置
+// 保持 defaultOptions 用于内部参数映射
+const defaultOptions = {
   aspectRatio: 1,
-  zoomable: true,
-  zoomOnTouch: true,
-  zoomOnWheel: true,
-  cropBoxMovable: true,
-  cropBoxResizable: true,
-  toggleDragModeOnDblclick: true,
-  autoCrop: true,
-  background: true,
-  highlight: true,
-  center: true,
-  responsive: true,
-  restore: true,
-  checkCrossOrigin: true,
-  checkOrientation: true,
-  scalable: true,
-  modal: true,
-  guides: true,
   movable: true,
-  rotatable: true
+  resizable: true,
+  zoomable: true
 };
 
 const props = {
@@ -68,7 +52,10 @@ const props = {
     default: undefined
   },
   imageStyle: { type: Object as PropType<CSSProperties>, default: () => ({}) },
-  options: { type: Object as PropType<Options>, default: () => ({}) }
+  options: {
+    type: Object as PropType<Record<string, any>>,
+    default: () => ({})
+  }
 };
 
 export default defineComponent({
@@ -77,7 +64,7 @@ export default defineComponent({
   setup(props, { attrs, emit }) {
     const tippyElRef = ref<ElRef<HTMLImageElement>>();
     const imgElRef = ref<ElRef<HTMLImageElement>>();
-    const cropper = ref<Nullable<Cropper>>();
+    const cropper = ref<any>(null);
     const isReady = ref(false);
     const imgBase64 = ref();
     const inCircled = ref(props.circled);
@@ -130,60 +117,111 @@ export default defineComponent({
       handCropper("reset");
     });
 
+    // CropperJS v2 的初始化方式
     async function init() {
       const imgEl = unref(imgElRef);
       if (!imgEl) return;
+
+      // CropperJS v2: 使用 template 定义裁剪器布局
+      const mergedOptions = { ...defaultOptions, ...props.options };
+      const aspectRatio = mergedOptions.aspectRatio || NaN;
+
       cropper.value = new Cropper(imgEl, {
-        ...defaultOptions,
-        ready: () => {
+        container: unref(tippyElRef) || undefined,
+        template: `
+          <cropper-canvas background>
+            <cropper-image
+              rotatable
+              scalable
+              skewable
+              translatable
+            ></cropper-image>
+            <cropper-shade hidden></cropper-shade>
+            <cropper-handle action="select" plain></cropper-handle>
+            <cropper-selection
+              initial-coverage="0.5"
+              movable
+              resizable
+              zoomable
+              ${!isNaN(aspectRatio) ? `aspect-ratio="${aspectRatio}"` : ""}
+            >
+              <cropper-grid role="grid" covered></cropper-grid>
+              <cropper-crosshair centered></cropper-crosshair>
+              <cropper-handle action="move" theme-color="rgba(255, 255, 255, 0.35)"></cropper-handle>
+              <cropper-handle action="n-resize"></cropper-handle>
+              <cropper-handle action="e-resize"></cropper-handle>
+              <cropper-handle action="s-resize"></cropper-handle>
+              <cropper-handle action="w-resize"></cropper-handle>
+              <cropper-handle action="ne-resize"></cropper-handle>
+              <cropper-handle action="nw-resize"></cropper-handle>
+              <cropper-handle action="se-resize"></cropper-handle>
+              <cropper-handle action="sw-resize"></cropper-handle>
+            </cropper-selection>
+          </cropper-canvas>
+        `
+      });
+
+      // 监听 ready 事件
+      const canvas = cropper.value.getCropperCanvas();
+      if (canvas) {
+        canvas.addEventListener("ready", () => {
           isReady.value = true;
           realTimeCroppered();
           delay(400).then(() => emit("readied", cropper.value));
-        },
-        crop() {
+        });
+        canvas.addEventListener("actionend", () => {
           debounceRealTimeCroppered();
-        },
-        zoom() {
-          debounceRealTimeCroppered();
-        },
-        cropmove() {
-          debounceRealTimeCroppered();
-        },
-        ...props.options
-      });
+        });
+      }
     }
 
     function realTimeCroppered() {
       props.realTimePreview && croppered();
     }
 
-    function croppered() {
+    async function croppered() {
       if (!cropper.value) return;
-      const canvas = inCircled.value
-        ? getRoundedCanvas()
-        : cropper.value.getCroppedCanvas();
-      // https://developer.mozilla.org/zh-CN/docs/Web/API/HTMLCanvasElement/toBlob
-      canvas.toBlob(blob => {
-        if (!blob) return;
-        const fileReader: FileReader = new FileReader();
-        fileReader.readAsDataURL(blob);
-        fileReader.onloadend = e => {
-          if (!e.target?.result || !blob) return;
-          imgBase64.value = e.target.result;
-          emit("cropper", {
-            base64: e.target.result,
-            blob,
-            info: { size: blob.size, ...cropper.value.getData() }
-          });
-        };
-        fileReader.onerror = () => {
-          emit("error");
-        };
-      });
+      const selection = cropper.value.getCropperSelection();
+      if (!selection) return;
+
+      try {
+        let canvas: HTMLCanvasElement;
+        if (inCircled.value) {
+          const sourceCanvas = await selection.$toCanvas();
+          canvas = getRoundedCanvas(sourceCanvas);
+        } else {
+          canvas = await selection.$toCanvas();
+        }
+
+        canvas.toBlob(blob => {
+          if (!blob) return;
+          const fileReader: FileReader = new FileReader();
+          fileReader.readAsDataURL(blob);
+          fileReader.onloadend = e => {
+            if (!e.target?.result || !blob) return;
+            imgBase64.value = e.target.result;
+            emit("cropper", {
+              base64: e.target.result,
+              blob,
+              info: {
+                size: blob.size,
+                x: selection.x || 0,
+                y: selection.y || 0,
+                width: selection.width || 0,
+                height: selection.height || 0
+              }
+            });
+          };
+          fileReader.onerror = () => {
+            emit("error");
+          };
+        });
+      } catch {
+        // 选区可能尚未就绪
+      }
     }
 
-    function getRoundedCanvas() {
-      const sourceCanvas = cropper.value!.getCroppedCanvas();
+    function getRoundedCanvas(sourceCanvas: HTMLCanvasElement) {
       const canvas = document.createElement("canvas");
       const context = canvas.getContext("2d")!;
       const width = sourceCanvas.width;
@@ -206,16 +244,42 @@ export default defineComponent({
       return canvas;
     }
 
+    // CropperJS v2: 通过 CropperImage 和 CropperSelection 的方法操作
     function handCropper(event: string, arg?: number | Array<number>) {
-      if (event === "scaleX") {
-        scaleX = arg = scaleX === -1 ? 1 : -1;
+      const image = cropper.value?.getCropperImage?.();
+      const selection = cropper.value?.getCropperSelection?.();
+
+      if (!image && !selection) return;
+
+      switch (event) {
+        case "reset":
+          image?.$resetTransform?.();
+          selection?.$reset?.();
+          break;
+        case "move":
+          if (isArray(arg)) {
+            image?.$move?.(arg[0], arg[1]);
+          }
+          break;
+        case "rotate":
+          image?.$rotate?.(arg as number);
+          debounceRealTimeCroppered();
+          break;
+        case "zoom":
+          image?.$zoom?.(arg as number);
+          debounceRealTimeCroppered();
+          break;
+        case "scaleX":
+          scaleX = scaleX === -1 ? 1 : -1;
+          image?.$scale?.(scaleX, undefined);
+          debounceRealTimeCroppered();
+          break;
+        case "scaleY":
+          scaleY = scaleY === -1 ? 1 : -1;
+          image?.$scale?.(undefined, scaleY);
+          debounceRealTimeCroppered();
+          break;
       }
-      if (event === "scaleY") {
-        scaleY = arg = scaleY === -1 ? 1 : -1;
-      }
-      arg && isArray(arg)
-        ? cropper.value?.[event]?.(...arg)
-        : cropper.value?.[event]?.(arg);
     }
 
     function beforeUpload(file) {
@@ -226,7 +290,10 @@ export default defineComponent({
         inSrc.value = e.target?.result as string;
       };
       reader.onloadend = () => {
-        init();
+        // CropperJS v2: 销毁旧实例并重新初始化
+        cropper.value?.destroy();
+        isReady.value = false;
+        delay(100).then(() => init());
       };
       return false;
     }

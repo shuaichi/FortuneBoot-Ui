@@ -1,6 +1,6 @@
-import { PaginationProps, TableColumn } from "@pureadmin/table";
-import { Sort } from "element-plus";
-import { utils, writeFile } from "xlsx";
+import type { PaginationProps, TableColumn } from "@pureadmin/table";
+import type { Sort } from "element-plus";
+import ExcelJS from "exceljs";
 import { message } from "./message";
 import { pinyin } from "pinyin-pro";
 
@@ -69,7 +69,7 @@ export class CommonUtils {
     baseQuery["endTime"] = CommonUtils.getEndTimeSafely(timeRange);
   }
 
-  static exportExcel(
+  static async exportExcel(
     columns: TableColumnList,
     originalDataList: any[],
     excelName: string
@@ -99,20 +99,29 @@ export class CommonUtils {
       }
     });
 
-    const excelDataList: string[][] = originalDataList.map(item => {
-      const arr = [];
-      dataKeyList.forEach(dataKey => {
-        arr.push(item[dataKey]);
-      });
-      return arr;
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet(excelName);
+
+    // 添加表头
+    worksheet.addRow(titleList);
+
+    // 添加数据行
+    originalDataList.forEach(item => {
+      const row = dataKeyList.map(dataKey => item[dataKey]);
+      worksheet.addRow(row);
     });
 
-    excelDataList.unshift(titleList);
-
-    const workSheet = utils.aoa_to_sheet(excelDataList);
-    const workBook = utils.book_new();
-    utils.book_append_sheet(workBook, workSheet, excelName);
-    writeFile(workBook, `${excelName}.xlsx`);
+    // 导出为文件并下载
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${excelName}.xlsx`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   static paginateList(dataList: any[], pagination: PaginationProps): any[] {

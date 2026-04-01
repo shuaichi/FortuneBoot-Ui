@@ -1,11 +1,15 @@
-@import "cropperjs/dist/cropper.css";
 @import "tippy.js/dist/tippy.css";
 @import "tippy.js/themes/light.css";
 @import "tippy.js/animations/perspective.css";
 
+/* CropperJS v2 使用 Web Components，圆形裁剪通过 border-radius 实现 */
 .re-circled {
-  .cropper-view-box,
-  .cropper-face {
+  cropper-selection {
+    border-radius: 50%;
+    outline: none;
+  }
+
+  cropper-selection::part(outline) {
     border-radius: 50%;
   }
 }
