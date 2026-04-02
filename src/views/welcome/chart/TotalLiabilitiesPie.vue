@@ -16,6 +16,7 @@ import {
 } from "vue";
 import * as echarts from "echarts";
 import { getTotalLiabilities } from "@/api/fortune/include";
+import { sumBy } from "@/utils/decimal";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -123,9 +124,10 @@ const initChart = () => {
     );
     console.log(chartData);
     // 重新计算被选中的总金额
-    const newSum = chartData
-      .filter(item => selectedNames.includes(item.name))
-      .reduce((sum, item) => sum + item.value, 0);
+    const newSum = sumBy(
+      chartData.filter(item => selectedNames.includes(item.name)),
+      "value"
+    );
     // 更新中心显示的文字
     chartInstance!.setOption({
       graphic: [
@@ -155,10 +157,7 @@ const fetchData = async () => {
     // 对数据进行从大到小排序
     chartData = [...data].sort((a, b) => b.value - a.value);
     // 计算总值（确保数据结构中包含value字段）
-    const totalValue = chartData.reduce(
-      (sum, item) => sum + (item.value || 0),
-      0
-    );
+    const totalValue = sumBy(chartData, "value");
     await nextTick();
     initChart();
     chartInstance.setOption({

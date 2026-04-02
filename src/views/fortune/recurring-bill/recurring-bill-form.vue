@@ -1,23 +1,23 @@
 <template>
   <v-dialog
+    v-model="visible"
     show-full-screen
     use-body-scrolling
     :fixed-body-height="false"
     :title="type === 'add' ? '新增周期记账规则' : '修改周期记账规则'"
-    v-model="visible"
     :loading="loading"
     @confirm="handleConfirm"
     @cancel="visible = false"
     @opened="handleOpened"
   >
-    <el-form :model="formData" label-width="120px" :rules="rules" ref="formRef">
+    <el-form ref="formRef" :model="formData" label-width="120px" :rules="rules">
       <el-row :gutter="30">
         <re-col :value="12">
           <el-form-item prop="billRequest.bookId" label="所属账本">
             <el-select
+              v-model="formData.billRequest.bookId"
               :disabled="props.type === 'edit'"
               filterable
-              v-model="formData.billRequest.bookId"
               placeholder="请选择账本"
               style="width: 100%"
               @change="handleBookOrBillTypeChange"
@@ -76,8 +76,8 @@
         <re-col :value="12">
           <el-form-item prop="recoveryStrategy" label="补偿策略">
             <el-select
-              filterable
               v-model="formData.recoveryStrategy"
+              filterable
               placeholder="补偿策略"
               style="width: 100%"
               @change="handleRecoveryStrategyChange"
@@ -119,8 +119,8 @@
         <re-col :value="12">
           <el-form-item prop="billRequest.billType" label="交易类型">
             <el-select
-              filterable
               v-model="formData.billRequest.billType"
+              filterable
               placeholder="请选择类型"
               style="width: 100%"
               @change="handleBillTypeChange"
@@ -140,8 +140,8 @@
             :label="formData.billRequest.billType === 3 ? '转出账户' : '账户'"
           >
             <el-select
-              filterable
               v-model="formData.billRequest.accountId"
+              filterable
               placeholder="请选择账户"
               style="width: 100%"
             >
@@ -160,7 +160,7 @@
         :key="index"
         class="category-row"
       >
-        <el-row :gutter="30" v-if="formData.billRequest.billType !== 3">
+        <el-row v-if="formData.billRequest.billType !== 3" :gutter="30">
           <re-col :value="12">
             <el-form-item
               :prop="'billRequest.categoryAmountPair.' + index + '.amount'"
@@ -207,9 +207,9 @@
               添加
             </el-button>
             <el-button
+              v-if="formData.billRequest.categoryAmountPair.length > 1"
               type="text"
               @click="removeCategory(index)"
-              v-if="formData.billRequest.categoryAmountPair.length > 1"
             >
               删除
             </el-button>
@@ -218,7 +218,7 @@
       </div>
 
       <el-row :gutter="30">
-        <re-col :value="12" v-if="formData.billRequest.billType === 3">
+        <re-col v-if="formData.billRequest.billType === 3" :value="12">
           <el-form-item prop="billRequest.amount" label="转出金额">
             <el-input-number
               v-model="formData.billRequest.amount"
@@ -229,11 +229,11 @@
             />
           </el-form-item>
         </re-col>
-        <re-col :value="12" v-if="formData.billRequest.billType === 3">
+        <re-col v-if="formData.billRequest.billType === 3" :value="12">
           <el-form-item prop="billRequest.toAccountId" label="转入账户">
             <el-select
-              filterable
               v-model="formData.billRequest.toAccountId"
+              filterable
               placeholder="请选择转入账户"
               style="width: 100%"
             >
@@ -246,7 +246,7 @@
             </el-select>
           </el-form-item>
         </re-col>
-        <re-col :value="12" v-if="showConvertedAmount">
+        <re-col v-if="showConvertedAmount" :value="12">
           <el-form-item prop="billRequest.convertedAmount">
             <template #label>
               到账金额
@@ -283,11 +283,11 @@
             />
           </el-form-item>
         </re-col>
-        <re-col :value="12" v-if="formData.billRequest.billType !== 3">
+        <re-col v-if="formData.billRequest.billType !== 3" :value="12">
           <el-form-item prop="billRequest.payeeId" label="交易对象">
             <el-select
-              filterable
               v-model="formData.billRequest.payeeId"
+              filterable
               placeholder="请选择交易对象"
               style="width: 100%"
             >
@@ -337,8 +337,8 @@
         <re-col :value="12">
           <el-form-item prop="remark" label="账单备注">
             <el-input
-              type="textarea"
               v-model="formData.billRequest.remark"
+              type="textarea"
               rows="5"
               placeholder="账单备注"
             />
@@ -347,8 +347,8 @@
         <re-col :value="12">
           <el-form-item prop="remark" label="规则备注">
             <el-input
-              type="textarea"
               v-model="formData.remark"
+              type="textarea"
               rows="5"
               placeholder="规则备注"
             />
@@ -434,7 +434,16 @@ const rules: FormRules = {
   "billRequest.billType": [{ required: true, message: "请选择交易类型" }],
   "billRequest.title": [{ required: true, message: "请输入标题" }],
   "billRequest.accountId": [
-    { required: formData.billRequest.billType === 3, message: "请选择账户" }
+    {
+      validator: (rule, value, callback) => {
+        if (formData.billRequest.billType === 3 && !value) {
+          callback(new Error("请选择账户"));
+        } else {
+          callback();
+        }
+      },
+      trigger: "change"
+    }
   ],
   // 动态规则：categoryAmountPair 校验
   "billRequest.categoryAmountPair.0.categoryId": [
@@ -606,7 +615,16 @@ async function handleCategoryPayeeTagRefresh() {
 async function handleOpened() {
   if (props.row) {
     Object.assign(formData, props.row);
-    const billRequestObj = JSON.parse(props.row.billRequest);
+    let billRequestObj;
+    try {
+      billRequestObj =
+        typeof props.row.billRequest === "string"
+          ? JSON.parse(props.row.billRequest)
+          : props.row.billRequest;
+    } catch (error) {
+      console.error("解析 billRequest 失败:", error);
+      billRequestObj = {};
+    }
     console.log(billRequestObj.tagIdList);
     formData.billRequest = billRequestObj;
 
@@ -660,6 +678,11 @@ function removeCategory(index: number) {
         rules[`categoryAmountPair.${i + 1}.amount`];
     }
   });
+
+  // 删除最后一个多余的规则
+  const lastIndex = formData.billRequest.categoryAmountPair.length;
+  delete rules[`categoryAmountPair.${lastIndex}.categoryId`];
+  delete rules[`categoryAmountPair.${lastIndex}.amount`];
 }
 
 async function handleConfirm() {

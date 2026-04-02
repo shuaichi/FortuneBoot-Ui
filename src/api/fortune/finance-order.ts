@@ -54,34 +54,24 @@ export const getUsingFinanceOrderApi = (bookId: number) => {
 
 // 新增单据
 export const addFinanceOrderApi = (data: FinanceOrderAddCommand) => {
-  return http.request<ResponseData<Boolean>>(
+  return http.request<ResponseData<boolean>>(
     "post",
     "/fortune/finance/order/add",
-    {
-      data,
-      headers: {
-        "Content-Type": "multipart/form-data" // 必须设置
-      }
-    }
+    data
   );
 };
 
 // 修改单据
 export const modifyFinanceOrderApi = (data: FinanceOrderModifyCommand) => {
-  return http.request<ResponseData<Boolean>>(
+  return http.request<ResponseData<boolean>>(
     "put",
     "/fortune/finance/order/modify",
-    {
-      data,
-      headers: {
-        "Content-Type": "multipart/form-data" // 必须设置
-      }
-    }
+    data
   );
 };
 
 export const usingFinanceOrderApi = (bookId: number, orderId: number) => {
-  return http.request<ResponseData<Boolean>>(
+  return http.request<ResponseData<boolean>>(
     "patch",
     `/fortune/finance/order/${bookId}/${orderId}/using`
   );
@@ -89,7 +79,7 @@ export const usingFinanceOrderApi = (bookId: number, orderId: number) => {
 
 // 关闭单据
 export const closeFinanceOrderApi = (bookId: number, orderId: number) => {
-  return http.request<ResponseData<Boolean>>(
+  return http.request<ResponseData<boolean>>(
     "patch",
     `/fortune/finance/order/${bookId}/${orderId}/close`
   );
@@ -97,7 +87,7 @@ export const closeFinanceOrderApi = (bookId: number, orderId: number) => {
 
 // 重启单据
 export const reopenFinanceOrderApi = (bookId: number, orderId: number) => {
-  return http.request<ResponseData<Boolean>>(
+  return http.request<ResponseData<boolean>>(
     "patch",
     `/fortune/finance/order/${bookId}/${orderId}/reopen`
   );
@@ -105,7 +95,7 @@ export const reopenFinanceOrderApi = (bookId: number, orderId: number) => {
 
 // 删除单据
 export const removeFinanceOrderApi = (bookId: number, orderId: number) => {
-  return http.request<ResponseData<Boolean>>(
+  return http.request<ResponseData<boolean>>(
     "delete",
     `/fortune/finance/order/${bookId}/${orderId}/remove`
   );

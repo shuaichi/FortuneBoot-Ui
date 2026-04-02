@@ -1,23 +1,23 @@
 <template>
   <v-dialog
+    v-model="visible"
     show-full-screen
     use-body-scrolling
     :fixed-body-height="false"
     :title="type === 'add' ? '新增账单' : '修改账单'"
-    v-model="visible"
     :loading="loading"
     @confirm="handleConfirm"
     @cancel="visible = false"
     @opened="handleOpened"
   >
-    <el-form :model="formData" label-width="120px" :rules="rules" ref="formRef">
+    <el-form ref="formRef" :model="formData" label-width="120px" :rules="rules">
       <el-row :gutter="30">
         <re-col :value="12">
           <el-form-item prop="bookId" label="所属账本">
             <el-select
+              v-model="formData.bookId"
               :disabled="props.type === 'edit'"
               filterable
-              v-model="formData.bookId"
               placeholder="请选择账本"
               style="width: 100%"
               @change="handleBookOrBillTypeChange"
@@ -34,9 +34,9 @@
         <re-col :value="12">
           <el-form-item prop="billType" label="交易类型">
             <el-select
+              v-model="formData.billType"
               :disabled="props.type === 'edit'"
               filterable
-              v-model="formData.billType"
               placeholder="请选择类型"
               style="width: 100%"
               @change="handleBillTypeChange"
@@ -54,24 +54,24 @@
 
       <el-row :gutter="30">
         <re-col
-          :value="24"
           v-if="formData.billType !== 7 && formData.billType !== 8"
+          :value="24"
         >
           <el-form-item prop="title" label="标题">
             <el-input v-model="formData.title" placeholder="请输入标题" />
           </el-form-item>
         </re-col>
         <re-col
-          :value="12"
           v-if="formData.billType === 7 || formData.billType === 8"
+          :value="12"
         >
           <el-form-item prop="title" label="标题">
             <el-input v-model="formData.title" placeholder="请输入标题" />
           </el-form-item>
         </re-col>
         <re-col
-          :value="12"
           v-if="formData.billType === 7 || formData.billType === 8"
+          :value="12"
         >
           <el-form-item
             prop="orderId"
@@ -79,8 +79,8 @@
             :required="formData.billType === 7 || formData.billType === 8"
           >
             <el-select
-              filterable
               v-model="formData.orderId"
+              filterable
               placeholder="请选择单据"
               style="width: 100%"
               clearable
@@ -115,8 +115,8 @@
             :required="formData.billType === 3"
           >
             <el-select
-              filterable
               v-model="formData.accountId"
+              filterable
               placeholder="请选择账户"
               style="width: 100%"
               clearable
@@ -136,7 +136,7 @@
         :key="index"
         class="category-row"
       >
-        <el-row :gutter="30" v-if="formData.billType !== 3">
+        <el-row v-if="formData.billType !== 3" :gutter="30">
           <re-col :value="12">
             <el-form-item
               :prop="'categoryAmountPair.' + index + '.amount'"
@@ -183,9 +183,9 @@
               添加
             </el-button>
             <el-button
+              v-if="formData.categoryAmountPair.length > 1"
               type="text"
               @click="removeCategory(index)"
-              v-if="formData.categoryAmountPair.length > 1"
             >
               删除
             </el-button>
@@ -194,7 +194,7 @@
       </div>
 
       <el-row :gutter="30">
-        <re-col :value="12" v-if="formData.billType === 3">
+        <re-col v-if="formData.billType === 3" :value="12">
           <el-form-item prop="amount" label="转出金额">
             <el-input-number
               v-model="formData.amount"
@@ -205,11 +205,11 @@
             />
           </el-form-item>
         </re-col>
-        <re-col :value="12" v-if="formData.billType === 3">
+        <re-col v-if="formData.billType === 3" :value="12">
           <el-form-item prop="toAccountId" label="转入账户">
             <el-select
-              filterable
               v-model="formData.toAccountId"
+              filterable
               placeholder="请选择转入账户"
               style="width: 100%"
               clearable
@@ -223,7 +223,7 @@
             </el-select>
           </el-form-item>
         </re-col>
-        <re-col :value="12" v-if="showConvertedAmount">
+        <re-col v-if="showConvertedAmount" :value="12">
           <el-form-item prop="convertedAmount">
             <template #label>
               到账金额
@@ -262,11 +262,11 @@
             />
           </el-form-item>
         </re-col>
-        <re-col :value="12" v-if="formData.billType !== 3">
+        <re-col v-if="formData.billType !== 3" :value="12">
           <el-form-item prop="payeeId" label="交易对象">
             <el-select
-              filterable
               v-model="formData.payeeId"
+              filterable
               placeholder="请选择交易对象"
               clearable
               style="width: 100%"
@@ -306,8 +306,8 @@
 
       <el-form-item prop="remark" label="备注">
         <el-input
-          type="textarea"
           v-model="formData.remark"
+          type="textarea"
           rows="4"
           placeholder="请输入备注"
         />
@@ -410,7 +410,7 @@ const rules: FormRules = {
       message: "请选择单据",
       trigger: "change",
       validator: (rule, value, callback) => {
-        if (formData.billType !== 7 && formData.billType !== 8 && !value) {
+        if ((formData.billType === 7 || formData.billType === 8) && !value) {
           callback(new Error(rule.message as string));
         } else {
           callback();
@@ -544,10 +544,14 @@ async function handleBillTypeChange(type: number) {
     formData.payeeId = null;
     formData.accountId = bookRes.data.defaultTransferOutAccountId;
     formData.toAccountId = bookRes.data.defaultTransferInAccountId;
-  } else if (type === 7 || type === 8) {
+  } else if (type === 7) {
     accountOptions.value = accountsRes.data.filter(item => item.canExpense);
     handleBookOrBillTypeChange();
     formData.accountId = bookRes.data.defaultExpenseAccountId;
+  } else if (type === 8) {
+    accountOptions.value = accountsRes.data.filter(item => item.canIncome);
+    handleBookOrBillTypeChange();
+    formData.accountId = bookRes.data.defaultIncomeAccountId;
   }
 }
 
@@ -690,6 +694,11 @@ function removeCategory(index: number) {
         rules[`categoryAmountPair.${i + 1}.amount`];
     }
   });
+
+  // 删除最后一个多余的规则
+  const lastIndex = formData.categoryAmountPair.length;
+  delete rules[`categoryAmountPair.${lastIndex}.categoryId`];
+  delete rules[`categoryAmountPair.${lastIndex}.amount`];
 }
 
 // 判断是否为图片文件

@@ -86,6 +86,7 @@ import {
 import * as echarts from "echarts";
 import { ArrowDown } from "@element-plus/icons-vue";
 import { Download, Refresh } from "@element-plus/icons-vue";
+import { sumBy } from "@/utils/decimal";
 
 interface PieVo {
   name: string;
@@ -114,7 +115,7 @@ let chartInstance: echarts.ECharts | null = null;
 const tableData = computed(() => {
   if (!props.data || props.data.length === 0) return [];
 
-  const total = props.data.reduce((sum, item) => sum + item.value, 0);
+  const total = sumBy(props.data, "value");
 
   return props.data.map(item => ({
     ...item,
@@ -125,7 +126,7 @@ const tableData = computed(() => {
 // 计算总金额
 const totalAmount = computed(() => {
   if (!props.data || props.data.length === 0) return 0;
-  return props.data.reduce((sum, item) => sum + item.value, 0);
+  return sumBy(props.data, "value");
 });
 
 onMounted(() => {

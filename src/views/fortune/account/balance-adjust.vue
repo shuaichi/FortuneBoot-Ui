@@ -1,22 +1,22 @@
 <template>
   <v-dialog
+    v-model="visible"
     show-full-screen
     :fixed-body-height="false"
     title="余额调整"
-    v-model="visible"
     :loading="loading"
+    width="480px"
     @confirm="handleConfirm"
     @cancel="visible = false"
     @opened="handleOpened"
-    width="480px"
   >
-    <el-form :model="formData" label-width="120px" :rules="rules" ref="formRef">
+    <el-form ref="formRef" :model="formData" label-width="120px" :rules="rules">
       <el-row :gutter="30">
         <re-col :value="24">
           <el-form-item prop="bookId" label="账本" required>
             <el-select
-              filterable
               v-model="formData.bookId"
+              filterable
               placeholder="请选择账本"
               style="width: 100%"
             >
@@ -64,8 +64,8 @@
       </el-row>
       <el-form-item prop="remark" label="备注">
         <el-input
-          type="textarea"
           v-model="formData.remark"
+          type="textarea"
           rows="4"
           placeholder="请输入备注"
         />
@@ -103,7 +103,7 @@ const visible = computed({
 const rules: FormRules = {
   bookId: [{ required: true, message: "请选择账本" }],
   balance: [{ required: true, message: "请输入余额" }],
-  tradeDate: [{ required: true, message: "请选择时间" }]
+  tradeTime: [{ required: true, message: "请选择时间" }]
 };
 async function handleOpened() {
   formData.accountId = props.row.accountId;

@@ -1,15 +1,15 @@
 <template>
   <v-dialog
+    v-model="visible"
     show-full-screen
     :fixed-body-height="false"
     :title="type === 'add' ? '新增账户' : '修改账户'"
-    v-model="visible"
     :loading="loading"
     @confirm="handleConfirm"
     @cancel="visible = false"
     @opened="handleOpened"
   >
-    <el-form :model="formData" label-width="120px" :rules="rules" ref="formRef">
+    <el-form ref="formRef" :model="formData" label-width="120px" :rules="rules">
       <el-row :gutter="30">
         <re-col :value="12">
           <el-form-item prop="groupId" label="所属分组">
@@ -101,8 +101,8 @@
           </el-form-item>
         </re-col>
         <re-col
-          :value="12"
           v-if="formData.accountType === 2 || formData.accountType === 4"
+          :value="12"
         >
           <el-form-item prop="creditLimit" label="额度">
             <el-input-number
@@ -115,10 +115,10 @@
         </re-col>
       </el-row>
       <el-row
-        :gutter="30"
         v-if="formData.accountType === 2 || formData.accountType === 4"
+        :gutter="30"
       >
-        <re-col :value="12" v-if="formData.accountType === 2">
+        <re-col v-if="formData.accountType === 2" :value="12">
           <el-form-item prop="billDay" label="账单日">
             <el-date-picker
               v-model="formData.billDay"
@@ -129,7 +129,7 @@
             />
           </el-form-item>
         </re-col>
-        <re-col :value="12" v-if="formData.accountType === 4">
+        <re-col v-if="formData.accountType === 4" :value="12">
           <el-form-item prop="apr" label="利率（%）">
             <el-input-number
               v-model="formData.apr"
@@ -188,8 +188,8 @@
 
       <el-form-item prop="remark" label="备注">
         <el-input
-          type="textarea"
           v-model="formData.remark"
+          type="textarea"
           rows="4"
           placeholder="请输入备注"
         />
@@ -281,6 +281,7 @@ function handleOpened() {
 
 async function handleConfirm() {
   try {
+    await formRef.value.validate();
     loading.value = true;
     if (props.type === "add") {
       await addAccountApi(formData);
