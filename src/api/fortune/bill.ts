@@ -1,6 +1,9 @@
 import { http } from "@/utils/http";
-import { TagVo } from "@/api/fortune/tag";
+import type { TagVo } from "@/api/fortune/tag";
 
+// 账单数据模型
+// 注意：文件上传需要单独处理，不包含在此接口中
+// 如需上传文件，请将数据和文件一起组装成 FormData 后调用 addBillApi 或 modifyBillApi
 export interface AddBillCommand {
   bookId?: number;
   title?: string;
@@ -17,7 +20,6 @@ export interface AddBillCommand {
   include: boolean;
   categoryAmountPair?: Array<CategoryAmountPairVo>;
   remark?: string;
-  fileList?: FormData;
 }
 
 export interface CategoryAmountPairVo {
@@ -74,6 +76,13 @@ export const getBillPage = (params?: BillQuery) => {
 };
 
 // 新增账单
+// 使用示例：
+// const formData = new FormData();
+// formData.append('bookId', '1');
+// formData.append('title', '账单标题');
+// formData.append('fileList', file1);
+// formData.append('fileList', file2);
+// addBillApi(formData);
 export const addBillApi = (data: FormData) => {
   return http.request("post", "/fortune/bill/add", {
     data,

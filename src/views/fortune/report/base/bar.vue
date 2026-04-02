@@ -101,6 +101,10 @@ const props = defineProps({
   title: {
     type: String,
     default: ""
+  },
+  currency: {
+    type: String,
+    default: "CNY"
   }
 });
 
@@ -339,7 +343,7 @@ const downloadChart = () => {
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("zh-CN", {
     style: "currency",
-    currency: "CNY",
+    currency: props.currency,
     minimumFractionDigits: 2
   }).format(value);
 };

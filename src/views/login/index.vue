@@ -12,9 +12,7 @@ import Motion from "./utils/motion";
 import { useRouter } from "vue-router";
 import { message } from "@/utils/message";
 import { loginRules } from "./utils/rule";
-// import phone from "./components/phone.vue";
 import TypeIt from "@/components/ReTypeit";
-// import qrCode from "./components/qrCode.vue";
 import register from "./components/register.vue";
 import resetPassword from "./components/resetPassword.vue";
 import { useNav } from "@/layout/hooks/useNav";
@@ -131,7 +129,7 @@ async function getCaptchaCode() {
   if (isCaptchaOn.value) {
     await CommonAPI.getCaptchaCode()
       .then(res => {
-        captchaCodeBase64.value = `data:image/gif;base64,${res.data.captchaCodeImg}`;
+        captchaCodeBase64.value = res.data.captchaCodeImg;
         ruleForm.captchaCodeKey = res.data.captchaCodeKey;
       })
       .catch(() => {

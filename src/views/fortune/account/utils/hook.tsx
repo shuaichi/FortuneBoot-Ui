@@ -3,8 +3,8 @@ import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
 import { usePublicHooks } from "@/views/system/hooks";
 import {
-  AccountQuery,
-  AccountVo,
+  type AccountQuery,
+  type AccountVo,
   getFortuneAccountPage,
   enableAccountApi,
   disableAccountApi,
@@ -24,7 +24,7 @@ import {
   getCurrencyTemplate,
   getDefaultGroupId,
   getEnableGroupList,
-  GroupVo
+  type GroupVo
 } from "@/api/fortune/group";
 import dayjs from "dayjs";
 import { useRouter } from "vue-router";
@@ -314,7 +314,7 @@ export function useHook() {
       message(`${action}成功`, { type: "success" });
       await onSearch();
     } catch (error) {
-      console.log("操作取消");
+      console.log("操作取消", error);
     }
   }
 
@@ -338,7 +338,7 @@ export function useHook() {
       message(`${action}成功`, { type: "success" });
       await onSearch();
     } catch (error) {
-      console.log("操作取消");
+      console.log("操作取消", error);
     }
   }
 
@@ -362,7 +362,7 @@ export function useHook() {
       message(`${action}成功`, { type: "success" });
       await onSearch();
     } catch (error) {
-      console.log("操作取消");
+      console.log("操作取消", error);
     }
   }
 
@@ -386,7 +386,7 @@ export function useHook() {
       message(`${action}成功`, { type: "success" });
       await onSearch();
     } catch (error) {
-      console.log("操作取消");
+      console.log("操作取消", error);
     }
   }
 
@@ -410,7 +410,7 @@ export function useHook() {
       message(`${action}成功`, { type: "success" });
       await onSearch();
     } catch (error) {
-      console.log("操作取消");
+      console.log("操作取消", error);
     }
   }
 
@@ -435,18 +435,33 @@ export function useHook() {
       message(`${action}成功`, { type: "success" });
       await onSearch();
     } catch (error) {
-      console.log("操作取消");
+      console.log("操作取消", error);
     }
   }
 
   async function handleMove2RecycleBin(row: AccountVo) {
     try {
+      // 根据账户余额情况显示不同的确认提示
+      const confirmMessage =
+        row.balance && row.balance !== 0
+          ? "账户余额不为零，移入回收站后将从资产统计中排除，确认继续？"
+          : `确认将【${row.accountName}】账户移入回收站吗？`;
+
+      await ElMessageBox.confirm(confirmMessage, "移入回收站确认", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      });
+
       loading.value = true;
       await moveAccount2RecycleBinApi(row.groupId, row.accountId);
       message(`已将【${row.accountName}】账户移入回收站`, { type: "success" });
       await onSearch();
     } catch (e) {
-      message(e.message || "移入回收站失败", { type: "error" });
+      // 用户取消操作不显示错误信息
+      if (e !== "cancel") {
+        message(e.message || "移入回收站失败", { type: "error" });
+      }
     } finally {
       loading.value = false;
     }

@@ -43,7 +43,6 @@
             <el-input
               v-model="formData.cronExpression"
               placeholder="cron表达式"
-              @blur="validateCronExpression"
             />
           </el-form-item>
         </re-col>
@@ -428,7 +427,28 @@ const formData = reactive<AddRecurringBillCommand | ModifyRecurringBillCommand>(
 
 const rules: FormRules = {
   ruleName: [{ required: true, message: "请输入规则名称" }],
-  cronExpression: [{ required: true, message: "请输入cron表达式" }],
+  cronExpression: [
+    { required: true, message: "请输入cron表达式" },
+    {
+      validator: async (rule, value, callback) => {
+        if (!value) {
+          callback();
+          return;
+        }
+        try {
+          const checkCronRes = await checkCronExpression(value);
+          if (!checkCronRes.data) {
+            callback(new Error("cron表达式格式不正确"));
+          } else {
+            callback();
+          }
+        } catch (error) {
+          callback(new Error("cron表达式校验失败"));
+        }
+      },
+      trigger: "blur"
+    }
+  ],
 
   "billRequest.bookId": [{ required: true, message: "请选择账本" }],
   "billRequest.billType": [{ required: true, message: "请选择交易类型" }],
@@ -714,19 +734,6 @@ async function handleConfirm() {
     }
   } finally {
     loading.value = false;
-  }
-}
-
-// 添加 cron 表达式校验函数
-async function validateCronExpression() {
-  if (!formData.cronExpression) {
-    ElMessage.warning("请输入cron表达式");
-    return;
-  }
-  // 后端接口校验cron表达式
-  const checkCronRes = await checkCronExpression(formData.cronExpression);
-  if (!checkCronRes.data) {
-    ElMessage.warning("cron表达式格式不正确");
   }
 }
 </script>

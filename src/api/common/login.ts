@@ -1,8 +1,8 @@
 import { http } from "@/utils/http";
-import { RouteRecordRaw } from "vue-router";
+import type { RouteRecordRaw } from "vue-router";
 
 export type CaptchaDTO = {
-  /**  验证码的base64图片 */
+  /** 验证码图片（data URI格式，如：data:image/svg+xml;base64,xxx） */
   captchaCodeImg: string;
   /** 验证码对应的缓存key */
   captchaCodeKey: string;
@@ -12,7 +12,7 @@ export type ConfigDTO = {
   /** 验证码开关 */
   isCaptchaOn: boolean;
   /** 系统字典配置（下拉选项之类的） */
-  dictionary: Map<String, Array<DictionaryData>>;
+  dictionary: Map<string, Array<DictionaryData>>;
 };
 
 export type LoginByPasswordDTO = {

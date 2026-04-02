@@ -797,8 +797,22 @@ const handleFileRemove = file => {
 };
 
 async function handleConfirm() {
+  // 防止重复提交
+  if (loading.value) {
+    return;
+  }
   try {
     await formRef.value.validate();
+
+    // 转账场景下校验转出账户和转入账户不能相同
+    if (
+      formData.billType === 3 &&
+      formData.accountId === formData.toAccountId
+    ) {
+      ElMessage.warning("转出账户与转入账户不能相同");
+      return;
+    }
+
     loading.value = true;
     // 清理非转账类型的字段
     if (formData.billType !== 3) {

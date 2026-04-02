@@ -1,5 +1,6 @@
 <template>
   <v-dialog
+    v-model="visible"
     show-full-screen
     :fixed-body-height="false"
     :title="
@@ -8,17 +9,16 @@
           ? '新增支出分类'
           : '新增收入分类'
         : props.categoryType === 2
-        ? '修改收入分类'
-        : '修改支出分类'
+          ? '修改收入分类'
+          : '修改支出分类'
     "
-    v-model="visible"
     width="640px"
     :loading="loading"
     @confirm="handleConfirm"
     @cancel="visible = false"
     @opened="handleOpened"
   >
-    <el-form :model="formData" label-width="120px" :rules="rules" ref="formRef">
+    <el-form ref="formRef" :model="formData" label-width="120px" :rules="rules">
       <el-row :gutter="30">
         <re-col :value="24">
           <el-form-item prop="parentId" label="父级分类">
@@ -67,8 +67,8 @@
         <re-col :value="24">
           <el-form-item prop="remark" label="备注" style="margin-bottom: 0">
             <el-input
-              type="textarea"
               v-model="formData.remark"
+              type="textarea"
               rows="6"
               placeholder="请输入备注"
             />
@@ -140,26 +140,8 @@ async function handleOpened() {
       categoryType: formData.categoryType,
       recycleBin: false
     });
-    categoryOptions.value = trimTreeToTwoLevels(categoryRes.data);
+    categoryOptions.value = categoryRes.data;
   }
-}
-
-function trimTreeToTwoLevels(nodes: Array<CategoryVo>) {
-  return nodes.map(node => {
-    // 复制当前节点的其他属性
-    const newNode = { ...node };
-    // 如果当前节点有子节点，则只保留它们的直接子节点，并清空更深层次的子节点
-    if (newNode.children && newNode.children.length > 0) {
-      newNode.children = newNode.children.map(childNode => {
-        // 复制子节点的其他属性
-        const trimmedChildNode = { ...childNode };
-        // 清空子节点的子节点
-        trimmedChildNode.children = [];
-        return trimmedChildNode;
-      });
-    }
-    return newNode;
-  });
 }
 
 async function handleConfirm() {

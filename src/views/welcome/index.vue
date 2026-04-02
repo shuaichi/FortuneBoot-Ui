@@ -49,62 +49,76 @@
 
     <!-- 资产概览卡片 -->
     <div class="summary-cards">
-      <el-card class="summary-card assets-card">
-        <div class="summary-icon">
-          <el-icon>
-            <Wallet />
-          </el-icon>
-        </div>
-        <div class="summary-content">
-          <div class="summary-label">总资产</div>
-          <div class="summary-value">
-            <span v-if="showAssets">
-              {{ formatCurrency(assetsLiabilities.totalAssets) }}
-            </span>
-            <el-icon @click="toggleShowAssets">
-              <View />
+      <!-- 空状态处理 -->
+      <el-card v-if="!hasAssetsLiabilitiesData" class="summary-empty-card">
+        <el-empty description="暂无数据，请先创建账户">
+          <template #image>
+            <el-icon :size="80" color="#c0c4cc">
+              <Wallet />
             </el-icon>
-          </div>
-        </div>
+          </template>
+        </el-empty>
       </el-card>
 
-      <el-card class="summary-card liabilities-card">
-        <div class="summary-icon">
-          <el-icon>
-            <Money />
-          </el-icon>
-        </div>
-        <div class="summary-content">
-          <div class="summary-label">总负债</div>
-          <div class="summary-value">
-            <span v-if="showLiabilities">
-              {{ formatCurrency(assetsLiabilities.totalLiabilities) }}
-            </span>
-            <el-icon @click="toggleShowLiabilities">
-              <View />
+      <!-- 有数据时显示卡片 -->
+      <template v-else>
+        <el-card class="summary-card assets-card">
+          <div class="summary-icon">
+            <el-icon>
+              <Wallet />
             </el-icon>
           </div>
-        </div>
-      </el-card>
+          <div class="summary-content">
+            <div class="summary-label">总资产</div>
+            <div class="summary-value">
+              <span v-if="showAssets">
+                {{ formatCurrency(assetsLiabilities.totalAssets) }}
+              </span>
+              <el-icon @click="toggleShowAssets">
+                <View />
+              </el-icon>
+            </div>
+          </div>
+        </el-card>
 
-      <el-card class="summary-card net-assets-card">
-        <div class="summary-icon">
-          <el-icon>
-            <TrendCharts />
-          </el-icon>
-        </div>
-        <div class="summary-content">
-          <div class="summary-label">净资产</div>
-          <div class="summary-value">
-            <span v-if="showNetAssets">
-              {{ formatCurrency(assetsLiabilities.netAssets) }}
-            </span>
-            <el-icon @click="toggleShowNetAssets">
-              <View />
+        <el-card class="summary-card liabilities-card">
+          <div class="summary-icon">
+            <el-icon>
+              <Money />
             </el-icon>
           </div>
-        </div>
-      </el-card>
+          <div class="summary-content">
+            <div class="summary-label">总负债</div>
+            <div class="summary-value">
+              <span v-if="showLiabilities">
+                {{ formatCurrency(assetsLiabilities.totalLiabilities) }}
+              </span>
+              <el-icon @click="toggleShowLiabilities">
+                <View />
+              </el-icon>
+            </div>
+          </div>
+        </el-card>
+
+        <el-card class="summary-card net-assets-card">
+          <div class="summary-icon">
+            <el-icon>
+              <TrendCharts />
+            </el-icon>
+          </div>
+          <div class="summary-content">
+            <div class="summary-label">净资产</div>
+            <div class="summary-value">
+              <span v-if="showNetAssets">
+                {{ formatCurrency(assetsLiabilities.netAssets) }}
+              </span>
+              <el-icon @click="toggleShowNetAssets">
+                <View />
+              </el-icon>
+            </div>
+          </div>
+        </el-card>
+      </template>
     </div>
     <!-- 图表区域 -->
     <div class="charts-container">
@@ -139,8 +153,8 @@
             <el-empty description="暂无数据" />
           </div>
           <TotalAssetsPie
-            ref="assetsPieRef"
             v-if="showAssetsChart"
+            ref="assetsPieRef"
             :group-id="searchForm.groupId"
           />
         </div>
@@ -177,8 +191,8 @@
             <el-empty description="暂无数据" />
           </div>
           <TotalLiabilitiesPie
-            ref="liabilitiesPieRef"
             v-if="showLiabilitiesChart"
+            ref="liabilitiesPieRef"
             :group-id="searchForm.groupId"
           />
         </div>
@@ -221,8 +235,8 @@
             <el-empty description="暂无数据" />
           </div>
           <ExpenseTrends
-            ref="expenseTrendsRef"
             v-else
+            ref="expenseTrendsRef"
             :book-id="searchForm.bookId"
             :time-granularity="expenseSearchForm.timeGranularity"
             :time-point="expenseSearchForm.timePoint"
@@ -267,8 +281,8 @@
             <el-empty description="暂无数据" />
           </div>
           <IncomeTrends
-            ref="incomeTrendsRef"
             v-else
+            ref="incomeTrendsRef"
             :book-id="searchForm.bookId"
             :time-granularity="incomeSearchForm.timeGranularity"
             :time-point="incomeSearchForm.timePoint"
@@ -338,11 +352,27 @@ const hasData = computed(() => {
   return !loading.value;
 });
 
+// 判断资产负债数据是否为空
+const hasAssetsLiabilitiesData = computed(() => {
+  return (
+    assetsLiabilities.value.totalAssets !== 0 ||
+    assetsLiabilities.value.totalLiabilities !== 0
+  );
+});
+
+// 计算当前分组的默认币种
+const currentCurrency = computed(() => {
+  const currentGroup = groupOptions.value.find(
+    group => group.groupId === searchForm.groupId
+  );
+  return currentGroup?.defaultCurrency || "CNY";
+});
+
 // 格式化货币
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("zh-CN", {
     style: "currency",
-    currency: "CNY",
+    currency: currentCurrency.value,
     minimumFractionDigits: 2
   }).format(value);
 };
@@ -640,6 +670,23 @@ watch(
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
+
+  .summary-empty-card {
+    display: flex;
+    grid-column: 1 / -1;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    border-radius: 8px;
+
+    :deep(.el-card__body) {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+  }
 
   .summary-card {
     display: flex;

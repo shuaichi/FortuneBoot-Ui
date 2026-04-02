@@ -15,7 +15,12 @@
       @reset="resetForm"
     />
     <el-card class="report-card">
-      <pie :data="resData" :title="reportTitle" @refresh="onSearch" />
+      <pie
+        :data="resData"
+        :title="reportTitle"
+        :currency="currentCurrency"
+        @refresh="onSearch"
+      />
     </el-card>
   </div>
 </template>
@@ -35,6 +40,14 @@ import {
 const billType = ref<number>();
 const reportTitle = computed(() => {
   return billType.value === 1 ? "支出分类统计" : "收入分类统计";
+});
+
+// 计算当前分组的默认币种
+const currentCurrency = computed(() => {
+  const currentGroup = groupOptions.value?.find(
+    group => group.groupId === groupId.value
+  );
+  return currentGroup?.defaultCurrency || "CNY";
 });
 
 const {

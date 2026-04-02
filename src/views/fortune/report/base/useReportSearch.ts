@@ -1,15 +1,15 @@
-import { reactive, Ref, ref, watch } from "vue";
-import { BillReportQuery, PieVo } from "@/api/fortune/include";
+import { reactive, type Ref, ref, watch } from "vue";
+import type { BillReportQuery, PieVo } from "@/api/fortune/include";
 import {
   getDefaultGroupId,
   getEnableGroupList,
-  GroupVo
+  type GroupVo
 } from "@/api/fortune/group";
-import { BookVo, getEnableBookList } from "@/api/fortune/book";
-import { AccountVo, getEnableAccountList } from "@/api/fortune/account";
-import { CategoryVo, getEnableCategoryList } from "@/api/fortune/category";
-import { getEnablePayeeList, PayeeVo } from "@/api/fortune/payee";
-import { getEnableTagList, TagVo } from "@/api/fortune/tag";
+import { type BookVo, getEnableBookList } from "@/api/fortune/book";
+import { type AccountVo, getEnableAccountList } from "@/api/fortune/account";
+import { type CategoryVo, getEnableCategoryList } from "@/api/fortune/category";
+import { getEnablePayeeList, type PayeeVo } from "@/api/fortune/payee";
+import { getEnableTagList, type TagVo } from "@/api/fortune/tag";
 import { message } from "@/utils/message";
 
 export function useReportSearch(billType: Ref<number>, fetchApi: Function) {
@@ -23,6 +23,7 @@ export function useReportSearch(billType: Ref<number>, fetchApi: Function) {
   const payeeOptions = ref<Array<PayeeVo>>();
   const tagOptions = ref<Array<TagVo>>();
   const resData = ref<Array<PieVo>>();
+  const isInitialized = ref<boolean>(false);
 
   async function init() {
     const groupRes = await getEnableGroupList();
@@ -50,6 +51,7 @@ export function useReportSearch(billType: Ref<number>, fetchApi: Function) {
     categoryOptions.value = categoryRes.data;
     payeeOptions.value = payeeRes.data;
     tagOptions.value = tagRes.data;
+    isInitialized.value = true;
   }
 
   watch(
@@ -69,6 +71,7 @@ export function useReportSearch(billType: Ref<number>, fetchApi: Function) {
   watch(
     () => searchForm.bookId,
     async () => {
+      if (!isInitialized.value) return;
       await onSearch();
     }
   );

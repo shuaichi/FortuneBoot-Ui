@@ -1,10 +1,10 @@
 import { reactive, ref } from "vue";
 import { message } from "@/utils/message";
-import { ElMessageBox, Sort } from "element-plus";
+import { ElMessageBox, type Sort } from "element-plus";
 import { usePublicHooks } from "@/views/system/hooks";
 import {
-  BillQuery,
-  BillVo,
+  type BillQuery,
+  type BillVo,
   getBillPage,
   deleteBillApi,
   confirmBillApi,
@@ -14,7 +14,10 @@ import {
   exportBillExcelApi
 } from "@/api/fortune/bill";
 import dayjs from "dayjs";
-import { BillStatisticsVo, getBillStatistics } from "@/api/fortune/include";
+import {
+  type BillStatisticsVo,
+  getBillStatistics
+} from "@/api/fortune/include";
 import { getCurrencySymbol } from "@/utils/currency";
 
 export function useHook() {
@@ -253,12 +256,48 @@ export function useHook() {
 
   async function handleDelete(row) {
     try {
+      // 构建风险提示信息
+      const warnings: string[] = [];
+
+      if (row.confirm) {
+        warnings.push("已确认");
+      }
+
+      if (row.include) {
+        warnings.push("已统计");
+      }
+
+      if (row.hasFileDesc && row.hasFileDesc !== "无附件") {
+        warnings.push("包含附件");
+      }
+
+      // 构建提示消息
+      let confirmMessage = `确定要删除【${row.title}】账单吗？`;
+      if (warnings.length > 0) {
+        confirmMessage = `该账单${warnings.join("、")}，删除后数据将无法恢复`;
+        if (row.hasFileDesc && row.hasFileDesc !== "无附件") {
+          confirmMessage += "，附件也将被清除";
+        }
+        confirmMessage += "。确定要删除吗？";
+      }
+
+      // 显示确认弹窗
+      await ElMessageBox.confirm(confirmMessage, "删除确认", {
+        confirmButtonText: "确定删除",
+        cancelButtonText: "取消",
+        type: "warning"
+      });
+
+      // 执行删除
       loading.value = true;
       await deleteBillApi(row.bookId, row.billId);
       message(`已删除【${row.title}】账单`, { type: "success" });
       await onSearch();
     } catch (e) {
-      message(e.message || "删除失败", { type: "error" });
+      // 用户取消删除时不显示错误消息
+      if (e !== "cancel") {
+        message(e.message || "删除失败", { type: "error" });
+      }
     } finally {
       loading.value = false;
     }
@@ -282,7 +321,7 @@ export function useHook() {
       message(`${action}成功`);
       await onSearch();
     } catch (error) {
-      console.log("操作取消");
+      console.log("操作取消", error);
     }
   }
 
@@ -304,7 +343,7 @@ export function useHook() {
       message(`${action}成功`);
       await onSearch();
     } catch (error) {
-      console.log("操作取消");
+      console.log("操作取消", error);
     }
   }
 

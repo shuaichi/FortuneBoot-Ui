@@ -1,22 +1,22 @@
 <template>
   <v-dialog
+    v-model="visible"
     show-full-screen
     :fixed-body-height="false"
     :title="type === 'add' ? '新增物品' : '编辑物品'"
-    v-model="visible"
     :loading="loading"
     @confirm="handleConfirm"
     @cancel="visible = false"
     @opened="handleOpened"
   >
-    <el-form :model="formData" label-width="82px" :rules="rules" ref="formRef">
+    <el-form ref="formRef" :model="formData" label-width="82px" :rules="rules">
       <el-row :gutter="30">
         <re-col :value="12">
           <el-form-item prop="bookId" label="账本" required>
             <el-select
+              v-model="formData.bookId"
               :disabled="props.type !== 'add'"
               filterable
-              v-model="formData.bookId"
               placeholder="请选择账本"
               style="width: 100%"
               @change="handleBookChange"
@@ -137,8 +137,8 @@
         <re-col :value="12">
           <el-form-item prop="status" label="状态">
             <el-select
-              filterable
               v-model="formData.status"
+              filterable
               placeholder="请选择状态"
               style="width: 100%"
             >
@@ -154,8 +154,8 @@
         <re-col :value="12">
           <el-form-item prop="retiredDate" label="退役日期">
             <el-date-picker
-              :disabled="formData.status === 1"
               v-model="formData.retiredDate"
+              :disabled="formData.status === 1"
               type="date"
               placeholder="选择退役日期"
               value-format="YYYY-MM-DD"
@@ -177,8 +177,8 @@
         <re-col :value="24">
           <el-form-item prop="remark" label="备注" style="margin-bottom: 0">
             <el-input
-              type="textarea"
               v-model="formData.remark"
+              type="textarea"
               rows="6"
               placeholder="请输入备注"
             />
@@ -284,7 +284,7 @@ function handleOpened() {
   if (props.row) {
     Object.assign(formData, props.row);
   } else {
-    //formRef.value?.resetFields();
+    formRef.value?.resetFields();
   }
 }
 
@@ -378,7 +378,7 @@ const rules: FormRules = {
   usageNum: [
     {
       validator: (rule, value, callback) => {
-        if (formData.useByTimes && !value) {
+        if (formData.useByTimes && (value === null || value === undefined)) {
           callback(new Error("请输入使用次数"));
         } else {
           callback();

@@ -6,7 +6,7 @@
       :model="searchForm"
       class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] grid-form"
     >
-      <el-form-item label="所属分组：" prop="groupId" v-show="isVisible(0)">
+      <el-form-item v-show="isVisible(0)" label="所属分组：" prop="groupId">
         <el-select
           v-model="searchForm.groupId"
           placeholder="请选择分组"
@@ -20,7 +20,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="账户类型：" prop="accountType" v-show="isVisible(1)">
+      <el-form-item v-show="isVisible(1)" label="账户类型：" prop="accountType">
         <el-select
           v-model="searchForm.accountType"
           placeholder="请选择分组"
@@ -34,7 +34,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="账户名称：" prop="accountName" v-show="isVisible(2)">
+      <el-form-item v-show="isVisible(2)" label="账户名称：" prop="accountName">
         <el-input
           v-model="searchForm.accountName"
           placeholder="请输入账本名称"
@@ -54,9 +54,9 @@
           重置
         </el-button>
         <el-button
+          v-show="width <= 1280"
           type="text"
           @click="expanded = !expanded"
-          v-show="width <= 1280"
         >
           {{ expanded ? "收起" : "展开" }}
         </el-button>
@@ -288,15 +288,23 @@ function handleCurrentChange(currentPage: number) {
 }
 
 async function handlePutBack(row: AccountVo) {
-  await accountPutBackApi(row.groupId, row.accountId);
-  message("恢复成功");
-  await onSearch();
+  try {
+    await accountPutBackApi(row.groupId, row.accountId);
+    message("恢复成功");
+    await onSearch();
+  } catch (e: any) {
+    message(e.message || "操作失败", { type: "error" });
+  }
 }
 
 async function handleRemove(row: AccountVo) {
-  await accountRemoveApi(row.groupId, row.accountId);
-  message("删除成功");
-  await onSearch();
+  try {
+    await accountRemoveApi(row.groupId, row.accountId);
+    message("删除成功");
+    await onSearch();
+  } catch (e: any) {
+    message(e.message || "操作失败", { type: "error" });
+  }
 }
 </script>
 
