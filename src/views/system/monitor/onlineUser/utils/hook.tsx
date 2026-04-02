@@ -1,13 +1,14 @@
 import dayjs from "dayjs";
 import { message } from "@/utils/message";
 import {
-  OnlineUserQuery,
+  type OnlineUserQuery,
   getOnlineUserListApi,
   logoutOnlineUserApi
 } from "@/api/system/monitor";
-import { reactive, ref, onMounted, toRaw } from "vue";
-import { PaginationProps } from "@pureadmin/table";
+import { reactive, ref, onMounted, onUnmounted, toRaw } from "vue";
+import type { PaginationProps } from "@pureadmin/table";
 import { CommonUtils } from "@/utils/common";
+import { useUserStoreHook } from "@/store/modules/user";
 
 export function useHook() {
   const pagination: PaginationProps = {
@@ -29,6 +30,47 @@ export function useHook() {
   let originalDataList = [];
   const dataList = ref([]);
   const pageLoading = ref(true);
+
+  // 自动刷新相关状态
+  const autoRefresh = ref(false);
+  const refreshInterval = ref(30); // 默认30秒刷新一次
+  let refreshTimer: ReturnType<typeof setInterval> | null = null;
+
+  // 启动自动刷新
+  const startAutoRefresh = () => {
+    if (refreshTimer) {
+      clearInterval(refreshTimer);
+    }
+    refreshTimer = setInterval(() => {
+      onSearch();
+    }, refreshInterval.value * 1000);
+  };
+
+  // 停止自动刷新
+  const stopAutoRefresh = () => {
+    if (refreshTimer) {
+      clearInterval(refreshTimer);
+      refreshTimer = null;
+    }
+  };
+
+  // 切换自动刷新状态
+  const toggleAutoRefresh = (value: boolean) => {
+    if (value) {
+      startAutoRefresh();
+    } else {
+      stopAutoRefresh();
+    }
+  };
+
+  // 更新刷新间隔
+  const updateRefreshInterval = (value: number) => {
+    refreshInterval.value = value;
+    if (autoRefresh.value) {
+      // 如果正在自动刷新，重新启动定时器
+      startAutoRefresh();
+    }
+  };
 
   const columns: TableColumnList = [
     {
@@ -109,6 +151,15 @@ export function useHook() {
   }
 
   async function handleLogout(row) {
+    // 校验是否踢出当前登录用户自己
+    const currentUser = useUserStoreHook().username;
+    if (row.username === currentUser) {
+      message("不能强制退出自己", {
+        type: "warning"
+      });
+      return;
+    }
+
     await logoutOnlineUserApi(row.tokenId).then(() => {
       message(`您强制登出了用户:${row.username}`, {
         type: "success"
@@ -122,6 +173,10 @@ export function useHook() {
     onSearch();
   });
 
+  onUnmounted(() => {
+    stopAutoRefresh();
+  });
+
   return {
     searchFormParams,
     pageLoading,
@@ -129,6 +184,10 @@ export function useHook() {
     dataList,
     pagination,
     timeRange,
+    autoRefresh,
+    refreshInterval,
+    toggleAutoRefresh,
+    updateRefreshInterval,
     onSearch,
     getList,
     resetForm,

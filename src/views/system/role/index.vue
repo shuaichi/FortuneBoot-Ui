@@ -12,6 +12,7 @@ import AddFill from "@iconify-icons/ri/add-circle-line";
 import { getRoleInfoApi, RoleDTO } from "@/api/system/role";
 import RoleFormModal from "@/views/system/role/role-form-modal.vue";
 import { ElMessage } from "element-plus";
+import PureTable from "@pureadmin/table";
 
 defineOptions({
   name: "SystemRole"
@@ -35,7 +36,6 @@ const opType = ref<"add" | "update">("add");
 const modalVisible = ref(false);
 const opRow = ref<RoleDTO>();
 async function openDialog(type: "add" | "update", row?: RoleDTO) {
-  debugger;
   try {
     await getMenuTree();
     if (row) {
@@ -101,11 +101,7 @@ async function openDialog(type: "add" | "update", row?: RoleDTO) {
       </el-form-item>
     </el-form>
 
-    <PureTableBar
-      title="角色列表（仅演示，操作后不生效）"
-      :columns="columns"
-      @refresh="onSearch"
-    >
+    <PureTableBar title="角色列表" :columns="columns" @refresh="onSearch">
       <template #buttons>
         <el-button
           type="primary"

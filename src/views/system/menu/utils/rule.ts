@@ -1,32 +1,48 @@
-import { reactive } from "vue";
 import type { FormRules } from "element-plus";
-import { isPhone, isEmail } from "@pureadmin/utils";
 
-/** 自定义表单规则校验 */
-export const formRules = reactive(<FormRules>{
-  name: [{ required: true, message: "部门名称为必填项", trigger: "blur" }],
-  phone: [
+/**
+ * 获取菜单表单校验规则
+ * @param getFormData 获取表单数据的函数，用于动态校验
+ */
+export const getFormRules = (
+  getFormData: () => {
+    isButton?: boolean;
+    menuType?: number;
+  }
+): FormRules => ({
+  menuName: [{ required: true, message: "请输入菜单名称", trigger: "blur" }],
+  path: [
     {
-      validator: (rule, value, callback) => {
-        if (value === "") {
-          callback();
-        } else if (!isPhone(value)) {
-          callback(new Error("请输入正确的手机号码格式"));
+      validator: (_rule, value, callback) => {
+        const formData = getFormData();
+        // 菜单类型为页面(1)或目录(2)时，path 必填
+        if (
+          formData.isButton === false &&
+          (formData.menuType === 1 || formData.menuType === 2)
+        ) {
+          if (!value || value.trim() === "") {
+            callback(new Error("请输入路径"));
+          } else {
+            callback();
+          }
         } else {
           callback();
         }
       },
       trigger: "blur"
-      // trigger: "click" // 如果想在点击确定按钮时触发这个校验，trigger 设置成 click 即可
     }
   ],
-  email: [
+  permission: [
     {
-      validator: (rule, value, callback) => {
-        if (value === "") {
-          callback();
-        } else if (!isEmail(value)) {
-          callback(new Error("请输入正确的邮箱格式"));
+      validator: (_rule, value, callback) => {
+        const formData = getFormData();
+        // 按钮类型时，permission 必填
+        if (formData.isButton === true) {
+          if (!value || value.trim() === "") {
+            callback(new Error("请输入权限标识"));
+          } else {
+            callback();
+          }
         } else {
           callback();
         }
@@ -35,3 +51,8 @@ export const formRules = reactive(<FormRules>{
     }
   ]
 });
+
+/** 兼容旧版本的静态导出（无动态校验能力） */
+export const formRules: FormRules = {
+  menuName: [{ required: true, message: "请输入菜单名称", trigger: "blur" }]
+};

@@ -33,6 +33,7 @@ const {
   timeRange,
   defaultSort,
   multipleSelection,
+  disabledDate,
   onSearch,
   resetForm,
   exportAllExcel,
@@ -105,13 +106,14 @@ const {
         >
         <!-- TODO 如何消除这个v-model的warning -->
         <el-date-picker
-          class="!w-[240px]"
           v-model="timeRange"
+          class="!w-[240px]"
           value-format="YYYY-MM-DD"
           type="daterange"
           range-separator="-"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
+          :disabled-date="disabledDate"
         />
       </el-form-item>
       <el-form-item>
@@ -152,8 +154,8 @@ const {
       </template>
       <template v-slot="{ size, dynamicColumns }">
         <pure-table
-          border
           ref="tableRef"
+          border
           align-whole="center"
           showOverflowTooltip
           table-layout="auto"

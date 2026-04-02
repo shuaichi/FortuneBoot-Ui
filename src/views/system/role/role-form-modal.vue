@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import VDialog from "@/components/VDialog/VDialog.vue";
-import { computed, reactive, ref } from "vue";
+import { computed, nextTick, reactive, ref } from "vue";
 import { useUserStoreHook } from "@/store/modules/user";
 import { ElMessage, FormInstance, FormRules } from "element-plus";
 import {
@@ -72,17 +72,38 @@ function handleOpened() {
     Object.assign(formData, props.row);
     formData.menuIds = props.row.selectedMenuList;
   } else {
-    formRef.value?.resetFields();
+    // 新增模式：手动重置 formData，因为 reactive 对象无法通过 resetFields 恢复到初始值
+    Object.assign(formData, {
+      roleId: 0,
+      dataScope: "",
+      menuIds: [],
+      remark: "",
+      roleKey: "",
+      roleName: "",
+      roleSort: 1,
+      status: ""
+    });
+    nextTick(() => formRef.value?.clearValidate());
   }
 }
 
 const treeRef = ref<InstanceType<typeof ElTree>>();
+// 父子联动开关：true 为独立选择，false 为父子联动
+const checkStrictly = ref(true);
+
 function handleCheckChange() {
-  formData.menuIds = treeRef.value.getCheckedKeys(false) as number[];
+  // 收集选中的节点和半选中的节点（父节点）
+  const checkedKeys = treeRef.value.getCheckedKeys(false) as number[];
+  const halfCheckedKeys = treeRef.value.getHalfCheckedKeys() as number[];
+  formData.menuIds = [...checkedKeys, ...halfCheckedKeys];
 }
 
 const loading = ref(false);
 async function handleConfirm() {
+  // 表单校验，校验不通过时终止提交
+  const valid = await formRef.value?.validate().catch(() => false);
+  if (!valid) return;
+
   try {
     loading.value = true;
     if (props.type === "add") {
@@ -104,17 +125,17 @@ async function handleConfirm() {
 
 <template>
   <v-dialog
+    v-model="visible"
     show-full-screen
     fixed-body-height
     use-body-scrolling
     :title="type === 'add' ? '新增角色' : '更新角色'"
-    v-model="visible"
     :loading="loading"
     @confirm="handleConfirm"
     @cancel="visible = false"
     @opened="handleOpened"
   >
-    <el-form :model="formData" label-width="120px" :rules="rules" ref="formRef">
+    <el-form ref="formRef" :model="formData" label-width="120px" :rules="rules">
       <el-form-item prop="roleName" label="角色名称" required inline-message>
         <el-input v-model="formData.roleName" />
       </el-form-item>
@@ -122,7 +143,7 @@ async function handleConfirm() {
         <el-input v-model="formData.roleKey" />
       </el-form-item>
       <el-form-item prop="roleSort" label="角色顺序" required>
-        <el-input-number :min="1" v-model="formData.roleSort" />
+        <el-input-number v-model="formData.roleSort" :min="1" />
       </el-form-item>
       <el-form-item prop="status" label="角色状态">
         <el-radio-group v-model="formData.status">
@@ -135,23 +156,37 @@ async function handleConfirm() {
         </el-radio-group>
       </el-form-item>
       <el-form-item label="菜单权限" prop="menuIds">
+        <div style="margin-bottom: 10px">
+          <el-switch
+            v-model="checkStrictly"
+            active-text="独立选择"
+            inactive-text="父子联动"
+          />
+          <span style="margin-left: 10px; font-size: 12px; color: #909399">
+            {{
+              checkStrictly
+                ? "父子节点选中状态不关联"
+                : "选中父节点将自动选中所有子节点"
+            }}
+          </span>
+        </div>
         <el-tree
           ref="treeRef"
           :props="{ label: 'menuName', children: 'children' }"
           :data="props.menuOptions"
           node-key="id"
-          check-strictly
+          :check-strictly="checkStrictly"
           show-checkbox
           default-expand-all
           check-on-click-node
           :expand-on-click-node="false"
           :default-checked-keys="formData.menuIds"
-          @check-change="handleCheckChange"
           style="width: 100%"
+          @check-change="handleCheckChange"
         />
       </el-form-item>
       <el-form-item prop="remark" label="备注" style="margin-bottom: 0">
-        <el-input type="textarea" v-model="formData.remark" />
+        <el-input v-model="formData.remark" type="textarea" />
       </el-form-item>
     </el-form>
   </v-dialog>

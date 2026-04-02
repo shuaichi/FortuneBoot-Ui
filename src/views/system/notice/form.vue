@@ -57,7 +57,7 @@ defineExpose({ getFormRuleRef });
         />
       </el-select>
     </el-form-item>
-    <el-form-item label="公告类型" prop="status">
+    <el-form-item label="公告状态" prop="status">
       <el-select
         v-model="noticeData.status"
         placeholder="请选择状态"

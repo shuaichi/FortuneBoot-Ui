@@ -1,16 +1,16 @@
 import dayjs from "dayjs";
 import { message } from "@/utils/message";
-import { ElMessageBox, Sort } from "element-plus";
+import { ElMessageBox, type Sort } from "element-plus";
 import {
   getLoginLogListApi,
   deleteLoginLogApi,
   exportLoginLogExcelApi,
-  LoginLogQuery
+  type LoginLogQuery
 } from "@/api/system/log";
 import { reactive, ref, onMounted, toRaw } from "vue";
 import { useUserStoreHook } from "@/store/modules/user";
 import { CommonUtils } from "@/utils/common";
-import { PaginationProps } from "@pureadmin/table";
+import type { PaginationProps } from "@pureadmin/table";
 
 const loginLogStatusMap =
   useUserStoreHook().dictionaryMap["sysLoginLog.status"];
@@ -99,6 +99,11 @@ export function useLoginLogHook() {
       prop: "statusStr",
       minWidth: 120,
       hide: true
+    },
+    {
+      label: "提示信息",
+      prop: "msg",
+      minWidth: 150
     },
     {
       label: "登录时间",

@@ -2,9 +2,9 @@ import dayjs from "dayjs";
 import descriptionForm from "../description.vue";
 import { message } from "@/utils/message";
 import { addDialog, closeDialog } from "@/components/ReDialog";
-import { ElMessageBox, Sort } from "element-plus";
+import { ElMessageBox, type Sort } from "element-plus";
 import {
-  OperationLogsQuery,
+  type OperationLogsQuery,
   getOperationLogListApi,
   deleteOperationLogApi,
   exportOperationLogExcelApi
@@ -12,7 +12,7 @@ import {
 import { reactive, ref, onMounted, h, toRaw } from "vue";
 import { useUserStoreHook } from "@/store/modules/user";
 import { CommonUtils } from "@/utils/common";
-import { PaginationProps } from "@pureadmin/table";
+import type { PaginationProps } from "@pureadmin/table";
 
 const operationLogStatusMap =
   useUserStoreHook().dictionaryMap["sysOperationLog.status"];
@@ -34,6 +34,21 @@ export function useOperationLogHook() {
   };
 
   const timeRange = ref([]);
+
+  // 设置默认时间范围为最近14天
+  const initDefaultTimeRange = () => {
+    const endDate = dayjs().format("YYYY-MM-DD");
+    const startDate = dayjs().subtract(14, "day").format("YYYY-MM-DD");
+    timeRange.value = [startDate, endDate];
+  };
+
+  // 禁用未来日期
+  const disabledDate = (time: Date) => {
+    return time.getTime() > Date.now();
+  };
+
+  // 初始化默认时间范围
+  initDefaultTimeRange();
 
   const searchFormParams = reactive<OperationLogsQuery>({
     beginTime: undefined,
@@ -142,9 +157,9 @@ export function useOperationLogHook() {
     // 清空排序
     searchFormParams.orderColumn = undefined;
     searchFormParams.orderDirection = undefined;
-    // 清空时间查询  TODO  这块有点繁琐  有可以优化的地方吗？
+    // 重置时间查询为默认值（最近14天）
     // Form组件的resetFields方法无法清除datepicker里面的数据。
-    timeRange.value = [];
+    initDefaultTimeRange();
     searchFormParams.beginTime = undefined;
     searchFormParams.endTime = undefined;
     tableRef.getTableRef().clearSort();
@@ -265,6 +280,7 @@ export function useOperationLogHook() {
     defaultSort,
     timeRange,
     multipleSelection,
+    disabledDate,
     onSearch,
     exportAllExcel,
     // exportExcel,

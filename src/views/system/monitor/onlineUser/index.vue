@@ -22,6 +22,10 @@ const {
   columns,
   dataList,
   pagination,
+  autoRefresh,
+  refreshInterval,
+  toggleAutoRefresh,
+  updateRefreshInterval,
   onSearch,
   resetForm,
   getList,
@@ -71,14 +75,31 @@ const {
           重置
         </el-button>
       </el-form-item>
+
+      <el-form-item>
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-600">自动刷新</span>
+          <el-switch v-model="autoRefresh" @change="toggleAutoRefresh" />
+          <el-select
+            v-model="refreshInterval"
+            :disabled="!autoRefresh"
+            class="!w-[100px]"
+            @change="updateRefreshInterval"
+          >
+            <el-option label="10秒" :value="10" />
+            <el-option label="30秒" :value="30" />
+            <el-option label="60秒" :value="60" />
+          </el-select>
+        </div>
+      </el-form-item>
     </el-form>
 
     <!-- table bar 包裹  table -->
     <PureTableBar title="登录日志列表" :columns="columns" @refresh="onSearch">
       <template v-slot="{ size, dynamicColumns }">
         <pure-table
-          border
           ref="tableRef"
+          border
           align-whole="center"
           showOverflowTooltip
           table-layout="auto"

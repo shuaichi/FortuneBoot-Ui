@@ -13,7 +13,7 @@ import { CommonUtils } from "../../../../utils/common";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
-  name: "SystemOperationLog"
+  name: "SystemLoginLog"
 });
 
 const loginLogStatusList =
@@ -87,8 +87,8 @@ const {
         >
         <!-- TODO 如何消除这个v-model的warning -->
         <el-date-picker
-          class="!w-[240px]"
           v-model="timeRange"
+          class="!w-[240px]"
           value-format="YYYY-MM-DD"
           type="daterange"
           range-separator="-"
@@ -134,8 +134,8 @@ const {
       </template>
       <template v-slot="{ size, dynamicColumns }">
         <pure-table
-          border
           ref="tableRef"
+          border
           align-whole="center"
           showOverflowTooltip
           table-layout="auto"

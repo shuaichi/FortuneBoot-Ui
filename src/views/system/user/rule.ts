@@ -28,7 +28,7 @@ export const formRules = reactive(<FormRules>{
       trigger: "blur"
     }
   ],
-  phone: [
+  phoneNumber: [
     {
       validator: (rule, value, callback) => {
         if (value === "") {

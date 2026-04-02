@@ -51,11 +51,12 @@ defineExpose({ getFormRuleRef });
 
     <el-form-item label="参数值" prop="configValue">
       <el-select
-        v-model="formData.configValue"
         v-if="formData.configOptions.length > 0"
+        v-model="formData.configValue"
         placeholder="请选择类型"
         clearable
         class="!w-[180px]"
+        :disabled="formData.isAllowChange === 'false'"
       >
         <el-option
           v-for="item in formData.configOptions"
@@ -68,6 +69,7 @@ defineExpose({ getFormRuleRef });
         v-else
         v-model="formData.configValue"
         placeholder="请输入参数键值"
+        :disabled="formData.isAllowChange === 'false'"
       />
     </el-form-item>
     <el-form-item label="允许修改" prop="isAllowChange">

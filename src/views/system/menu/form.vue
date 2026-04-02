@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import ReCol from "@/components/ReCol";
-import { formRules } from "./utils/rule";
+import { getFormRules } from "./utils/rule";
 import { usePublicHooks } from "../hooks";
 import { MenuRequest } from "@/api/system/menu";
 import IconSelect from "@/components/ReIcon/src/Select.vue";
@@ -37,6 +37,14 @@ const typeName = computed(() => {
   return newFormInline.value.isButton ? "按钮" : "菜单";
 });
 
+// 动态表单校验规则，根据菜单类型和是否为按钮动态校验
+const formRules = computed(() =>
+  getFormRules(() => ({
+    isButton: newFormInline.value.isButton,
+    menuType: newFormInline.value.menuType
+  }))
+);
+
 function getRef() {
   return ruleFormRef.value;
 }
@@ -55,8 +63,8 @@ defineExpose({ getRef });
       <re-col>
         <el-form-item label="父菜单">
           <el-cascader
-            class="w-full"
             v-model="newFormInline.parentId"
+            class="w-full"
             :options="deptOptions"
             :props="{
               value: 'id',

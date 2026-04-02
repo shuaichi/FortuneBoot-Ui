@@ -38,6 +38,8 @@ defineExpose({ getFormRuleRef });
         <el-form-item label="新密码" prop="password">
           <el-input
             v-model="newFormInline.password"
+            type="password"
+            show-password
             clearable
             placeholder="请输入新密码"
           />

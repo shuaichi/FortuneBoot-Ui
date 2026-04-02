@@ -1,16 +1,19 @@
 import dayjs from "dayjs";
 import editForm from "../form.vue";
 import { message } from "@/utils/message";
-import { SystemNoticeQuery, getSystemNoticeListApi } from "@/api/system/notice";
+import {
+  type SystemNoticeQuery,
+  getSystemNoticeListApi
+} from "@/api/system/notice";
 import { addDialog } from "@/components/ReDialog";
-import { ElMessageBox, Sort } from "element-plus";
-import { AddNoticeRequest } from "../utils/types";
-import { type PaginationProps } from "@pureadmin/table";
+import { ElMessageBox, type Sort } from "element-plus";
+import type { AddNoticeRequest } from "../utils/types";
+import type { PaginationProps } from "@pureadmin/table";
 import {
   addSystemNoticeApi,
   updateSystemNoticeApi,
   deleteSystemNoticeApi,
-  SystemNoticeRequest
+  type SystemNoticeRequest
 } from "@/api/system/notice";
 import { reactive, ref, onMounted, h, toRaw } from "vue";
 import { useUserStoreHook } from "@/store/modules/user";
@@ -173,7 +176,9 @@ export function useNoticeHook() {
 
   async function handleDelete(row) {
     await deleteSystemNoticeApi([row.noticeId]).then(() => {
-      message(`您删除了通知标题为${row.name}的这条数据`, { type: "success" });
+      message(`您删除了通知标题为${row.noticeTitle}的这条数据`, {
+        type: "success"
+      });
       // 刷新列表
       getNoticeList();
     });
@@ -228,7 +233,7 @@ export function useNoticeHook() {
 
   async function handleUpdate(row, done) {
     await updateSystemNoticeApi(row as SystemNoticeRequest).then(() => {
-      message(`您新增了通知标题为${row.noticeTitle}的这条数据`, {
+      message(`您修改了通知标题为${row.noticeTitle}的这条数据`, {
         type: "success"
       });
       // 关闭弹框

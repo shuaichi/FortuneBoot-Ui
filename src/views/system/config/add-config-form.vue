@@ -10,8 +10,8 @@
         <el-select
           v-model="form.type"
           placeholder="请选择"
-          @change="onTypeChange"
           class="!w-full"
+          @change="onTypeChange"
         >
           <el-option label="内置参数" value="builtin" />
           <el-option label="自定义参数" value="custom" />
@@ -20,9 +20,9 @@
 
       <el-form-item label="参数名称" prop="configName">
         <component
-          class="!w-full"
           :is="form.type === 'builtin' ? 'el-select' : 'el-input'"
           v-model="form.configName"
+          class="!w-full"
           placeholder="请输入/选择"
         >
           <template v-if="form.type === 'builtin'">
@@ -38,9 +38,9 @@
 
       <el-form-item label="参数键名" prop="configKey">
         <component
-          class="!w-full"
           :is="form.type === 'builtin' ? 'el-select' : 'el-input'"
           v-model="form.configKey"
+          class="!w-full"
           placeholder="请输入/选择"
           :disabled="form.type === 'builtin'"
         >
@@ -56,18 +56,14 @@
       </el-form-item>
 
       <el-form-item label="参数值" prop="configValue">
-        <el-input
-          v-model="form.configValue"
-          placeholder="请输入参数值"
-          :disabled="form.isAllowChange"
-        />
+        <el-input v-model="form.configValue" placeholder="请输入参数值" />
       </el-form-item>
 
       <el-form-item label="参数选项" prop="configOptions">
         <component
-          class="!w-full"
           :is="form.type === 'builtin' ? 'el-select' : 'el-input'"
           v-model="form.configOptions"
+          class="!w-full"
           placeholder="请输入/选择,如果多个值以逗号间隔"
           :disabled="form.type === 'builtin'"
         >

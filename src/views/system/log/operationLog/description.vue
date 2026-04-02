@@ -7,6 +7,21 @@ const props = defineProps<OperationLogDTO>();
 
 const operationLogStatusMap =
   useUserStoreHook().dictionaryMap["sysOperationLog.status"];
+
+/**
+ * 格式化JSON字符串
+ * @param str 可能是JSON的字符串
+ * @returns 格式化后的JSON字符串或原始字符串
+ */
+const formatJson = (str: string | undefined | null): string => {
+  if (!str) return "";
+  try {
+    const parsed = JSON.parse(str);
+    return JSON.stringify(parsed, null, 2);
+  } catch {
+    return str;
+  }
+};
 </script>
 
 <template>
@@ -50,10 +65,8 @@ const operationLogStatusMap =
       props.requestMethod
     }}</el-descriptions-item>
     <el-descriptions-item :span="2" label="请求参数:">
-      <!-- 长度可能较长的字符串使用el-text包住 避免超出框 -->
-      <el-text>
-        {{ props.operationParam }}
-      </el-text>
+      <!-- JSON格式化展示，使用pre标签保留格式 -->
+      <pre class="json-content">{{ formatJson(props.operationParam) }}</pre>
     </el-descriptions-item>
     <el-descriptions-item :span="2" label="调用方法:">
       <el-text>
@@ -61,9 +74,8 @@ const operationLogStatusMap =
       </el-text>
     </el-descriptions-item>
     <el-descriptions-item :span="2" label="返回结果:">
-      <el-text>
-        {{ props.operationResult }}
-      </el-text>
+      <!-- JSON格式化展示，使用pre标签保留格式 -->
+      <pre class="json-content">{{ formatJson(props.operationResult) }}</pre>
     </el-descriptions-item>
     <el-descriptions-item :span="2" label="错误详情:">
       <el-text>
@@ -86,5 +98,19 @@ const operationLogStatusMap =
 <style>
 .el-descriptions {
   margin-top: 20px;
+}
+
+.json-content {
+  max-height: 400px;
+  padding: 12px;
+  margin: 0;
+  overflow-y: auto;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  background-color: #f5f7fa;
+  border-radius: 4px;
 }
 </style>

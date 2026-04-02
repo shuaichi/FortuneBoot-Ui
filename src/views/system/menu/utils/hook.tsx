@@ -4,20 +4,50 @@ import { handleTree, setDisabledForTreeOptions } from "@/utils/tree";
 import { message } from "@/utils/message";
 import { transferToStandardRouterData } from "./menuLogic";
 import {
-  MenuDTO,
-  MenuRequest,
+  type MenuDTO,
+  type MenuRequest,
   getMenuListApi,
   addMenuApi,
   deleteMenuApi,
   getMenuInfoApi,
   updateMenuApi,
-  MenuDetailDTO
+  type MenuDetailDTO
 } from "@/api/system/menu";
 import { usePublicHooks } from "../../hooks";
 import { addDialog } from "@/components/ReDialog";
 import { reactive, ref, onMounted, h, computed } from "vue";
 import { isAllEmpty } from "@pureadmin/utils";
 import { IconifyIconOnline } from "@/components/ReIcon";
+
+/**
+ * 过滤树结构，保留命中节点及其所有祖先节点
+ * @param treeData 树形数据
+ * @param predicate 过滤条件函数，返回 true 表示该节点命中
+ * @returns 过滤后的树形数据
+ */
+function filterTree<T extends { children?: T[] }>(
+  treeData: T[],
+  predicate: (node: T) => boolean
+): T[] {
+  const result: T[] = [];
+
+  for (const node of treeData) {
+    // 递归过滤子节点
+    const filteredChildren = node.children
+      ? filterTree(node.children, predicate)
+      : [];
+
+    // 如果当前节点命中，或者有子节点命中，则保留该节点
+    if (predicate(node) || filteredChildren.length > 0) {
+      result.push({
+        ...node,
+        children: filteredChildren.length > 0 ? filteredChildren : node.children
+      });
+    }
+  }
+
+  return result;
+}
 
 export function useHook() {
   const searchFormParams = reactive({
@@ -29,21 +59,29 @@ export function useHook() {
 
   const originalDataList = ref([]);
   const dataList = computed(() => {
-    let filterDataList = [...originalDataList.value];
-    if (!isAllEmpty(searchFormParams.menuName)) {
-      // 前端搜索菜单名称
-      filterDataList = filterDataList.filter((item: MenuDTO) =>
-        item.menuName.includes(searchFormParams.menuName)
-      );
+    // 先将原始数据转成树结构
+    const treeData = handleTree(originalDataList.value);
+
+    // 判断是否有搜索条件
+    const hasMenuNameFilter = !isAllEmpty(searchFormParams.menuName);
+    const hasStatusFilter = !isAllEmpty(searchFormParams.status);
+
+    // 如果没有任何搜索条件，直接返回完整的树结构
+    if (!hasMenuNameFilter && !hasStatusFilter) {
+      return [...treeData];
     }
-    if (!isAllEmpty(searchFormParams.status)) {
-      // 前端搜索状态
-      filterDataList = filterDataList.filter(
-        (item: MenuDTO) => item.status === searchFormParams.status
-      );
-    }
-    // 处理成树结构
-    return [...handleTree(filterDataList)];
+
+    // 在树结构上进行过滤，保留命中节点及其所有祖先节点
+    return filterTree(treeData, (item: MenuDTO) => {
+      let match = true;
+      if (hasMenuNameFilter) {
+        match = match && item.menuName.includes(searchFormParams.menuName);
+      }
+      if (hasStatusFilter) {
+        match = match && item.status === searchFormParams.status;
+      }
+      return match;
+    });
   });
   const loading = ref(true);
   const { tagStyle } = usePublicHooks();

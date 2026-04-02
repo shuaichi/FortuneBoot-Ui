@@ -1,22 +1,22 @@
 import dayjs from "dayjs";
 import { message } from "@/utils/message";
 import {
-  UserQuery,
+  type UserQuery,
   getUserListApi,
   addUserApi,
   updateUserStatusApi,
   updateUserApi,
   exportUserExcelApi,
-  UserRequest,
+  type UserRequest,
   deleteUserApi,
-  PasswordRequest,
+  type PasswordRequest,
   updateUserPasswordApi
 } from "@/api/system/user";
 import editForm from "./form.vue";
 import passwordForm from "./passwordForm.vue";
 import uploadForm from "./uploadForm.vue";
 import { ElMessageBox } from "element-plus";
-import { type PaginationProps } from "@pureadmin/table";
+import type { PaginationProps } from "@pureadmin/table";
 import { reactive, ref, computed, onMounted, toRaw, h } from "vue";
 import { CommonUtils } from "@/utils/common";
 import { addDialog } from "@/components/ReDialog";
@@ -154,12 +154,22 @@ export function useHook() {
     )
       .then(async () => {
         switchLoading(index, true);
-        await updateUserStatusApi(row.userId, row.status).finally(() => {
-          switchLoading(index, false);
-        });
-        message("已成功修改用户状态", {
-          type: "success"
-        });
+        await updateUserStatusApi(row.userId, row.status)
+          .then(() => {
+            message("已成功修改用户状态", {
+              type: "success"
+            });
+          })
+          .catch(() => {
+            // 失败时恢复状态
+            row.status === 0 ? (row.status = 1) : (row.status = 0);
+            message("修改用户状态失败", {
+              type: "error"
+            });
+          })
+          .finally(() => {
+            switchLoading(index, false);
+          });
       })
       .catch(() => {
         message("取消操作", {
@@ -301,17 +311,26 @@ export function useHook() {
 
   async function openUploadDialog() {
     const uploadFormRef = ref();
+    let closeDialog: (() => void) | null = null;
+
     addDialog({
       title: `导入用户`,
       props: {},
       width: "30%",
       closeOnClickModal: false,
-      contentRenderer: () => h(uploadForm, { ref: uploadFormRef }),
+      contentRenderer: () =>
+        h(uploadForm, {
+          ref: uploadFormRef,
+          onClose: () => {
+            closeDialog?.();
+            getList();
+          }
+        }),
       beforeSure: done => {
+        closeDialog = done;
         console.log("上传文件");
         uploadFormRef.value.getFormRef().submit();
-        done();
-        getList();
+        // 不在这里调用 done()，等待上传完成后在 onClose 回调中调用
       }
     });
   }

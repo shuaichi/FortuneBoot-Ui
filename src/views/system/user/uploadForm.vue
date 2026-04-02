@@ -3,9 +3,14 @@ import { reactive, ref } from "vue";
 import { getToken } from "@/utils/auth";
 import { http } from "@/utils/http";
 import { message } from "@/utils/message";
-import { useHook } from "./hook";
 
-const { getList } = useHook();
+const emit = defineEmits<{
+  success: [];
+}>();
+
+const props = defineProps<{
+  onClose?: () => void;
+}>();
 
 /** * 用户导入参数 */
 const upload = reactive({
@@ -40,7 +45,9 @@ const handleFileSuccess = () => {
   upload.loading = false;
   formRef.value.clearFiles();
   message("导入成功", { type: "success" });
-  getList();
+  emit("success");
+  // 上传成功后通知父组件关闭弹窗
+  props.onClose?.();
 };
 
 const formRef = ref();
