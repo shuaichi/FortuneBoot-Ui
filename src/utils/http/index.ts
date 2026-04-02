@@ -1,9 +1,9 @@
 import Axios, {
-  AxiosInstance,
-  AxiosRequestConfig,
-  CustomParamsSerializer
+  type AxiosInstance,
+  type AxiosRequestConfig,
+  type CustomParamsSerializer
 } from "axios";
-import {
+import type {
   PureHttpError,
   RequestMethods,
   PureHttpResponse,
@@ -108,6 +108,7 @@ class PureHttp {
                   router.push("/login");
                 } catch (e) {
                   // ignore
+                  console.log(e);
                 }
               }
               resolve(config);
@@ -159,29 +160,24 @@ class PureHttp {
             response.data.code === 107 ||
             response.data.code === 108
           ) {
-            if (!PureHttp.hasShownAuthModal) {
-              PureHttp.hasShownAuthModal = true;
-              ElMessageBox.confirm(
-                "登录状态已过期，您可以继续留在该页面，或者重新登录",
-                "系统提示",
-                {
-                  confirmButtonText: "重新登录",
-                  cancelButtonText: "取消",
-                  type: "warning"
-                }
-              )
-                .then(() => {
-                  removeToken();
-                  router.push("/login");
-                })
-                .catch(() => {
-                  message("取消重新登录", { type: "info" });
-                })
-                .finally(() => {
-                  // 允许下次再次弹出（如果需要长期不弹可以移除此行）
-                  PureHttp.hasShownAuthModal = false;
-                });
+            // 已在登录页则不弹出过期提示
+            if (
+              router.currentRoute.value.path === "/login" ||
+              PureHttp.hasShownAuthModal
+            ) {
+              NProgress.done();
+              return Promise.reject(msg);
             }
+            PureHttp.hasShownAuthModal = true;
+            ElMessageBox.alert("登录状态已过期，请重新登录", "系统提示", {
+              confirmButtonText: "重新登录",
+              type: "warning",
+              showClose: false
+            }).finally(() => {
+              PureHttp.hasShownAuthModal = false;
+              removeToken();
+              router.push("/login");
+            });
           } else {
             // 其余情况弹出错误提示框
             message(msg, { type: "error" });
@@ -212,27 +208,21 @@ class PureHttp {
         if (error?.response) {
           const status = error.response.status;
           if (status === 401 || status === 403) {
-            if (!PureHttp.hasShownAuthModal) {
+            // 已在登录页则不弹出过期提示
+            if (
+              router.currentRoute.value.path !== "/login" &&
+              !PureHttp.hasShownAuthModal
+            ) {
               PureHttp.hasShownAuthModal = true;
-              ElMessageBox.confirm(
-                "登录状态已过期，您可以继续留在该页面，或者重新登录",
-                "系统提示",
-                {
-                  confirmButtonText: "重新登录",
-                  cancelButtonText: "取消",
-                  type: "warning"
-                }
-              )
-                .then(() => {
-                  removeToken();
-                  router.push("/login");
-                })
-                .catch(() => {
-                  message("取消重新登录", { type: "info" });
-                })
-                .finally(() => {
-                  PureHttp.hasShownAuthModal = false;
-                });
+              ElMessageBox.alert("登录状态已过期，请重新登录", "系统提示", {
+                confirmButtonText: "重新登录",
+                type: "warning",
+                showClose: false
+              }).finally(() => {
+                PureHttp.hasShownAuthModal = false;
+                removeToken();
+                router.push("/login");
+              });
             }
           }
         }

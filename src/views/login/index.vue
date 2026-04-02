@@ -104,9 +104,11 @@ const onLogin = async (formEl: FormInstance | undefined) => {
           }
         })
         .catch(() => {
-          loading.value = false;
           //如果登陆失败则重新获取验证码
           getCaptchaCode();
+        })
+        .finally(() => {
+          loading.value = false;
         });
     } else {
       loading.value = false;
@@ -122,13 +124,31 @@ function onkeypress({ code }: KeyboardEvent) {
   }
 }
 
+/** 是否正在节流冷却中 */
+const isCaptchaThrottled = ref(false);
+
 async function getCaptchaCode() {
   if (isCaptchaOn.value) {
-    await CommonAPI.getCaptchaCode().then(res => {
-      captchaCodeBase64.value = `data:image/gif;base64,${res.data.captchaCodeImg}`;
-      ruleForm.captchaCodeKey = res.data.captchaCodeKey;
-    });
+    await CommonAPI.getCaptchaCode()
+      .then(res => {
+        captchaCodeBase64.value = `data:image/gif;base64,${res.data.captchaCodeImg}`;
+        ruleForm.captchaCodeKey = res.data.captchaCodeKey;
+      })
+      .catch(() => {
+        message("获取验证码失败，请稍后重试", { type: "error" });
+      });
   }
+}
+
+/** 节流版获取验证码（2秒内不可重复点击） */
+function throttledGetCaptchaCode() {
+  if (isCaptchaThrottled.value) return;
+  isCaptchaThrottled.value = true;
+  getCaptchaCode().finally(() => {
+    setTimeout(() => {
+      isCaptchaThrottled.value = false;
+    }, 2000);
+  });
 }
 
 watch(isRememberMe, newVal => {
@@ -143,6 +163,12 @@ onBeforeMount(async () => {
   await CommonAPI.getConfig().then(res => {
     isCaptchaOn.value = res.data.isCaptchaOn;
     useUserStoreHook().SET_DICTIONARY(res.data.dictionary);
+    // 验证码开启时动态添加校验规则
+    if (isCaptchaOn.value) {
+      loginRules.captchaCode = [
+        { required: true, message: "请输入验证码", trigger: "blur" }
+      ];
+    }
   });
 
   await getCaptchaCode();
@@ -250,7 +276,7 @@ onBeforeUnmount(() => {
                         width: 120px;
                         height: 40px;
                       "
-                      @click="getCaptchaCode"
+                      @click="throttledGetCaptchaCode"
                     >
                       <template #error>
                         <span>Loading</span>
