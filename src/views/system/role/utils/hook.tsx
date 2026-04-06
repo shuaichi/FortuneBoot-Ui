@@ -3,13 +3,13 @@ import { message } from "@/utils/message";
 import {
   deleteRoleApi,
   getRoleListApi,
-  RoleDTO,
-  RoleQuery
+  type RoleDTO,
+  type RoleQuery
 } from "@/api/system/role";
-import { getMenuListApi, MenuDTO } from "@/api/system/menu";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { getMenuListApi, type MenuDTO } from "@/api/system/menu";
+import { ElMessageBox } from "element-plus";
 import { usePublicHooks } from "../../hooks";
-import { type PaginationProps } from "@pureadmin/table";
+import type { PaginationProps } from "@pureadmin/table";
 import { onMounted, reactive, ref, toRaw } from "vue";
 import { toTree } from "@/utils/tree";
 
@@ -153,12 +153,11 @@ export function useRole() {
     try {
       loading.value = true;
       const { data } = await getRoleListApi(toRaw(form));
-      console.log("role list", data);
       dataList.value = data.rows;
       pagination.total = data.total;
     } catch (e) {
       console.error(e);
-      ElMessage.error((e as Error)?.message || "加载失败");
+      message(e.message || "操作失败", { type: "error" });
     } finally {
       loading.value = false;
     }

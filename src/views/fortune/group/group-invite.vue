@@ -1,16 +1,16 @@
 <template>
   <v-dialog
+    v-model="visible"
     show-full-screen
     :fixed-body-height="false"
     title="邀请用户"
-    v-model="visible"
     :loading="loading"
+    width="360px"
     @confirm="handleConfirm"
     @cancel="visible = false"
     @opened="handleOpened"
-    width="360px"
   >
-    <el-form :model="formData" label-width="82px" :rules="rules" ref="formRef">
+    <el-form ref="formRef" :model="formData" label-width="82px" :rules="rules">
       <el-row :gutter="30">
         <re-col :value="24">
           <el-form-item prop="roleType" label="角色" required inline-message>
@@ -50,7 +50,8 @@ import {
   RoleType
 } from "@/api/fortune/group";
 import ReCol from "@/components/ReCol";
-import { ElMessage, FormRules } from "element-plus";
+import { FormRules } from "element-plus";
+import { message } from "@/utils/message";
 
 const props = defineProps<{
   modelValue: boolean;
@@ -93,13 +94,11 @@ async function handleConfirm() {
   try {
     loading.value = true;
     await inviteUserApi(formData);
-    ElMessage.info("提交成功");
+    message("操作成功", { type: "success" });
     visible.value = false;
-    console.log(visible.value);
     emits("success");
   } catch (e) {
-    console.error(e);
-    ElMessage.error((e as Error)?.message || "提交失败");
+    message(e.message || "操作失败", { type: "error" });
   } finally {
     loading.value = false;
   }

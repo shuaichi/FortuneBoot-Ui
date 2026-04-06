@@ -89,21 +89,21 @@
       </template>
     </PureTableBar>
     <group-form
+      v-if="uploadVisible"
       v-model="uploadVisible"
       :type="opType"
       :row="opRow"
-      v-if="uploadVisible"
       @success="onSearch"
     />
     <group-invite
-      v-model="inviteVisible"
       v-if="inviteVisible"
+      v-model="inviteVisible"
       :group-id="opRow.groupId"
       @success="onSearch"
     />
     <group-user
-      v-model="userVisible"
       v-if="userVisible"
+      v-model="userVisible"
       :group-id="opRow.groupId"
       @success="onSearch"
     />
@@ -117,12 +117,12 @@ import { ref } from "vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 
 import AddFill from "@iconify-icons/ri/add-circle-line";
-import { ElMessage } from "element-plus";
 import { GroupVo, setGroupDefaultApi } from "@/api/fortune/group";
 import GroupForm from "@/views/fortune/group/group-form.vue";
 import PureTable from "@pureadmin/table";
 import GroupInvite from "@/views/fortune/group/group-invite.vue";
 import GroupUser from "@/views/fortune/group/group-user.vue";
+import { message } from "@/utils/message";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -158,7 +158,7 @@ async function openUploadDialog(type: "add" | "upload", row?: GroupVo) {
     uploadVisible.value = true;
   } catch (e) {
     console.error(e);
-    ElMessage.error((e as Error)?.message || "加载菜单失败");
+    message(e.message || "操作失败", { type: "error" });
   }
 }
 

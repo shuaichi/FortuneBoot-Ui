@@ -192,7 +192,7 @@
 <script setup lang="ts">
 import VDialog from "@/components/VDialog/VDialog.vue";
 import { computed, onMounted, reactive, ref } from "vue";
-import { ElMessage, FormRules } from "element-plus";
+import { FormRules } from "element-plus";
 import ReCol from "@/components/ReCol";
 import { BookVo, getEnableBookList } from "@/api/fortune/book";
 import {
@@ -205,6 +205,7 @@ import {
 import { CategoryVo, getEnableCategoryList } from "@/api/fortune/category";
 import { getEnableTagList, TagVo } from "@/api/fortune/tag";
 import dayjs from "dayjs";
+import { message } from "@/utils/message";
 
 const props = defineProps<Props>();
 const loading = ref(false);
@@ -319,14 +320,14 @@ async function handleConfirm() {
       default:
         break;
     }
-    ElMessage.info("提交成功");
+    message("操作成功", { type: "success" });
     visible.value = false;
     console.log(visible.value);
     emits("success");
   } catch (e) {
     console.error(e);
     if (!e.message.includes("validate")) {
-      ElMessage.error((e as Error)?.message || "提交失败");
+      message(e.message || "操作失败", { type: "error" });
     }
   } finally {
     loading.value = false;

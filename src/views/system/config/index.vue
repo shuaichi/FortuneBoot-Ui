@@ -3,7 +3,7 @@ import { ref } from "vue";
 import { useHook } from "./utils/hook";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { ElMessageBox } from "element-plus";
 import EditPen from "@iconify-icons/ep/edit-pen";
 import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
@@ -12,7 +12,8 @@ import Delete from "@iconify-icons/ep/delete";
 import { useUserStoreHook } from "@/store/modules/user";
 import { deleteSystemConfig } from "@/api/system/config";
 
-import AddConfigForm from "@/views/system/config/add-config-form.vue"; // 引入新增弹窗组件
+import AddConfigForm from "@/views/system/config/add-config-form.vue";
+import { message } from "@/utils/message"; // 引入新增弹窗组件
 
 defineOptions({
   name: "SystemConfig"
@@ -49,10 +50,10 @@ const handleDelete = async (row: any) => {
     );
 
     await deleteSystemConfig(row.configId);
-    ElMessage.success("删除成功");
+    message("操作成功", { type: "success" });
     await getList();
   } catch (err) {
-    if (err !== "cancel") ElMessage.error("删除失败");
+    message(e.message || "操作失败", { type: "error" });
   }
 };
 </script>
@@ -136,8 +137,8 @@ const handleDelete = async (row: any) => {
 
       <template v-slot="{ size, dynamicColumns }">
         <pure-table
-          border
           ref="tableRef"
+          border
           align-whole="center"
           showOverflowTooltip
           table-layout="auto"

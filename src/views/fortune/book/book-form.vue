@@ -1,15 +1,15 @@
 <template>
   <v-dialog
+    v-model="visible"
     show-full-screen
     :fixed-body-height="false"
     :title="type === 'add' ? '新增账本' : '修改账本'"
-    v-model="visible"
     :loading="loading"
     @confirm="handleConfirm"
     @cancel="visible = false"
     @opened="handleOpened"
   >
-    <el-form :model="formData" label-width="120px" :rules="rules" ref="formRef">
+    <el-form ref="formRef" :model="formData" label-width="120px" :rules="rules">
       <el-row :gutter="30">
         <re-col :value="12">
           <el-form-item prop="bookName" label="账本名称">
@@ -57,9 +57,9 @@
         </re-col>
         <re-col :value="12">
           <el-form-item
+            v-if="props.type === 'add'"
             prop="bookTemplate"
             label="账本模板"
-            v-if="props.type === 'add'"
           >
             <el-select
               v-model="formData.bookTemplate"
@@ -176,8 +176,8 @@
         <re-col :value="24">
           <el-form-item prop="remark" label="备注">
             <el-input
-              type="textarea"
               v-model="formData.remark"
+              type="textarea"
               rows="4"
               placeholder="请输入备注"
             />
@@ -190,7 +190,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from "vue";
-import { ElMessage, FormRules } from "element-plus";
+import { FormRules } from "element-plus";
 import VDialog from "@/components/VDialog/VDialog.vue";
 import ReCol from "@/components/ReCol";
 import {
@@ -209,6 +209,7 @@ import {
 import { getEnableGroupList } from "@/api/fortune/group";
 import { usePublicHooks } from "@/views/system/hooks";
 import { getEnableAccountList } from "@/api/fortune/account";
+import { message } from "@/utils/message";
 
 const props = defineProps<{
   type: "add" | "edit";
@@ -311,11 +312,11 @@ async function handleConfirm() {
     } else {
       await modifyBookApi(formData);
     }
-    ElMessage.success("操作成功");
+    message("操作成功", { type: "success" });
     visible.value = false;
     emits("success");
   } catch (e) {
-    ElMessage.error(e.message || "操作失败");
+    message(e.message || "操作失败", { type: "error" });
   } finally {
     loading.value = false;
   }

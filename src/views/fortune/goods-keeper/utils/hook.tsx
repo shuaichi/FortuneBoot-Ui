@@ -1,21 +1,20 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { message } from "@/utils/message";
 import type { PaginationProps } from "@pureadmin/table";
-import { ElMessage } from "element-plus";
 import {
   getFortuneGoodsKeeperPage,
   getGoodsKeeperStatistics,
-  GoodsKeeperQuery,
-  goodsKeeperStatistics,
-  GoodsKeeperVo,
+  type GoodsKeeperQuery,
+  type goodsKeeperStatistics,
+  type GoodsKeeperVo,
   removeGoodsKeeperApi
 } from "@/api/fortune/goods-keeper";
 import {
   getDefaultGroupId,
   getEnableGroupList,
-  GroupVo
+  type GroupVo
 } from "@/api/fortune/group";
-import { BookVo, getEnableBookList } from "@/api/fortune/book";
+import { type BookVo, getEnableBookList } from "@/api/fortune/book";
 
 export function useHook() {
   const loading = ref(true);
@@ -52,16 +51,12 @@ export function useHook() {
   });
 
   const tableTitle = computed(() => {
-    // eslint-disable-next-line no-irregular-whitespace
     return `归物　|　总资产：${
       goodsKeeperStatistics.value?.allPrice ?? 0
-      // eslint-disable-next-line no-irregular-whitespace
     }元　|　总日均成本：${
       goodsKeeperStatistics.value?.allDailyPrice ?? 0
-      // eslint-disable-next-line no-irregular-whitespace
     }元　|　在役资产：${
       goodsKeeperStatistics.value?.activePrice ?? 0
-      // eslint-disable-next-line no-irregular-whitespace
     }元　|　在役日均成本：${
       goodsKeeperStatistics.value?.activeDailyPrice ?? 0
     }元`;
@@ -123,7 +118,7 @@ export function useHook() {
       formVisible.value = true;
     } catch (e) {
       console.error(e);
-      ElMessage.error((e as Error)?.message || "加载菜单失败");
+      message(e.message || "操作失败", { type: "error" });
     }
   }
 

@@ -7,8 +7,8 @@ import {
   getRecurringBillPageApi,
   recurringBillDisableApi,
   recurringBillEnableApi,
-  RecurringBillQuery,
-  RecurringBillVo,
+  type RecurringBillQuery,
+  type RecurringBillVo,
   removeRecurringBillApi
 } from "@/api/fortune/recurring-bill";
 
@@ -179,7 +179,7 @@ export function useHook() {
       message(`${action}成功`);
       await onSearch();
     } catch (error) {
-      console.log("操作取消");
+      console.log("操作取消", error);
     }
   }
 

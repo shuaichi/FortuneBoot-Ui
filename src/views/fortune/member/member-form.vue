@@ -63,7 +63,8 @@ import {
   ModifyMemberCommand,
   MemberVo
 } from "@/api/fortune/member";
-import { ElMessage, FormRules } from "element-plus";
+import { FormRules } from "element-plus";
+import { message } from "@/utils/message";
 
 const props = defineProps<{
   type: "add" | "edit";
@@ -108,11 +109,11 @@ async function handleConfirm() {
     } else {
       await modifyMemberApi(formData as ModifyMemberCommand);
     }
-    ElMessage.success("操作成功");
+    message("操作成功", { type: "success" });
     visible.value = false;
     emits("success");
   } catch (e) {
-    ElMessage.error(e.message || "操作失败");
+    message(e.message || "操作失败", { type: "error" });
   } finally {
     loading.value = false;
   }

@@ -211,12 +211,13 @@ import {
 import { useHook } from "@/views/fortune/account/utils/hook";
 import ReCol from "@/components/ReCol";
 import VDialog from "@/components/VDialog/VDialog.vue";
-import { ElMessage, FormRules } from "element-plus";
+import { FormRules } from "element-plus";
 import {
   getCurrencyTemplate,
   getEnableGroupList,
   GroupVo
 } from "@/api/fortune/group";
+import { message } from "@/utils/message";
 
 const props = defineProps<{
   type: "add" | "edit";
@@ -288,11 +289,11 @@ async function handleConfirm() {
     } else {
       await modifyAccountApi(formData);
     }
-    ElMessage.success("操作成功");
+    message("操作成功", { type: "success" });
     visible.value = false;
     emits("success");
   } catch (e) {
-    ElMessage.error(e.message || "操作失败");
+    message(e.message || "操作失败", { type: "error" });
   } finally {
     loading.value = false;
   }

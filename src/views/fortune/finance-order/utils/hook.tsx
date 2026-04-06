@@ -1,17 +1,16 @@
 import { onMounted, reactive, ref } from "vue";
 import { message } from "@/utils/message";
 import type { PaginationProps } from "@pureadmin/table";
-import { ElMessage } from "element-plus";
 import {
   getDefaultGroupId,
   getEnableGroupList,
-  GroupVo
+  type GroupVo
 } from "@/api/fortune/group";
-import { BookVo, getEnableBookList } from "@/api/fortune/book";
+import { type BookVo, getEnableBookList } from "@/api/fortune/book";
 import {
   closeFinanceOrderApi,
-  FinanceOrderQuery,
-  FinanceOrderVo,
+  type FinanceOrderQuery,
+  type FinanceOrderVo,
   getFinanceOrderPage,
   removeFinanceOrderApi,
   reopenFinanceOrderApi,
@@ -146,8 +145,7 @@ export function useHook() {
       opRow.value = row;
       formVisible.value = true;
     } catch (e) {
-      console.error(e);
-      ElMessage.error((e as Error)?.message || "加载菜单失败");
+      message(e.message || "操作失败", { type: "error" });
     }
   }
 

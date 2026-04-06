@@ -84,7 +84,7 @@ import VDialog from "@/components/VDialog/VDialog.vue";
 import ReCol from "@/components/ReCol";
 import { usePublicHooks } from "@/views/system/hooks";
 import { computed, reactive, ref } from "vue";
-import { ElMessage, FormRules } from "element-plus";
+import { FormRules } from "element-plus";
 import {
   addCategoryApi,
   AddCategoryCommand,
@@ -93,6 +93,7 @@ import {
   modifyCategoryApi,
   ModifyCategoryCommand
 } from "@/api/fortune/category";
+import { message } from "@/utils/message";
 
 const props = defineProps<{
   categoryType: number;
@@ -153,11 +154,11 @@ async function handleConfirm() {
     } else {
       await modifyCategoryApi(formData);
     }
-    ElMessage.success("操作成功");
+    message("操作成功", { type: "success" });
     visible.value = false;
     emits("success");
   } catch (e) {
-    ElMessage.error(e.message || "操作失败");
+    message(e.message || "操作失败", { type: "error" });
   } finally {
     loading.value = false;
   }

@@ -360,7 +360,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
-import { ElMessage, FormRules } from "element-plus";
+import { FormRules } from "element-plus";
 import VDialog from "@/components/VDialog/VDialog.vue";
 import ReCol from "@/components/ReCol";
 import { BookVo, getBookById, getEnableBookList } from "@/api/fortune/book";
@@ -725,12 +725,12 @@ async function handleConfirm() {
       await modifyRecurringBillApi(formData);
     }
 
-    ElMessage.success("操作成功");
+    message("操作成功", { type: "success" });
     visible.value = false;
     emits("success");
   } catch (e) {
     if (!e.message.includes("validate")) {
-      ElMessage.error(e.message || "操作失败");
+      message(e.message || "操作失败", { type: "error" });
     }
   } finally {
     loading.value = false;

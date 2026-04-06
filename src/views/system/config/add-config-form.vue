@@ -109,8 +109,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch, defineEmits, defineProps } from "vue";
-import { ElMessage } from "element-plus";
 import { getParamEnums, saveSystemConfig } from "@/api/system/config";
+import { message } from "@/utils/message";
 
 const props = defineProps<{
   modelValue: boolean;
@@ -230,11 +230,11 @@ const handleSubmit = () => {
         })()
       };
       await saveSystemConfig(payload);
-      ElMessage.success("新增成功");
+      message("操作成功", { type: "success" });
       visible.value = false;
       emit("success");
     } catch (err) {
-      ElMessage.error("新增失败");
+      message(e.message || "操作失败", { type: "error" });
     }
   });
 };

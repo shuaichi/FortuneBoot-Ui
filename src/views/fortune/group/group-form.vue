@@ -1,15 +1,15 @@
 <template>
   <v-dialog
+    v-model="visible"
     show-full-screen
     :fixed-body-height="false"
     :title="type === 'add' ? '新增分组' : '修改分组'"
-    v-model="visible"
     :loading="loading"
     @confirm="handleConfirm"
     @cancel="visible = false"
     @opened="handleOpened"
   >
-    <el-form :model="formData" label-width="82px" :rules="rules" ref="formRef">
+    <el-form ref="formRef" :model="formData" label-width="82px" :rules="rules">
       <el-row :gutter="30">
         <re-col :value="12">
           <el-form-item
@@ -43,7 +43,7 @@
         </re-col>
       </el-row>
       <el-row :gutter="30">
-        <re-col :value="12" v-if="props.type === 'add'">
+        <re-col v-if="props.type === 'add'" :value="12">
           <el-form-item prop="bookTemplate" label="账本模板" required>
             <el-select
               v-model="formData.bookTemplate"
@@ -59,7 +59,7 @@
             </el-select>
           </el-form-item>
         </re-col>
-        <re-col :value="12" v-if="props.type !== 'add'">
+        <re-col v-if="props.type !== 'add'" :value="12">
           <el-form-item prop="defaultBookId" label="默认账本" required>
             <el-select
               v-model="(formData as ModifyGroupCommand).defaultBookId"
@@ -93,8 +93,8 @@
         <re-col :value="24">
           <el-form-item prop="remark" label="备注" style="margin-bottom: 0">
             <el-input
-              type="textarea"
               v-model="formData.remark"
+              type="textarea"
               rows="6"
               placeholder="请输入备注"
             />
@@ -118,10 +118,11 @@ import {
   ModifyGroupCommand
 } from "@/api/fortune/group";
 import { computed, onMounted, reactive, ref, watch } from "vue";
-import { ElMessage, FormRules } from "element-plus";
+import { FormRules } from "element-plus";
 import ReCol from "@/components/ReCol";
 import { BookVo, getBookByGroupId } from "@/api/fortune/book";
 import { usePublicHooks } from "@/views/system/hooks";
+import { message } from "@/utils/message";
 
 const props = defineProps<Props>();
 const loading = ref(false);
@@ -193,13 +194,12 @@ async function handleConfirm() {
       default:
         break;
     }
-    ElMessage.info("提交成功");
+    message("操作成功", { type: "success" });
     visible.value = false;
-    console.log(visible.value);
     emits("success");
   } catch (e) {
     console.error(e);
-    ElMessage.error((e as Error)?.message || "提交失败");
+    message(e.message || "操作失败", { type: "error" });
   } finally {
     loading.value = false;
   }

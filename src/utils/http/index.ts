@@ -339,13 +339,12 @@ class PureHttp {
   //     const rspObj = JSON.parse(resText);
   //     const errMsg =
   //       errorCode[rspObj.code] || rspObj.msg || errorCode.default;
-  //     ElMessage.error(errMsg);
+  //       message(e.message || "操作失败", { type: "error" });
   //   }
   //   downloadLoadingInstance.close();
   // })
   // .catch(r => {
-  //   console.error(r);
-  //   ElMessage.error("下载文件出现错误，请联系管理员！");
+  //   message(e.message || "下载文件出现错误，请联系管理员！", { type: "error" });
   //   downloadLoadingInstance.close();
   // });
 

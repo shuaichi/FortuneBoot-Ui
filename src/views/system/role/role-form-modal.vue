@@ -2,7 +2,7 @@
 import VDialog from "@/components/VDialog/VDialog.vue";
 import { computed, nextTick, reactive, ref } from "vue";
 import { useUserStoreHook } from "@/store/modules/user";
-import { ElMessage, FormInstance, FormRules } from "element-plus";
+import { FormInstance, FormRules } from "element-plus";
 import {
   AddRoleCommand,
   RoleDTO,
@@ -11,6 +11,7 @@ import {
   updateRoleApi
 } from "@/api/system/role";
 import { MenuDTO } from "@/api/system/menu";
+import { message } from "@/utils/message";
 
 interface Props {
   type: "add" | "update";
@@ -111,12 +112,12 @@ async function handleConfirm() {
     } else if (props.type === "update") {
       await updateRoleApi(formData as UpdateRoleCommand);
     }
-    ElMessage.info("提交成功");
+    message("操作成功", { type: "success" });
     visible.value = false;
     emits("success");
   } catch (e) {
     console.error(e);
-    ElMessage.error((e as Error)?.message || "提交失败");
+    message(e.message || "操作失败", { type: "error" });
   } finally {
     loading.value = false;
   }

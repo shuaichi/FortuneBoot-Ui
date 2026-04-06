@@ -82,10 +82,11 @@ import {
   balanceAdjustApi,
   BalanceAdjustCommand
 } from "@/api/fortune/account";
-import { ElMessage, FormRules } from "element-plus";
+import { FormRules } from "element-plus";
 import { getGroupByIdApi } from "@/api/fortune/group";
 import { BookVo, getEnableBookList } from "@/api/fortune/book";
 import dayjs from "dayjs";
+import { message } from "@/utils/message";
 
 const loading = ref<boolean>(false);
 const bookOptions = ref<Array<BookVo>>();
@@ -121,12 +122,12 @@ async function handleConfirm() {
   try {
     loading.value = true;
     await balanceAdjustApi(formData);
-    ElMessage.success("操作成功");
+    message("操作成功", { type: "success" });
     visible.value = false;
     emits("success");
   } catch (e) {
     if (!e.message.includes("validate")) {
-      ElMessage.error(e.message || "操作失败");
+      message(e.message || "操作失败", { type: "error" });
     }
   } finally {
     loading.value = false;

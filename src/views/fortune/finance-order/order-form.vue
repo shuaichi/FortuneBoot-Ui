@@ -1,15 +1,15 @@
 <template>
   <v-dialog
+    v-model="visible"
     show-full-screen
     :fixed-body-height="false"
     :title="type === 'add' ? '新增报销单' : '修改报销单'"
-    v-model="visible"
     :loading="loading"
     @confirm="handleConfirm"
     @cancel="visible = false"
     @opened="handleOpened"
   >
-    <el-form :model="formData" label-width="120px" :rules="rules" ref="formRef">
+    <el-form ref="formRef" :model="formData" label-width="120px" :rules="rules">
       <el-row :gutter="30">
         <re-col :value="12">
           <el-form-item prop="title" label="标题">
@@ -38,8 +38,8 @@
         <re-col :value="24">
           <el-form-item prop="remark" label="备注">
             <el-input
-              type="textarea"
               v-model="formData.remark"
+              type="textarea"
               rows="4"
               placeholder="请输入备注"
             />
@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
-import { ElMessage, FormRules } from "element-plus";
+import { FormRules } from "element-plus";
 import VDialog from "@/components/VDialog/VDialog.vue";
 import ReCol from "@/components/ReCol";
 import {
@@ -63,6 +63,7 @@ import {
   modifyFinanceOrderApi
 } from "@/api/fortune/finance-order";
 import { BookVo, getEnableBookList } from "@/api/fortune/book";
+import { message } from "@/utils/message";
 
 const props = defineProps<{
   type: "add" | "edit";
@@ -125,11 +126,11 @@ async function handleConfirm() {
     } else {
       await modifyFinanceOrderApi(formData);
     }
-    ElMessage.success("操作成功");
+    message("操作成功", { type: "success" });
     visible.value = false;
     emits("success");
   } catch (e) {
-    ElMessage.error(e.message || "操作失败");
+    message(e.message || "操作失败", { type: "error" });
   } finally {
     loading.value = false;
   }

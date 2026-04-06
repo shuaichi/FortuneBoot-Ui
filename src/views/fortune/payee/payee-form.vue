@@ -1,16 +1,16 @@
 <template>
   <v-dialog
+    v-model="visible"
     show-full-screen
     :fixed-body-height="false"
     :title="type === 'add' ? '新增交易对象' : '修改交易对象'"
-    v-model="visible"
     width="640px"
     :loading="loading"
     @confirm="handleConfirm"
     @cancel="visible = false"
     @opened="handleOpened"
   >
-    <el-form :model="formData" label-width="120px" :rules="rules" ref="formRef">
+    <el-form ref="formRef" :model="formData" label-width="120px" :rules="rules">
       <el-row :gutter="30">
         <re-col :value="24">
           <el-form-item prop="payeeName" label="名称">
@@ -51,8 +51,8 @@
         <re-col :value="24">
           <el-form-item prop="remark" label="备注" style="margin-bottom: 0">
             <el-input
-              type="textarea"
               v-model="formData.remark"
+              type="textarea"
               rows="6"
               placeholder="请输入备注"
             />
@@ -75,7 +75,8 @@ import {
   ModifyPayeeCommand,
   PayeeVo
 } from "@/api/fortune/payee";
-import { ElMessage, FormRules } from "element-plus";
+import { FormRules } from "element-plus";
+import { message } from "@/utils/message";
 
 const props = defineProps<{
   type: "add" | "edit";
@@ -123,11 +124,11 @@ async function handleConfirm() {
     } else {
       await modifyPayeeApi(formData);
     }
-    ElMessage.success("操作成功");
+    message("操作成功", { type: "success" });
     visible.value = false;
     emits("success");
   } catch (e) {
-    ElMessage.error(e.message || "操作失败");
+    message(e.message || "操作失败", { type: "error" });
   } finally {
     loading.value = false;
   }
