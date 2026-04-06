@@ -28,7 +28,7 @@
         :model="searchForm"
         class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] fortune-grid-form"
       >
-        <el-form-item label="所属分组：" prop="groupId" v-show="isVisible(0)">
+        <el-form-item v-show="isVisible(0)" label="所属分组：" prop="groupId">
           <el-select
             v-model="searchForm.groupId"
             placeholder="请选择分组"
@@ -43,9 +43,9 @@
           </el-select>
         </el-form-item>
         <el-form-item
+          v-show="isVisible(1)"
           label="账户名称："
           prop="accountName"
-          v-show="isVisible(1)"
         >
           <el-input
             v-model="searchForm.accountName"
@@ -53,7 +53,7 @@
             clearable
           />
         </el-form-item>
-        <el-form-item prop="currencyCode" label="币种：" v-show="isVisible(2)">
+        <el-form-item v-show="isVisible(2)" prop="currencyCode" label="币种：">
           <el-select
             v-model="searchForm.currencyCode"
             placeholder="请选择币种"
@@ -68,7 +68,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item prop="include" label="统计状态：" v-show="isVisible(3)">
+        <el-form-item v-show="isVisible(3)" prop="include" label="统计状态：">
           <el-select
             v-model="searchForm.include"
             placeholder="请选择统计状态"
@@ -84,9 +84,9 @@
           </el-select>
         </el-form-item>
         <el-form-item
+          v-show="isVisible(4)"
           prop="canExpense"
           label="支出状态："
-          v-show="isVisible(4)"
         >
           <el-select
             v-model="searchForm.canExpense"
@@ -102,7 +102,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item prop="canIncome" label="收入状态：" v-show="isVisible(5)">
+        <el-form-item v-show="isVisible(5)" prop="canIncome" label="收入状态：">
           <el-select
             v-model="searchForm.canIncome"
             placeholder="请选择收入状态"
@@ -118,9 +118,9 @@
           </el-select>
         </el-form-item>
         <el-form-item
+          v-show="isVisible(6)"
           prop="canTransferOut"
           label="转出状态："
-          v-show="isVisible(6)"
         >
           <el-select
             v-model="searchForm.canTransferOut"
@@ -137,9 +137,9 @@
           </el-select>
         </el-form-item>
         <el-form-item
+          v-show="isVisible(7)"
           prop="canTransferIn"
           label="转入状态："
-          v-show="isVisible(7)"
         >
           <el-select
             v-model="searchForm.canTransferIn"
@@ -155,7 +155,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item prop="enable" label="启用状态：" v-show="isVisible(8)">
+        <el-form-item v-show="isVisible(8)" prop="enable" label="启用状态：">
           <el-select
             v-model="searchForm.enable"
             placeholder="请选择启用状态"
@@ -276,7 +276,7 @@
 <script setup lang="ts">
 import { useHook } from "./utils/hook";
 import PureTable from "@pureadmin/table";
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { ref } from "vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import { PureTableBar } from "@/components/RePureTableBar";
@@ -284,6 +284,7 @@ import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
 import AccountForm from "@/views/fortune/account/account-form.vue";
 import BalanceAdjust from "@/views/fortune/account/balance-adjust.vue";
+import { useResponsiveForm } from "@/views/fortune/hooks/useResponsiveForm";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -292,9 +293,6 @@ defineOptions({
 
 const formRef = ref();
 const barRef = ref();
-// 展开收起
-const expanded = ref(false);
-const width = ref(window.innerWidth);
 
 const trueFalseOptions = ref([
   {
@@ -327,32 +325,6 @@ const {
   openAdjustDialog,
   openEditDialog
 } = useHook();
-onMounted(async () => {
-  window.addEventListener("resize", onResize);
-});
-const onResize = () => {
-  width.value = window.innerWidth;
-};
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", onResize);
-});
-// 计算默认展示条数
-const defaultCount = computed(() => {
-  let base = 3;
-  if (width.value <= 1280) {
-    base = base - 1; // 2
-  } else if (width.value >= 1921) {
-    base = base + 1; // 4
-  }
-  return base;
-});
-// 最终可见条数：展开时展示所有，收起时展示 defaultCount
-const visibleCount = computed(() =>
-  expanded.value ? 100 : defaultCount.value
-);
 
-// 判断第几个项是否可见
-function isVisible(idx: number) {
-  return idx < visibleCount.value;
-}
+const { expanded, width, isVisible } = useResponsiveForm();
 </script>

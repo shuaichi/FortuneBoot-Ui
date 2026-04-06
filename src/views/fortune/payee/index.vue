@@ -11,14 +11,14 @@
       :model="searchForm"
       class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] fortune-grid-form"
     >
-      <el-form-item label="名称：" prop="payeeName" v-show="isVisible(0)">
+      <el-form-item v-show="isVisible(0)" label="名称：" prop="payeeName">
         <el-input
           v-model="searchForm.payeeName"
           placeholder="请输入名称"
           clearable
         />
       </el-form-item>
-      <el-form-item label="支出状态：" prop="canExpense" v-show="isVisible(1)">
+      <el-form-item v-show="isVisible(1)" label="支出状态：" prop="canExpense">
         <el-select
           v-model="searchForm.canExpense"
           placeholder="请选择支出状态"
@@ -32,7 +32,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="收入状态：" prop="canIncome" v-show="isVisible(2)">
+      <el-form-item v-show="isVisible(2)" label="收入状态：" prop="canIncome">
         <el-select
           v-model="searchForm.canIncome"
           placeholder="请选择收入状态"
@@ -46,7 +46,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="启用状态：" prop="enable" v-show="isVisible(3)">
+      <el-form-item v-show="isVisible(3)" label="启用状态：" prop="enable">
         <el-select
           v-model="searchForm.enable"
           placeholder="请选择是否可收入"
@@ -73,9 +73,9 @@
           重置
         </el-button>
         <el-button
+          v-show="width <= 1920"
           type="text"
           @click="expanded = !expanded"
-          v-show="width <= 1920"
         >
           {{ expanded ? "收起" : "展开" }}
         </el-button>
@@ -134,11 +134,11 @@
       </template>
     </PureTableBar>
     <payee-form
+      v-if="modalVisible"
       v-model="modalVisible"
       :type="opType"
       :row="currentRow"
       :bookId="bookId"
-      v-if="modalVisible"
       @success="onSearch"
     />
   </div>
@@ -156,6 +156,7 @@ import { PayeeVo } from "@/api/fortune/payee";
 import { useRoute } from "vue-router";
 import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
+import { useResponsiveForm } from "@/views/fortune/hooks/useResponsiveForm";
 
 const opType = ref<"add" | "edit">("add");
 const currentRow = ref<PayeeVo>();
@@ -202,42 +203,14 @@ defineOptions({
   name: "FortuneBookPayee"
 });
 
-// 展开收起
-const expanded = ref(false);
-const width = ref(window.innerWidth);
+const { expanded, width, isVisible } = useResponsiveForm();
 
 onMounted(async () => {
-  window.addEventListener("resize", onResize);
   const route = useRoute();
   searchForm.bookId = Number(route.query.bookId);
   searchForm.recycleBin = false;
   await onSearch();
 });
-const onResize = () => {
-  width.value = window.innerWidth;
-};
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", onResize);
-});
-// 计算默认展示条数
-const defaultCount = computed(() => {
-  let base = 3;
-  if (width.value <= 1280) {
-    base = base - 1; // 2
-  } else if (width.value >= 1921) {
-    base = base + 1; // 4
-  }
-  return base;
-});
-// 最终可见条数：展开时展示所有，收起时展示 defaultCount
-const visibleCount = computed(() =>
-  expanded.value ? 100 : defaultCount.value
-);
-
-// 判断第几个项是否可见
-function isVisible(idx: number) {
-  return idx < visibleCount.value;
-}
 function openDialog(type: "add" | "edit", row?: PayeeVo) {
   opType.value = type;
   currentRow.value = row;

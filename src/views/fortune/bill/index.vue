@@ -326,6 +326,7 @@ import { getEnableMemberList, MemberVo } from "@/api/fortune/member";
 import { useRoute } from "vue-router";
 import Download from "@iconify-icons/ep/download";
 import dayjs from "dayjs";
+import { useResponsiveForm } from "@/views/fortune/hooks/useResponsiveForm";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -345,9 +346,6 @@ const categoryOptions = ref<Array<CategoryVo>>();
 const payeeOptions = ref<Array<PayeeVo>>();
 const tagOptions = ref<Array<TagVo>>();
 const memberOptions = ref<Array<MemberVo>>();
-
-const expanded = ref(false);
-const width = ref(window.innerWidth);
 
 const route = useRoute();
 
@@ -388,8 +386,9 @@ const {
   handleCurrentChange
 } = useHook();
 
+const { expanded, width, isVisible } = useResponsiveForm();
+
 onMounted(async () => {
-  window.addEventListener("resize", onResize);
   // 初始化分组
   await initGroup();
   // 初始化分组下的账本和账户
@@ -402,33 +401,6 @@ onMounted(async () => {
   // 监听账单创建成功事件，刷新账单列表
   emitter.on("billCreated", onSearch);
 });
-const onResize = () => {
-  width.value = window.innerWidth;
-};
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", onResize);
-  // 移除事件监听
-  emitter.off("billCreated", onSearch);
-});
-// 计算默认展示条数
-const defaultCount = computed(() => {
-  let base = 3;
-  if (width.value <= 1280) {
-    base = base - 1; // 2
-  } else if (width.value >= 1921) {
-    base = base + 1; // 4
-  }
-  return base;
-});
-// 最终可见条数：展开时展示所有，收起时展示 defaultCount
-const visibleCount = computed(() =>
-  expanded.value ? 100 : defaultCount.value
-);
-
-// 判断第几个项是否可见
-function isVisible(idx: number) {
-  return idx < visibleCount.value;
-}
 
 const initGroup = async () => {
   const groupRes = await getEnableGroupList();

@@ -4,9 +4,9 @@
       ref="formRef"
       :inline="true"
       :model="searchForm"
-      class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] grid-form"
+      class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] fortune-grid-form"
     >
-      <el-form-item label="所属分组：" prop="groupId" v-show="isVisible(0)">
+      <el-form-item v-show="isVisible(0)" label="所属分组：" prop="groupId">
         <el-select v-model="groupId" placeholder="请选择分组" filterable>
           <el-option
             v-for="item in groupOptions"
@@ -16,7 +16,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="所属账本：" prop="bookId" v-show="isVisible(1)">
+      <el-form-item v-show="isVisible(1)" label="所属账本：" prop="bookId">
         <el-select
           v-model="searchForm.bookId"
           placeholder="请选择账本"
@@ -30,14 +30,14 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="标签名称：" prop="tagName" v-show="isVisible(2)">
+      <el-form-item v-show="isVisible(2)" label="标签名称：" prop="tagName">
         <el-input
           v-model="searchForm.tagName"
           placeholder="请输入标签名称"
           clearable
         />
       </el-form-item>
-      <el-form-item class="search-buttons">
+      <el-form-item class="fortune-search-buttons">
         <el-button
           type="primary"
           :icon="useRenderIcon(Search)"
@@ -50,9 +50,9 @@
           重置
         </el-button>
         <el-button
+          v-show="width <= 1280"
           type="text"
           @click="expanded = !expanded"
-          v-show="width <= 1280"
         >
           {{ expanded ? "收起" : "展开" }}
         </el-button>
@@ -130,6 +130,7 @@ import {
 } from "@/api/fortune/group";
 import { message } from "@/utils/message";
 import { BookVo, getEnableBookList } from "@/api/fortune/book";
+import { useResponsiveForm } from "@/views/fortune/hooks/useResponsiveForm";
 
 const groupId = ref<number>();
 const defaultGroup = ref<number>();
@@ -170,12 +171,9 @@ const columns: TableColumnList = [
   }
 ];
 
-// 展开收起
-const expanded = ref(false);
-const width = ref(window.innerWidth);
+const { expanded, width, isVisible } = useResponsiveForm();
 
 onMounted(async () => {
-  window.addEventListener("resize", onResize);
   const [groupRes, defaultGroupId] = await Promise.all([
     getEnableGroupList(),
     getDefaultGroupId()
@@ -236,32 +234,6 @@ async function onSearch() {
   }
 }
 
-const onResize = () => {
-  width.value = window.innerWidth;
-};
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", onResize);
-});
-// 计算默认展示条数
-const defaultCount = computed(() => {
-  let base = 3;
-  if (width.value <= 1280) {
-    base = base - 1; // 2
-  } else if (width.value >= 1921) {
-    base = base + 1; // 4
-  }
-  return base;
-});
-// 最终可见条数：展开时展示所有，收起时展示 defaultCount
-const visibleCount = computed(() =>
-  expanded.value ? 100 : defaultCount.value
-);
-
-// 判断第几个项是否可见
-function isVisible(idx: number) {
-  return idx < visibleCount.value;
-}
-
 async function resetForm() {
   groupId.value = defaultGroup.value;
   searchForm.bookId = defaultBook.value;
@@ -291,88 +263,3 @@ async function handleRemove(row: TagVo) {
   await onSearch();
 }
 </script>
-
-<style scoped>
-@media (width > 1920px) {
-  .grid-form {
-    grid-template-columns: repeat(5, 1fr);
-  }
-}
-
-/* 分辨率 <= 1920px 时四列 */
-@media (width <= 1920px) {
-  .grid-form {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-/* 分辨率 <= 768px 时三列 */
-@media (width <= 1280px) {
-  .grid-form {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.grid-form {
-  display: grid;
-  padding-bottom: 16px;
-}
-
-/* 统一标签宽度和对齐方式 */
-.grid-form :deep(.el-form-item__label) {
-  width: 80px;
-  height: 40px;
-  padding-right: 8px;
-  line-height: 40px;
-  text-align: right;
-}
-
-/* 统一表单项内容区域样式 */
-.grid-form :deep(.el-form-item__content) {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: flex-start;
-  height: 40px;
-}
-
-/* 统一所有输入控件的宽度 */
-.grid-form :deep(.el-select),
-.grid-form :deep(.el-input),
-.grid-form :deep(.el-date-editor),
-.grid-form :deep(.el-tree-select),
-.grid-form :deep(.el-input-number) {
-  width: 100%;
-  height: 32px;
-}
-
-/* 确保日期选择器的宽度正确 */
-.grid-form :deep(.el-date-editor.el-input__wrapper) {
-  width: 100% !important;
-}
-
-/* 按钮容器样式 */
-.search-buttons {
-  display: flex;
-  grid-column: span 1 / -1;
-  align-items: center;
-  justify-content: flex-end;
-  justify-self: end;
-  height: 40px;
-  margin-right: 30px;
-}
-
-/* 确保按钮垂直居中 */
-.search-buttons :deep(.el-button) {
-  height: 32px;
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-/* 修复可能的对齐问题 */
-.grid-form :deep(.el-input__wrapper),
-.grid-form :deep(.el-select__wrapper) {
-  height: 32px;
-  line-height: 32px;
-}
-</style>

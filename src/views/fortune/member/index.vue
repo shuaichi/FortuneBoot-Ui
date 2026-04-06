@@ -128,6 +128,7 @@ import { MemberVo } from "@/api/fortune/member";
 import { useRoute } from "vue-router";
 import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
+import { useResponsiveForm } from "@/views/fortune/hooks/useResponsiveForm";
 
 const opType = ref<"add" | "edit">("add");
 const currentRow = ref<MemberVo>();
@@ -157,34 +158,13 @@ defineOptions({
   name: "FortuneBookMember"
 });
 
-const expanded = ref(false);
-const width = ref(window.innerWidth);
-
+const { expanded, width, isVisible } = useResponsiveForm();
 onMounted(async () => {
-  window.addEventListener("resize", onResize);
   const route = useRoute();
   searchForm.bookId = Number(route.query.bookId);
   searchForm.recycleBin = false;
   await onSearch();
 });
-const onResize = () => {
-  width.value = window.innerWidth;
-};
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", onResize);
-});
-const defaultCount = computed(() => {
-  let base = 3;
-  if (width.value <= 1280) base -= 1;
-  else if (width.value >= 1921) base += 1;
-  return base;
-});
-const visibleCount = computed(() =>
-  expanded.value ? 100 : defaultCount.value
-);
-function isVisible(idx: number) {
-  return idx < visibleCount.value;
-}
 function openDialog(type: "add" | "edit", row?: MemberVo) {
   opType.value = type;
   currentRow.value = row;

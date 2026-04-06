@@ -166,6 +166,7 @@ import Refresh from "@iconify-icons/ep/refresh";
 import { getEnableGroupList, GroupVo } from "@/api/fortune/group";
 import { message } from "@/utils/message";
 import { useRouter } from "vue-router";
+import { useResponsiveForm } from "@/views/fortune/hooks/useResponsiveForm";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -198,39 +199,15 @@ const modalVisible = ref(false);
 const groupOptions = ref<Array<GroupVo>>();
 const router = useRouter();
 
-const expanded = ref(false);
-const width = ref(window.innerWidth);
+const { expanded, width, isVisible } = useResponsiveForm();
 
 onMounted(async () => {
-  window.addEventListener("resize", onResize);
   const groupRes = await getEnableGroupList();
   groupOptions.value = groupRes.data;
   if (groupRes.data.length === 0) {
     message("请先启用或创建分组");
   }
 });
-const onResize = () => {
-  width.value = window.innerWidth;
-};
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", onResize);
-});
-const defaultCount = computed(() => {
-  let base = 3;
-  if (width.value <= 1280) {
-    base = base - 1; // 2
-  } else if (width.value >= 1921) {
-    base = base + 1; // 4
-  }
-  return base;
-});
-const visibleCount = computed(() =>
-  expanded.value ? 100 : defaultCount.value
-);
-
-function isVisible(idx: number) {
-  return idx < visibleCount.value;
-}
 
 function openDialog(type: "add" | "edit", row?: BookVo) {
   opType.value = type;

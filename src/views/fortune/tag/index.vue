@@ -11,14 +11,14 @@
       :model="searchForm"
       class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] fortune-grid-form"
     >
-      <el-form-item label="名称：" prop="tagName" v-show="isVisible(0)">
+      <el-form-item v-show="isVisible(0)" label="名称：" prop="tagName">
         <el-input
           v-model="searchForm.tagName"
           placeholder="请输入名称"
           clearable
         />
       </el-form-item>
-      <el-form-item label="支出状态：" prop="canExpense" v-show="isVisible(1)">
+      <el-form-item v-show="isVisible(1)" label="支出状态：" prop="canExpense">
         <el-select
           v-model="searchForm.canExpense"
           placeholder="请选择支出状态"
@@ -32,7 +32,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="收入状态：" prop="canIncome" v-show="isVisible(2)">
+      <el-form-item v-show="isVisible(2)" label="收入状态：" prop="canIncome">
         <el-select
           v-model="searchForm.canIncome"
           placeholder="请选择收入状态"
@@ -46,7 +46,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="转账状态：" prop="canTransfer" v-show="isVisible(3)">
+      <el-form-item v-show="isVisible(3)" label="转账状态：" prop="canTransfer">
         <el-select
           v-model="searchForm.canTransfer"
           placeholder="请选择转账状态"
@@ -60,7 +60,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="启用状态：" prop="enable" v-show="isVisible(4)">
+      <el-form-item v-show="isVisible(4)" label="启用状态：" prop="enable">
         <el-select
           v-model="searchForm.enable"
           placeholder="请选择是否可收入"
@@ -145,11 +145,11 @@
       </template>
     </PureTableBar>
     <tag-form
+      v-if="modalVisible"
       v-model="modalVisible"
       :type="opType"
       :row="currentRow"
       :bookId="bookId"
-      v-if="modalVisible"
       @success="onSearch"
     />
   </div>
@@ -167,6 +167,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useHook } from "./utils/hook";
 import { useRoute } from "vue-router";
 import { TagVo } from "@/api/fortune/tag";
+import { useResponsiveForm } from "@/views/fortune/hooks/useResponsiveForm";
 
 const opType = ref<"add" | "edit">("add");
 const currentRow = ref<TagVo>();
@@ -220,42 +221,14 @@ defineOptions({
   name: "FortuneBookTag"
 });
 
-// 展开收起
-const expanded = ref(false);
-const width = ref(window.innerWidth);
+const { expanded, width, isVisible } = useResponsiveForm();
 
 onMounted(async () => {
-  window.addEventListener("resize", onResize);
   const route = useRoute();
   searchForm.bookId = Number(route.query.bookId);
   searchForm.recycleBin = false;
   await onSearch();
 });
-const onResize = () => {
-  width.value = window.innerWidth;
-};
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", onResize);
-});
-// 计算默认展示条数
-const defaultCount = computed(() => {
-  let base = 3;
-  if (width.value <= 1280) {
-    base = base - 1; // 2
-  } else if (width.value >= 1921) {
-    base = base + 1; // 4
-  }
-  return base;
-});
-// 最终可见条数：展开时展示所有，收起时展示 defaultCount
-const visibleCount = computed(() =>
-  expanded.value ? 100 : defaultCount.value
-);
-
-// 判断第几个项是否可见
-function isVisible(idx: number) {
-  return idx < visibleCount.value;
-}
 
 function openDialog(type: "add" | "edit", row?: TagVo) {
   opType.value = type;

@@ -4,7 +4,7 @@
       ref="formRef"
       :inline="true"
       :model="searchForm"
-      class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] grid-form"
+      class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] fortune-grid-form"
     >
       <el-form-item v-show="isVisible(0)" label="所属分组：" prop="groupId">
         <el-select v-model="groupId" placeholder="请选择分组" filterable>
@@ -37,7 +37,7 @@
           clearable
         />
       </el-form-item>
-      <el-form-item class="search-buttons">
+      <el-form-item class="fortune-search-buttons">
         <el-button
           type="primary"
           :icon="useRenderIcon(Search)"
@@ -130,6 +130,7 @@ import {
 } from "@/api/fortune/group";
 import { message } from "@/utils/message";
 import { BookVo, getEnableBookList } from "@/api/fortune/book";
+import { useResponsiveForm } from "@/views/fortune/hooks/useResponsiveForm";
 
 const groupId = ref<number>();
 const defaultGroup = ref<number>();
@@ -170,11 +171,9 @@ const columns: TableColumnList = [
   }
 ];
 
-const expanded = ref(false);
-const width = ref(window.innerWidth);
+const { expanded, width, isVisible } = useResponsiveForm();
 
 onMounted(async () => {
-  window.addEventListener("resize", onResize);
   const [groupRes, defaultGroupId] = await Promise.all([
     getEnableGroupList(),
     getDefaultGroupId()
@@ -235,27 +234,6 @@ async function onSearch() {
   }
 }
 
-const onResize = () => {
-  width.value = window.innerWidth;
-};
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", onResize);
-});
-
-const defaultCount = computed(() => {
-  let base = 3;
-  if (width.value <= 1280) base -= 1;
-  else if (width.value >= 1921) base += 1;
-  return base;
-});
-const visibleCount = computed(() =>
-  expanded.value ? 100 : defaultCount.value
-);
-
-function isVisible(idx: number) {
-  return idx < visibleCount.value;
-}
-
 async function resetForm() {
   groupId.value = defaultGroup.value;
   searchForm.bookId = defaultBook.value;
@@ -285,79 +263,3 @@ async function handleRemove(row: MemberVo) {
   await onSearch();
 }
 </script>
-
-<style scoped>
-@media (width > 1920px) {
-  .grid-form {
-    grid-template-columns: repeat(5, 1fr);
-  }
-}
-
-@media (width <= 1920px) {
-  .grid-form {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (width <= 1280px) {
-  .grid-form {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.grid-form {
-  display: grid;
-  padding-bottom: 16px;
-}
-
-.grid-form :deep(.el-form-item__label) {
-  width: 80px;
-  height: 40px;
-  padding-right: 8px;
-  line-height: 40px;
-  text-align: right;
-}
-
-.grid-form :deep(.el-form-item__content) {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: flex-start;
-  height: 40px;
-}
-
-.grid-form :deep(.el-select),
-.grid-form :deep(.el-input),
-.grid-form :deep(.el-date-editor),
-.grid-form :deep(.el-tree-select),
-.grid-form :deep(.el-input-number) {
-  width: 100%;
-  height: 32px;
-}
-
-.grid-form :deep(.el-date-editor.el-input__wrapper) {
-  width: 100% !important;
-}
-
-.search-buttons {
-  display: flex;
-  grid-column: span 1 / -1;
-  align-items: center;
-  justify-content: flex-end;
-  justify-self: end;
-  height: 40px;
-  margin-right: 30px;
-}
-
-.search-buttons :deep(.el-button) {
-  height: 32px;
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-.grid-form :deep(.el-input__wrapper),
-.grid-form :deep(.el-select__wrapper) {
-  height: 32px;
-  line-height: 32px;
-}
-</style>
