@@ -157,6 +157,11 @@ export function useHook() {
       width: 100
     },
     {
+      label: "成员",
+      prop: "memberName",
+      minWidth: 120
+    },
+    {
       label: "确认状态",
       prop: "confirm",
       width: 90,
@@ -236,6 +241,9 @@ export function useHook() {
           ? item.categoryAmountPair
               .map(category => category.categoryName)
               .join(", ")
+          : "-",
+        memberName: item.memberList
+          ? item.memberList.map(member => member.memberName).join(", ")
           : "-",
         payeeName: item.payeeName ? item.payeeName : "-",
         hasFileDesc: item.hasFile ? "是" : "否"
@@ -368,6 +376,7 @@ export function useHook() {
     searchForm.amountMax = null;
     searchForm.categoryIds = [];
     searchForm.tagIds = [];
+    searchForm.memberIds = [];
     searchForm.payeeId = null;
     searchForm.confirm = null;
     searchForm.include = null;

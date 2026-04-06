@@ -12,6 +12,7 @@
       <el-radio-button :label="5" class="quarter-width"
         >交 易 对 象</el-radio-button
       >
+      <el-radio-button :label="6" class="quarter-width">成 员</el-radio-button>
     </el-radio-group>
 
     <account-recycle v-if="recycleBinType === 1" />
@@ -23,6 +24,8 @@
     <tag-recycle v-if="recycleBinType === 4" />
 
     <payee-recycle v-if="recycleBinType === 5" />
+
+    <member-recycle v-if="recycleBinType === 6" />
   </div>
 </template>
 
@@ -33,6 +36,7 @@ import BookRecycle from "./components/BookRecycle.vue";
 import CategoryRecycle from "@/views/fortune/recycle-bin/components/CategoryRecycle.vue";
 import TagRecycle from "@/views/fortune/recycle-bin/components/TagRecycle.vue";
 import PayeeRecycle from "@/views/fortune/recycle-bin/components/PayeeRecycle.vue";
+import MemberRecycle from "@/views/fortune/recycle-bin/components/MemberRecycle.vue";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -45,10 +49,6 @@ const recycleBinType = ref(1);
 <style scoped>
 .full-width-container {
   width: 100%;
-}
-
-.quarter-width {
-  width: 25%;
 }
 
 /* 深度选择器覆盖 element 样式 */

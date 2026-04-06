@@ -6,7 +6,7 @@
       :model="searchFormParams"
       class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] fortune-grid-form"
     >
-      <el-form-item label="所属分组：" prop="groupId" v-show="isVisible(0)">
+      <el-form-item v-show="isVisible(0)" label="所属分组：" prop="groupId">
         <el-select
           v-model="searchFormParams.groupId"
           placeholder="请选择分组"
@@ -20,14 +20,14 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="账本名称：" prop="bookName" v-show="isVisible(1)">
+      <el-form-item v-show="isVisible(1)" label="账本名称：" prop="bookName">
         <el-input
           v-model="searchFormParams.bookName"
           placeholder="请输入账本名称"
           clearable
         />
       </el-form-item>
-      <el-form-item label="启用状态：" prop="status" v-show="isVisible(2)">
+      <el-form-item v-show="isVisible(2)" label="启用状态：" prop="status">
         <el-select
           v-model="searchFormParams.enable"
           placeholder="请选择状态"
@@ -50,9 +50,9 @@
           重置
         </el-button>
         <el-button
+          v-show="width <= 1280"
           type="text"
           @click="expanded = !expanded"
-          v-show="width <= 1280"
         >
           {{ expanded ? "收起" : "展开" }}
         </el-button>
@@ -130,6 +130,9 @@
                     <el-dropdown-item @click="openPayee(row)">
                       交易对象
                     </el-dropdown-item>
+                    <el-dropdown-item @click="openMember(row)">
+                      成员管理
+                    </el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -195,7 +198,6 @@ const modalVisible = ref(false);
 const groupOptions = ref<Array<GroupVo>>();
 const router = useRouter();
 
-// 展开收起
 const expanded = ref(false);
 const width = ref(window.innerWidth);
 
@@ -213,7 +215,6 @@ const onResize = () => {
 onBeforeUnmount(() => {
   window.removeEventListener("resize", onResize);
 });
-// 计算默认展示条数
 const defaultCount = computed(() => {
   let base = 3;
   if (width.value <= 1280) {
@@ -223,12 +224,10 @@ const defaultCount = computed(() => {
   }
   return base;
 });
-// 最终可见条数：展开时展示所有，收起时展示 defaultCount
 const visibleCount = computed(() =>
   expanded.value ? 100 : defaultCount.value
 );
 
-// 判断第几个项是否可见
 function isVisible(idx: number) {
   return idx < visibleCount.value;
 }
@@ -260,6 +259,15 @@ function openTag(row?: BookVo) {
 function openPayee(row?: BookVo) {
   router.push({
     path: "/fortune/payee/index",
+    query: {
+      bookId: row.bookId
+    }
+  });
+}
+
+function openMember(row?: BookVo) {
+  router.push({
+    path: "/fortune/member/index",
     query: {
       bookId: row.bookId
     }

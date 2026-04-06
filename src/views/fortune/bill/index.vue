@@ -6,7 +6,7 @@
       :model="searchForm"
       class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] fortune-grid-form"
     >
-      <el-form-item label="所属分组：" prop="groupId" v-show="isVisible(0)">
+      <el-form-item v-show="isVisible(0)" label="所属分组：" prop="groupId">
         <el-select
           v-model="searchForm.groupId"
           placeholder="请选择账本"
@@ -20,7 +20,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="所属账本：" prop="bookId" v-show="isVisible(1)">
+      <el-form-item v-show="isVisible(1)" label="所属账本：" prop="bookId">
         <el-select
           v-model="searchForm.bookId"
           placeholder="请选择账本"
@@ -34,7 +34,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="所属账户：" prop="accountId" v-show="isVisible(2)">
+      <el-form-item v-show="isVisible(2)" label="所属账户：" prop="accountId">
         <el-select
           v-model="searchForm.accountId"
           placeholder="请选择账户"
@@ -48,14 +48,14 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="标题：" prop="title" v-show="isVisible(3)">
+      <el-form-item v-show="isVisible(3)" label="标题：" prop="title">
         <el-input
           v-model.trim="searchForm.title"
           placeholder="请输入标题"
           clearable
         />
       </el-form-item>
-      <el-form-item label="交易类型：" prop="billType" v-show="isVisible(4)">
+      <el-form-item v-show="isVisible(4)" label="交易类型：" prop="billType">
         <el-select
           v-model="searchForm.billType"
           placeholder="请选择类型"
@@ -70,9 +70,9 @@
         </el-select>
       </el-form-item>
       <el-form-item
+        v-show="isVisible(5)"
         label="交易时间："
         prop="tradeTimeRange"
-        v-show="isVisible(5)"
       >
         <el-date-picker
           v-model="searchForm.tradeTimeRange"
@@ -85,7 +85,7 @@
           :shortcuts="shortcuts"
         />
       </el-form-item>
-      <el-form-item prop="amountMin" label="金额：" v-show="isVisible(6)">
+      <el-form-item v-show="isVisible(6)" prop="amountMin" label="金额：">
         <div class="fortune-number-range-picker">
           <el-input-number
             v-model="searchForm.amountMin"
@@ -104,7 +104,7 @@
           />
         </div>
       </el-form-item>
-      <el-form-item label="分类：" prop="categoryIds" v-show="isVisible(7)">
+      <el-form-item v-show="isVisible(7)" label="分类：" prop="categoryIds">
         <el-tree-select
           v-model="searchForm.categoryIds"
           :data="categoryOptions"
@@ -117,7 +117,7 @@
           clearable
         />
       </el-form-item>
-      <el-form-item prop="tagIds" label="标签：" v-show="isVisible(8)">
+      <el-form-item v-show="isVisible(8)" prop="tagIds" label="标签：">
         <el-tree-select
           v-model="searchForm.tagIds"
           :data="tagOptions"
@@ -130,10 +130,10 @@
           clearable
         />
       </el-form-item>
-      <el-form-item prop="payeeId" label="交易对象：" v-show="isVisible(9)">
+      <el-form-item v-show="isVisible(9)" prop="payeeId" label="交易对象：">
         <el-select
-          filterable
           v-model="searchForm.payeeId"
+          filterable
           placeholder="请选择交易对象"
           style="width: 100%"
           clearable
@@ -146,7 +146,25 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item prop="confirm" label="确认状态：" v-show="isVisible(10)">
+      <!-- 加入成员搜索条件 -->
+      <el-form-item v-show="isVisible(10)" prop="memberIds" label="成员：">
+        <el-select
+          v-model="searchForm.memberIds"
+          filterable
+          multiple
+          placeholder="请选择成员"
+          style="width: 100%"
+          clearable
+        >
+          <el-option
+            v-for="item in memberOptions"
+            :key="item.memberId"
+            :label="item.memberName"
+            :value="item.memberId"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item v-show="isVisible(11)" prop="confirm" label="确认状态：">
         <el-select
           v-model="searchForm.confirm"
           placeholder="请选择确认状态"
@@ -161,7 +179,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item prop="include" label="统计状态：" v-show="isVisible(11)">
+      <el-form-item v-show="isVisible(12)" prop="include" label="统计状态：">
         <el-select
           v-model="searchForm.include"
           placeholder="请选择统计状态"
@@ -176,7 +194,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="备注：" prop="remark" v-show="isVisible(12)">
+      <el-form-item v-show="isVisible(13)" label="备注：" prop="remark">
         <el-input
           v-model="searchForm.remark"
           placeholder="请输入备注"
@@ -244,16 +262,16 @@
             <el-button
               link
               type="success"
-              @click="openDialog('add', row)"
               :disabled="row.billType === 4"
+              @click="openDialog('add', row)"
             >
               复制
             </el-button>
             <el-button
               link
               type="primary"
-              @click="openDialog('edit', row)"
               :disabled="row.billType === 4"
+              @click="openDialog('edit', row)"
             >
               编辑
             </el-button>
@@ -304,6 +322,7 @@ import { message } from "@/utils/message";
 import { CategoryVo, getEnableCategoryList } from "@/api/fortune/category";
 import { getEnablePayeeList, PayeeVo } from "@/api/fortune/payee";
 import { getEnableTagList, TagVo } from "@/api/fortune/tag";
+import { getEnableMemberList, MemberVo } from "@/api/fortune/member";
 import { useRoute } from "vue-router";
 import Download from "@iconify-icons/ep/download";
 import dayjs from "dayjs";
@@ -325,6 +344,7 @@ const formRef = ref();
 const categoryOptions = ref<Array<CategoryVo>>();
 const payeeOptions = ref<Array<PayeeVo>>();
 const tagOptions = ref<Array<TagVo>>();
+const memberOptions = ref<Array<MemberVo>>();
 
 const expanded = ref(false);
 const width = ref(window.innerWidth);
@@ -448,15 +468,17 @@ const initBookAndAccount = async () => {
 };
 
 const initSearchSelect = async () => {
-  // 查询账单分类、交易对象、标签下拉框
-  const [categoryRes, payeeRes, tagRes] = await Promise.all([
+  // 查询账单分类、交易对象、标签、成员下拉框
+  const [categoryRes, payeeRes, tagRes, memberRes] = await Promise.all([
     getEnableCategoryList(searchForm.bookId, null),
     getEnablePayeeList(searchForm.bookId, null),
-    getEnableTagList(searchForm.bookId, null)
+    getEnableTagList(searchForm.bookId, null),
+    getEnableMemberList(searchForm.bookId)
   ]);
   categoryOptions.value = categoryRes.data;
   payeeOptions.value = payeeRes.data;
   tagOptions.value = tagRes.data;
+  memberOptions.value = memberRes.data;
 };
 
 watch(
@@ -474,10 +496,9 @@ watch(
 );
 const tableTitle = computed(() => {
   const statistics = billStatistics.value;
-  // eslint-disable-next-line no-irregular-whitespace
+
   return `账单管理　|　总收入：${statistics?.income ?? 0}元　|　总支出：${
     statistics?.expense ?? 0
-    // eslint-disable-next-line no-irregular-whitespace
   }元　|　总结余：${statistics?.surplus ?? 0}元`;
 });
 

@@ -280,6 +280,26 @@
             </el-select>
           </el-form-item>
         </re-col>
+        <!-- 加入成员的选择 -->
+        <re-col v-if="formData.billType !== 3" :value="12">
+          <el-form-item prop="memberIdList" label="成员">
+            <el-select
+              v-model="formData.memberIdList"
+              filterable
+              multiple
+              placeholder="请选择成员"
+              clearable
+              style="width: 100%"
+            >
+              <el-option
+                v-for="item in memberOptions"
+                :key="item.memberId"
+                :label="item.memberName"
+                :value="item.memberId"
+              />
+            </el-select>
+          </el-form-item>
+        </re-col>
       </el-row>
       <el-row :gutter="30">
         <re-col :value="12">
@@ -351,6 +371,7 @@ import { message } from "@/utils/message";
 import { CategoryVo, getEnableCategoryList } from "@/api/fortune/category";
 import { getEnablePayeeList, PayeeVo } from "@/api/fortune/payee";
 import { getEnableTagList, TagVo } from "@/api/fortune/tag";
+import { getEnableMemberList, MemberVo } from "@/api/fortune/member";
 import { Plus as PlusIcon } from "@element-plus/icons-vue";
 import { getFileByBillId } from "@/api/fortune/file";
 import dayjs from "dayjs";
@@ -432,7 +453,6 @@ const rules: FormRules = {
     }
   ],
 
-  // 动态规则：categoryAmountPair 校验
   "categoryAmountPair.0.categoryId": [
     {
       required: true,
@@ -472,6 +492,7 @@ const toAccountOptions = ref<Array<AccountVo>>();
 const categoryOptions = ref<Array<CategoryVo>>([]);
 const payeeOptions = ref<Array<PayeeVo>>();
 const tagOptions = ref<Array<TagVo>>();
+const memberOptions = ref<Array<MemberVo>>();
 const fileList = ref([]);
 const financeOrderOptions = ref(Array<FinanceOrderVo>());
 onMounted(async () => {
@@ -490,7 +511,7 @@ onMounted(async () => {
   bookOptions.value = booksRes.data;
   await initAccountOptions();
 });
-// 是否展示转入金额，当类型为转账、币种不一致时显示
+
 const showConvertedAmount = computed(() => {
   if (formData.billType !== 3) {
     return false;
@@ -540,6 +561,7 @@ async function handleBillTypeChange(type: number) {
       item => item.canTransferIn
     );
     formData.tagIdList = [];
+    formData.memberIdList = [];
     formData.categoryAmountPair = [];
     formData.payeeId = null;
     formData.accountId = bookRes.data.defaultTransferOutAccountId;
@@ -559,12 +581,14 @@ async function handleBookOrBillTypeChange() {
   formData.categoryAmountPair = [{ categoryId: null, amount: null }];
   formData.payeeId = null;
   formData.tagIdList = [];
+  formData.memberIdList = [];
   formData.amount = null;
   formData.toAccountId = null;
   formData.orderId = null;
   categoryOptions.value = [];
   payeeOptions.value = [];
   tagOptions.value = [];
+  memberOptions.value = [];
   handleCategoryPayeeTagRefresh();
   const financeOrderRes = await getUsingFinanceOrderApi(formData.bookId);
   financeOrderOptions.value = financeOrderRes.data;
@@ -577,14 +601,16 @@ async function handleCategoryPayeeTagRefresh() {
   } else if (formData.billType === 8) {
     billType = 2;
   }
-  const [categoryRes, payeeRes, tagRes] = await Promise.all([
+  const [categoryRes, payeeRes, tagRes, memberRes] = await Promise.all([
     getEnableCategoryList(formData.bookId, billType),
     getEnablePayeeList(formData.bookId, billType),
-    getEnableTagList(formData.bookId, billType)
+    getEnableTagList(formData.bookId, billType),
+    getEnableMemberList(formData.bookId)
   ]);
   categoryOptions.value = categoryRes.data;
   payeeOptions.value = payeeRes.data;
   tagOptions.value = tagRes.data;
+  memberOptions.value = memberRes.data;
 }
 
 async function handleOpened() {
@@ -593,12 +619,14 @@ async function handleOpened() {
     formData.tagIdList = props.row.tagList
       ? props.row.tagList.map(item => item.tagId)
       : [];
+    formData.memberIdList = props.row.memberList
+      ? props.row.memberList.map(item => item.memberId)
+      : [];
     handleCategoryPayeeTagRefresh();
     const financeOrderRes = await getUsingFinanceOrderApi(formData.bookId);
     financeOrderOptions.value = financeOrderRes.data;
     const fileRes = await getFileByBillId(props.row.billId);
     fileList.value = fileRes.data.map(file => ({
-      // 使用后端返回的fileId作为唯一标识
       uid: file.fileId,
       name: file.originalName,
       size: file.size,
@@ -608,14 +636,13 @@ async function handleOpened() {
       }),
       status: "success",
       type: file.contentType,
-      // 标记为已存在的文件
       isExisting: true
     }));
   } else {
     formRef.value?.resetFields();
     formData.bookId = props.bookId;
-    // 设置默认交易时间为当前时间
     formData.tradeTime = dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    formData.memberIdList = [];
     const bookRes = await getBookById(props.bookId);
     formData.accountId = bookRes.data.defaultExpenseAccountId;
     handleCategoryPayeeTagRefresh();
@@ -623,7 +650,6 @@ async function handleOpened() {
 }
 
 function handleFile2Blob(file: any) {
-  // 将 Base64 编码的图片数据转换为 Blob 对象
   const byteCharacters = atob(file.fileData);
   const byteArrays = [];
   for (let offset = 0; offset < byteCharacters.length; offset += 512) {
@@ -635,17 +661,13 @@ function handleFile2Blob(file: any) {
   return new Blob(byteArrays, { type: file.contentType });
 }
 
-// 文件预览/下载处理
 const handleFilePreview = async (file: any) => {
-  // 获取原始文件列表中的对应文件
   const originalFile = fileList.value.find(f => f.uid === file.uid);
   if (!originalFile) return;
 
   if (isImageFile(file.name)) {
-    // 如果是图片，直接预览
     window.open(originalFile.url, "_blank");
   } else {
-    // 如果是非图片文件，使用文件的实际 URL 进行下载
     const a = document.createElement("a");
     a.href = originalFile.url;
     a.download = file.name || originalFile.url.split("/").pop();
@@ -661,7 +683,6 @@ function insertCategory(index: number) {
     amount: null
   });
 
-  // 动态添加新规则
   const newIndex = index + 1;
   rules[`categoryAmountPair.${newIndex}.categoryId`] = [
     {
@@ -681,11 +702,9 @@ function insertCategory(index: number) {
 
 function removeCategory(index: number) {
   formData.categoryAmountPair.splice(index, 1);
-  // 清理对应规则
   delete rules[`categoryAmountPair.${index}.categoryId`];
   delete rules[`categoryAmountPair.${index}.amount`];
 
-  // 重新排序后续规则
   formData.categoryAmountPair.forEach((_, i) => {
     if (i >= index) {
       rules[`categoryAmountPair.${i}.categoryId`] =
@@ -695,36 +714,29 @@ function removeCategory(index: number) {
     }
   });
 
-  // 删除最后一个多余的规则
   const lastIndex = formData.categoryAmountPair.length;
   delete rules[`categoryAmountPair.${lastIndex}.categoryId`];
   delete rules[`categoryAmountPair.${lastIndex}.amount`];
 }
 
-// 判断是否为图片文件
 const isImageFile = (file: any) => {
-  // 如果传入的是文件对象
   if (typeof file === "object") {
-    // 检查MIME类型
     if (file.type && file.type.startsWith("image/")) {
       return true;
     }
     if (file.contentType && file.contentType.startsWith("image/")) {
       return true;
     }
-    // 如果有raw属性（上传的文件）
     if (file.raw && file.raw.type && file.raw.type.startsWith("image/")) {
       return true;
     }
 
-    // 如果没有类型信息，尝试通过文件名判断
     if (file.name) {
       return isImageByFileName(file.name);
     }
     return false;
   }
 
-  // 如果传入的是文件名字符串
   if (typeof file === "string") {
     return isImageByFileName(file);
   }
@@ -732,9 +744,7 @@ const isImageFile = (file: any) => {
   return false;
 };
 
-// 通过文件名判断是否为图片
 const isImageByFileName = (fileName: string) => {
-  // 常见图片扩展名
   const imageExtensions = [
     ".jpg",
     ".jpeg",
@@ -752,7 +762,6 @@ const isImageByFileName = (fileName: string) => {
   return imageExtensions.some(ext => name.endsWith(ext));
 };
 
-// 文件类型图标映射
 const getFileIcon = file => {
   const ext = file.name.split(".").pop()?.toLowerCase();
   const icons = {
@@ -768,27 +777,22 @@ const getFileIcon = file => {
   return icons[ext] || "/file-icons/default.svg";
 };
 
-// 计算显示列表（处理不同状态）
 const fileListDisplay = computed(() => {
   return fileList.value.map(file => {
-    // 检查是否为图片类型
     const isImage = isImageFile(file.name);
     return {
       uid: file.uid,
       name: file.name,
-      // 图片文件显示实际预览，非图片文件显示图标
       url: isImage ? file.url : getFileIcon(file),
       status: file.status || "success"
     };
   });
 });
 
-// 文件变化处理
 const handleFileChange = uploadFile => {
   fileList.value.push(uploadFile);
 };
 
-// 文件移除处理
 const handleFileRemove = file => {
   const index = fileList.value.findIndex(f => f.uid === file.uid);
   if (index !== -1) {
@@ -797,14 +801,12 @@ const handleFileRemove = file => {
 };
 
 async function handleConfirm() {
-  // 防止重复提交
   if (loading.value) {
     return;
   }
   try {
     await formRef.value.validate();
 
-    // 转账场景下校验转出账户和转入账户不能相同
     if (
       formData.billType === 3 &&
       formData.accountId === formData.toAccountId
@@ -814,7 +816,6 @@ async function handleConfirm() {
     }
 
     loading.value = true;
-    // 清理非转账类型的字段
     if (formData.billType !== 3) {
       formData.toAccountId = null;
     } else {
@@ -827,12 +828,8 @@ async function handleConfirm() {
         type: "application/json"
       })
     );
-    // 处理文件列表
     if (fileList.value.length !== 0) {
-      // 2. 处理文件列表（正确格式）
       fileList.value.forEach(file => {
-        // 确保上传的是原始文件对象
-        console.log("file ===== ", file);
         formDataObj.append(`files`, file.raw);
       });
     }
@@ -855,13 +852,11 @@ async function handleConfirm() {
 }
 </script>
 <style scoped>
-/* 自定义文件类型图标 */
 .el-upload-list__item-thumbnail {
   object-fit: contain;
   background: #f5f7fa;
 }
 
-/* 非图片文件显示类型图标 */
 .el-upload-list__item[data-filetype^="image/"] .el-upload-list__item-thumbnail {
   background: transparent;
 }

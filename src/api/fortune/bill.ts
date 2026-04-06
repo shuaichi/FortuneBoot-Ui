@@ -13,6 +13,7 @@ export interface AddBillCommand {
   amount?: number;
   convertedAmount?: number;
   tagIdList?: Array<number>;
+  memberIdList?: Array<number>;
   payeeId?: number;
   billType?: number;
   toAccountId?: number;
@@ -43,6 +44,7 @@ export interface BillQuery extends BasePageQuery {
   amountMax?: number;
   categoryIds?: number[];
   tagIds?: number[];
+  memberIds?: number[];
   payeeId?: number;
   confirm?: boolean;
   include?: boolean;
@@ -59,6 +61,7 @@ export interface BillVo {
   billType?: number;
   categoryAmountPair?: [{ categoryName: string; amount: number }];
   tagList?: Array<TagVo>;
+  memberList?: Array<{ memberId: number; memberName: string }>; // 新增成员
   currencyCode?: string;
   payeeName?: string;
   hasFile?: boolean;
@@ -75,14 +78,6 @@ export const getBillPage = (params?: BillQuery) => {
   );
 };
 
-// 新增账单
-// 使用示例：
-// const formData = new FormData();
-// formData.append('bookId', '1');
-// formData.append('title', '账单标题');
-// formData.append('fileList', file1);
-// formData.append('fileList', file2);
-// addBillApi(formData);
 export const addBillApi = (data: FormData) => {
   return http.request("post", "/fortune/bill/add", {
     data,
