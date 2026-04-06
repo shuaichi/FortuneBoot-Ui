@@ -12,15 +12,12 @@
       <el-radio-group
         v-model="searchForm.categoryType"
         size="large"
-        class="full-width-group"
+        class="fortune-full-width-group"
         @change="onSearch()"
       >
-        <el-radio-button :label="1" class="half-width"
-          >支 出 分 类</el-radio-button
-        >
-        <el-radio-button :label="2" class="half-width"
-          >收 入 分 类</el-radio-button
-        >
+        <!-- 删除了 half-width class，因为全局样式会自动等分 -->
+        <el-radio-button :label="1">支 出 分 类</el-radio-button>
+        <el-radio-button :label="2">收 入 分 类</el-radio-button>
       </el-radio-group>
     </div>
     <el-form
@@ -104,12 +101,12 @@
       </template>
     </PureTableBar>
     <category-form
-      :category-type="searchForm.categoryType"
+      v-if="modalVisible"
       v-model="modalVisible"
+      :category-type="searchForm.categoryType"
       :type="opType"
       :row="currentRow"
       :bookId="bookId"
-      v-if="modalVisible"
       @success="onSearch"
     />
   </div>

@@ -131,3 +131,21 @@
     }
   }
 }
+
+.fortune-full-width-group {
+  display: flex;
+  width: 100%;
+  margin-bottom: 16px; /* 统一下方间距 */
+
+  /* 直接选中组件内部的 radio-button，自动等分剩余空间 */
+  .el-radio-button {
+    flex: 1;
+
+    /* 调整内部按钮宽度，覆盖 Element Plus 默认样式 */
+    .el-radio-button__inner {
+      display: block;
+      width: 100%;
+      text-align: center;
+    }
+  }
+}

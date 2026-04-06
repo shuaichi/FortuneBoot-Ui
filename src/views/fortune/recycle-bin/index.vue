@@ -3,16 +3,14 @@
     <el-radio-group
       v-model="recycleBinType"
       size="large"
-      class="full-width-group"
+      class="fortune-full-width-group"
     >
-      <el-radio-button :label="1" class="quarter-width">账 户</el-radio-button>
-      <el-radio-button :label="2" class="quarter-width">账 本</el-radio-button>
-      <el-radio-button :label="3" class="quarter-width">分 类</el-radio-button>
-      <el-radio-button :label="4" class="quarter-width">标 签</el-radio-button>
-      <el-radio-button :label="5" class="quarter-width"
-        >交 易 对 象</el-radio-button
-      >
-      <el-radio-button :label="6" class="quarter-width">成 员</el-radio-button>
+      <el-radio-button :label="1">账 户</el-radio-button>
+      <el-radio-button :label="2">账 本</el-radio-button>
+      <el-radio-button :label="3">分 类</el-radio-button>
+      <el-radio-button :label="4">标 签</el-radio-button>
+      <el-radio-button :label="5">交 易 对 象</el-radio-button>
+      <el-radio-button :label="6">成 员</el-radio-button>
     </el-radio-group>
 
     <account-recycle v-if="recycleBinType === 1" />
@@ -49,23 +47,5 @@ const recycleBinType = ref(1);
 <style scoped>
 .full-width-container {
   width: 100%;
-}
-
-/* 深度选择器覆盖 element 样式 */
-:deep(.full-width-group) {
-  display: flex;
-  width: 100%;
-}
-
-:deep(.quarter-width) {
-  /* 等分剩余空间 */
-  flex: 1;
-
-  /* 调整内部按钮宽度 */
-  .el-radio-button__inner {
-    display: block;
-    width: 100%;
-    text-align: center;
-  }
 }
 </style>
