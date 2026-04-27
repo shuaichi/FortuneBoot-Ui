@@ -57,7 +57,7 @@ export const addFinanceOrderApi = (data: FinanceOrderAddCommand) => {
   return http.request<ResponseData<boolean>>(
     "post",
     "/fortune/finance/order/add",
-    data
+    { params: data }
   );
 };
 
@@ -66,7 +66,7 @@ export const modifyFinanceOrderApi = (data: FinanceOrderModifyCommand) => {
   return http.request<ResponseData<boolean>>(
     "put",
     "/fortune/finance/order/modify",
-    data
+    { params: data }
   );
 };
 
