@@ -1,223 +1,19 @@
 <template>
   <div class="main">
-    <el-form
-      ref="formRef"
-      :inline="true"
-      :model="searchForm"
-      class="search-form bg-bg_color w-[99/100] pl-8 pr-8 pt-[12px] fortune-grid-form"
-    >
-      <el-form-item v-show="isVisible(0)" label="所属分组：" prop="groupId">
-        <el-select
-          v-model="searchForm.groupId"
-          placeholder="请选择账本"
-          filterable
-        >
-          <el-option
-            v-for="item in groupOptions"
-            :key="item.groupId"
-            :label="item.groupName"
-            :value="item.groupId"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item v-show="isVisible(1)" label="所属账本：" prop="bookId">
-        <el-select
-          v-model="searchForm.bookId"
-          placeholder="请选择账本"
-          filterable
-        >
-          <el-option
-            v-for="item in bookOptions"
-            :key="item.bookId"
-            :label="item.bookName"
-            :value="item.bookId"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item v-show="isVisible(2)" label="所属账户：" prop="accountId">
-        <el-select
-          v-model="searchForm.accountId"
-          placeholder="请选择账户"
-          filterable
-        >
-          <el-option
-            v-for="item in accountOptions"
-            :key="item.accountId"
-            :label="item.accountName"
-            :value="item.accountId"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item v-show="isVisible(3)" label="标题：" prop="title">
-        <el-input
-          v-model.trim="searchForm.title"
-          placeholder="请输入标题"
-          clearable
-        />
-      </el-form-item>
-      <el-form-item v-show="isVisible(4)" label="交易类型：" prop="billType">
-        <el-select
-          v-model="searchForm.billType"
-          placeholder="请选择类型"
-          clearable
-        >
-          <el-option
-            v-for="item in billTypeOptions"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item
-        v-show="isVisible(5)"
-        label="交易时间："
-        prop="tradeTimeRange"
-      >
-        <el-date-picker
-          v-model="searchForm.tradeTimeRange"
-          type="daterange"
-          range-separator="-"
-          class="!w-[260px]"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          value-format="YYYY-MM-DD"
-          :shortcuts="shortcuts"
-        />
-      </el-form-item>
-      <el-form-item v-show="isVisible(6)" prop="amountMin" label="金额：">
-        <div class="fortune-number-range-picker">
-          <el-input-number
-            v-model="searchForm.amountMin"
-            placeholder="最小值"
-            :precision="2"
-            :controls="false"
-            class="amount-input"
-          />
-          <span class="range-separator">—</span>
-          <el-input-number
-            v-model="searchForm.amountMax"
-            placeholder="最大值"
-            :precision="2"
-            :controls="false"
-            class="amount-input"
-          />
-        </div>
-      </el-form-item>
-      <el-form-item v-show="isVisible(7)" label="分类：" prop="categoryIds">
-        <el-tree-select
-          v-model="searchForm.categoryIds"
-          :data="categoryOptions"
-          check-strictly
-          filterable
-          multiple
-          placeholder="请选择分类"
-          style="width: 100%"
-          :props="categoryTreeProps"
-          clearable
-        />
-      </el-form-item>
-      <el-form-item v-show="isVisible(8)" prop="tagIds" label="标签：">
-        <el-tree-select
-          v-model="searchForm.tagIds"
-          :data="tagOptions"
-          placeholder="请选择标签"
-          style="width: 100%"
-          check-strictly
-          filterable
-          multiple
-          :props="tagTreeProps"
-          clearable
-        />
-      </el-form-item>
-      <el-form-item v-show="isVisible(9)" prop="payeeId" label="交易对象：">
-        <el-select
-          v-model="searchForm.payeeId"
-          filterable
-          placeholder="请选择交易对象"
-          style="width: 100%"
-          clearable
-        >
-          <el-option
-            v-for="item in payeeOptions"
-            :key="item.payeeId"
-            :label="item.payeeName"
-            :value="item.payeeId"
-          />
-        </el-select>
-      </el-form-item>
-      <!-- 加入成员搜索条件 -->
-      <el-form-item v-show="isVisible(10)" prop="memberIds" label="成员：">
-        <el-select
-          v-model="searchForm.memberIds"
-          filterable
-          multiple
-          placeholder="请选择成员"
-          style="width: 100%"
-          clearable
-        >
-          <el-option
-            v-for="item in memberOptions"
-            :key="item.memberId"
-            :label="item.memberName"
-            :value="item.memberId"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item v-show="isVisible(11)" prop="confirm" label="确认状态：">
-        <el-select
-          v-model="searchForm.confirm"
-          placeholder="请选择确认状态"
-          clearable
-          filterable
-        >
-          <el-option
-            v-for="item in trueFalseOptions"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item v-show="isVisible(12)" prop="include" label="统计状态：">
-        <el-select
-          v-model="searchForm.include"
-          placeholder="请选择统计状态"
-          clearable
-          filterable
-        >
-          <el-option
-            v-for="item in trueFalseOptions"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item v-show="isVisible(13)" label="备注：" prop="remark">
-        <el-input
-          v-model="searchForm.remark"
-          placeholder="请输入备注"
-          clearable
-        />
-      </el-form-item>
-      <el-form-item class="fortune-search-buttons">
-        <el-button
-          type="primary"
-          :icon="useRenderIcon(Search)"
-          :loading="loading"
-          @click="onSearch"
-        >
-          搜索
-        </el-button>
-        <el-button :icon="useRenderIcon(Refresh)" @click="resetForm">
-          重置
-        </el-button>
-        <el-button type="text" @click="expanded = !expanded">
-          {{ expanded ? "收起" : "展开" }}
-        </el-button>
-      </el-form-item>
-    </el-form>
+    <BillSearchForm
+      v-model="searchForm"
+      :loading="loading"
+      :groupOptions="groupOptions"
+      :bookOptions="bookOptions"
+      :accountOptions="accountOptions"
+      :billTypeOptions="billTypeOptions"
+      :categoryOptions="categoryOptions"
+      :tagOptions="tagOptions"
+      :payeeOptions="payeeOptions"
+      :memberOptions="memberOptions"
+      @search="onSearch"
+      @reset="resetForm"
+    />
 
     <PureTableBar :title="tableTitle" :columns="columns" @refresh="onSearch">
       <template #buttons>
@@ -297,19 +93,26 @@
       :row="currentRow"
       @success="onSearch"
     />
+
+    <GlobalAddBtn />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, onBeforeUnmount, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { emitter } from "@/utils/mitt";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import AddFill from "@iconify-icons/ri/add-circle-line";
+import Download from "@iconify-icons/ep/download";
 import { PureTableBar } from "@/components/RePureTableBar";
 import PureTable from "@pureadmin/table";
-import Search from "@iconify-icons/ep/search";
-import Refresh from "@iconify-icons/ep/refresh";
+import { useRoute } from "vue-router";
+import { message } from "@/utils/message";
+
 import BillForm from "./bill-form.vue";
+import BillSearchForm from "./components/BillSearchForm.vue";
+import GlobalAddBtn from "./components/GlobalAddBtn.vue";
+
 import { useHook } from "./utils/hook";
 import { BookVo, getEnableBookList } from "@/api/fortune/book";
 import { AccountVo, getEnableAccountList } from "@/api/fortune/account";
@@ -318,15 +121,10 @@ import {
   getEnableGroupList,
   GroupVo
 } from "@/api/fortune/group";
-import { message } from "@/utils/message";
 import { CategoryVo, getEnableCategoryList } from "@/api/fortune/category";
 import { getEnablePayeeList, PayeeVo } from "@/api/fortune/payee";
 import { getEnableTagList, TagVo } from "@/api/fortune/tag";
 import { getEnableMemberList, MemberVo } from "@/api/fortune/member";
-import { useRoute } from "vue-router";
-import Download from "@iconify-icons/ep/download";
-import dayjs from "dayjs";
-import { useResponsiveForm } from "@/views/fortune/hooks/useResponsiveForm";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -338,37 +136,16 @@ const currentRow = ref();
 const modalVisible = ref(false);
 const groupIdProp = ref();
 const bookIdProp = ref();
-const groupOptions = ref<Array<GroupVo>>();
-const bookOptions = ref<Array<BookVo>>();
-const accountOptions = ref<Array<AccountVo>>();
-const formRef = ref();
-const categoryOptions = ref<Array<CategoryVo>>();
-const payeeOptions = ref<Array<PayeeVo>>();
-const tagOptions = ref<Array<TagVo>>();
-const memberOptions = ref<Array<MemberVo>>();
+const groupOptions = ref<Array<GroupVo>>([]);
+const bookOptions = ref<Array<BookVo>>([]);
+const accountOptions = ref<Array<AccountVo>>([]);
+const categoryOptions = ref<Array<CategoryVo>>([]);
+const payeeOptions = ref<Array<PayeeVo>>([]);
+const tagOptions = ref<Array<TagVo>>([]);
+const memberOptions = ref<Array<MemberVo>>([]);
 
 const route = useRoute();
 
-const trueFalseOptions = ref([
-  {
-    value: 1,
-    label: "是"
-  },
-  {
-    value: 0,
-    label: "否"
-  }
-]);
-const tagTreeProps = {
-  label: "tagName",
-  value: "tagId",
-  children: "children"
-};
-const categoryTreeProps = {
-  label: "categoryName",
-  value: "categoryId",
-  children: "children"
-};
 const {
   searchForm,
   dataList,
@@ -385,8 +162,6 @@ const {
   handleSizeChange,
   handleCurrentChange
 } = useHook();
-
-const { expanded, width, isVisible } = useResponsiveForm();
 
 onMounted(async () => {
   // 初始化分组
@@ -430,7 +205,7 @@ const initBookAndAccount = async () => {
   bookOptions.value = booksRes.data;
   searchForm.bookId = groupOptions.value.find(
     group => group.groupId === searchForm.groupId
-  ).defaultBookId;
+  )?.defaultBookId;
   accountOptions.value = accountsRes.data;
 
   // 对账（如果 route 中有账户，则查询这个账户的数据）
@@ -481,56 +256,6 @@ function openDialog(type: "add" | "edit", row?: any) {
   currentRow.value = row;
   modalVisible.value = true;
 }
-const shortcuts = [
-  {
-    text: "最近一周",
-    value: () => {
-      const end = dayjs();
-      const start = end.subtract(7, "day");
-      return [start.toDate(), end.toDate()];
-    }
-  },
-  {
-    text: "本周",
-    value: () => {
-      const start = dayjs().startOf("week");
-      const end = dayjs().endOf("week");
-      return [start.toDate(), end.toDate()];
-    }
-  },
-  {
-    text: "最近一月",
-    value: () => {
-      const end = dayjs();
-      const start = end.subtract(1, "month");
-      return [start.toDate(), end.toDate()];
-    }
-  },
-  {
-    text: "本月",
-    value: () => {
-      const start = dayjs().startOf("month");
-      const end = dayjs().endOf("month");
-      return [start.toDate(), end.toDate()];
-    }
-  },
-  {
-    text: "最近一年",
-    value: () => {
-      const end = dayjs();
-      const start = end.subtract(1, "year");
-      return [start.toDate(), end.toDate()];
-    }
-  },
-  {
-    text: "今年",
-    value: () => {
-      const start = dayjs().startOf("year");
-      const end = dayjs().endOf("year");
-      return [start.toDate(), end.toDate()];
-    }
-  }
-];
 </script>
 
 <style scoped>

@@ -175,6 +175,8 @@
                 style="width: 100%"
                 :props="categoryTreeProps"
                 clearable
+                node-key="categoryId"
+                :filter-node-method="filterNodeMethod('categoryName')"
               />
             </el-form-item>
           </re-col>
@@ -259,6 +261,8 @@
               multiple
               clearable
               :props="tagTreeProps"
+              node-key="tagId"
+              :filter-node-method="filterNodeMethod('tagName')"
             />
           </el-form-item>
         </re-col>
@@ -380,6 +384,11 @@ import {
   FinanceOrderVo,
   getUsingFinanceOrderApi
 } from "@/api/fortune/finance-order";
+import {
+  filterNodeMethod,
+  categoryTreeProps,
+  tagTreeProps
+} from "./utils/helper";
 
 const props = defineProps<{
   type: "add" | "edit";
@@ -404,16 +413,7 @@ const billTypeOptions = [
   { value: 7, label: "垫付" },
   { value: 8, label: "报销" }
 ];
-const tagTreeProps = {
-  label: "tagName",
-  value: "tagId",
-  children: "children"
-};
-const categoryTreeProps = {
-  label: "categoryName",
-  value: "categoryId",
-  children: "children"
-};
+
 const formData = reactive<AddBillCommand | ModifyBillCommand>({
   billType: 1,
   confirm: true,
@@ -851,6 +851,7 @@ async function handleConfirm() {
   }
 }
 </script>
+
 <style scoped>
 .el-upload-list__item-thumbnail {
   object-fit: contain;
