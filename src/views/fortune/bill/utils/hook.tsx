@@ -20,6 +20,61 @@ import {
 } from "@/api/fortune/include";
 import { getCurrencySymbol } from "@/utils/currency";
 
+// 千分位格式化（纯函数）
+const formatThousand = (val: unknown): string =>
+  val != null ? String(val).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "-";
+
+// 带币种符号格式化
+const withSymbol = (sym: string, code: string, val: unknown): string =>
+  sym && sym !== code
+    ? `${sym}${formatThousand(val)}`
+    : `${code} ${formatThousand(val)}`;
+
+// 账单金额主文案（不含附加费用/优惠提示）
+function formatBillAmount(params: {
+  amount: number;
+  convertedAmount: number;
+  currencyCode: string;
+  toCurrencyCode: string;
+  billType: number;
+}): string {
+  const { amount, convertedAmount, currencyCode, toCurrencyCode, billType } =
+    params;
+  if (
+    billType === 3 &&
+    currencyCode &&
+    toCurrencyCode &&
+    currencyCode !== toCurrencyCode
+  ) {
+    const fromSym = getCurrencySymbol(currencyCode);
+    const toSym = getCurrencySymbol(toCurrencyCode);
+    return `${withSymbol(fromSym, currencyCode, amount)} -> ${withSymbol(
+      toSym,
+      toCurrencyCode,
+      convertedAmount
+    )}`;
+  }
+  const sym = getCurrencySymbol(currencyCode);
+  return withSymbol(sym, currencyCode, amount);
+}
+
+// 附加费用/优惠汇总文案（不含样式，纯文本）
+function formatExtrasTip(extras: any[] | undefined): string {
+  if (!Array.isArray(extras) || extras.length === 0) return "";
+  const feeTotal = extras
+    .filter(e => e?.extraType === 1)
+    .reduce((sum, e) => sum + (Number(e?.amount) || 0), 0);
+  const discountTotal = extras
+    .filter(e => e?.extraType === 2)
+    .reduce((sum, e) => sum + (Number(e?.amount) || 0), 0);
+  const parts: string[] = [];
+  if (feeTotal > 0)
+    parts.push(`含手续费 ${formatThousand(feeTotal.toFixed(2))}`);
+  if (discountTotal > 0)
+    parts.push(`含优惠 ${formatThousand(discountTotal.toFixed(2))}`);
+  return parts.join("，");
+}
+
 export function useHook() {
   const { tagStyle } = usePublicHooks();
   const loading = ref(false);
@@ -81,47 +136,41 @@ export function useHook() {
     {
       label: "金额",
       prop: "convertedAmount",
-      width: 150,
+      width: 180,
       sortable: "custom",
-      formatter: ({
-        amount,
-        convertedAmount,
-        currencyCode,
-        toCurrencyCode,
-        billType
-      }) => {
-        // 千分位格式化
-        const format = val =>
-          val != null
-            ? val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-            : "-";
-
-        // 转账类型且币种不同，展示前后金额
-        // 使用全局工具函数获取币种符号
-        if (
-          billType === 3 &&
-          currencyCode &&
-          toCurrencyCode &&
-          currencyCode !== toCurrencyCode
-        ) {
-          const fromSym = getCurrencySymbol(currencyCode);
-          const toSym = getCurrencySymbol(toCurrencyCode);
-          const withSymbol = (sym, code, val) =>
-            sym && sym !== code
-              ? `${sym}${format(val)}`
-              : `${code} ${format(val)}`;
-          return `${withSymbol(fromSym, currencyCode, amount)} -> ${withSymbol(
-            toSym,
-            toCurrencyCode,
-            convertedAmount
-          )}`;
-        }
-
-        // 其他情况，展示原币金额
-        const sym = getCurrencySymbol(currencyCode);
-        return sym && sym !== currencyCode
-          ? `${sym} ${format(amount)}`
-          : `${currencyCode} ${format(amount)}`;
+      cellRenderer: ({ row }) => {
+        const {
+          amount,
+          convertedAmount,
+          currencyCode,
+          toCurrencyCode,
+          billType,
+          extras
+        } = row;
+        const mainText = formatBillAmount({
+          amount,
+          convertedAmount,
+          currencyCode,
+          toCurrencyCode,
+          billType
+        });
+        const extrasTip = formatExtrasTip(extras);
+        return (
+          <span>
+            {mainText}
+            {extrasTip ? (
+              <span
+                style={{
+                  color: "#909399",
+                  fontSize: "12px",
+                  marginLeft: "4px"
+                }}
+              >
+                ({extrasTip})
+              </span>
+            ) : null}
+          </span>
+        );
       }
     },
     {

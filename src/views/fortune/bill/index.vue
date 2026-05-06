@@ -110,8 +110,8 @@ import { useRoute } from "vue-router";
 import { message } from "@/utils/message";
 
 import BillForm from "./bill-form.vue";
-import BillSearchForm from "./components/BillSearchForm.vue";
-import GlobalAddBtn from "./components/GlobalAddBtn.vue";
+import BillSearchForm from "./components/bill-search-form.vue";
+import GlobalAddBtn from "./global-add-bill-button.vue";
 
 import { useHook } from "./utils/hook";
 import { BookVo, getEnableBookList } from "@/api/fortune/book";

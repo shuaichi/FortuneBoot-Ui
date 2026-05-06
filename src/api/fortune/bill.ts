@@ -20,12 +20,26 @@ export interface AddBillCommand {
   confirm: boolean;
   include: boolean;
   categoryAmountPair?: Array<CategoryAmountPairVo>;
+  extras?: Array<BillExtraVo>;
   remark?: string;
 }
 
 export interface CategoryAmountPairVo {
   categoryId?: number;
   amount?: number;
+}
+
+// 附加费用/优惠
+// extraType:   1=手续费，2=优惠
+// accountSide: 账户方向，1=转出账户(from)，2=转入账户(to)
+//              非转账账单默认 1；转账账单可指定从哪方扣/给
+// categoryId:  所属分类（隐式继承所在分类金额组的 categoryId）
+export interface BillExtraVo {
+  extraType?: number;
+  amount?: number;
+  accountSide?: number;
+  categoryId?: number;
+  remark?: string;
 }
 
 export interface ModifyBillCommand extends AddBillCommand {
@@ -67,6 +81,7 @@ export interface BillVo {
   hasFile?: boolean;
   confirm?: boolean;
   include?: boolean;
+  extras?: Array<BillExtraVo>;
 }
 
 // 分页查询

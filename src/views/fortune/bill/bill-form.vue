@@ -193,6 +193,78 @@
             </el-button>
           </el-col>
         </el-row>
+
+        <!-- 附加费用/优惠（关联到当前分类金额组） -->
+        <el-form-item
+          v-if="formData.billType !== 3"
+          label=" "
+          class="extra-form-item"
+        >
+          <div class="extra-panel">
+            <div class="extra-actions">
+              <button
+                type="button"
+                class="extra-add-btn extra-add-btn--fee"
+                @click="handleAddExtra(1, item.categoryId)"
+              >
+                <span class="extra-add-btn__plus">+</span>
+                手续费
+              </button>
+              <button
+                type="button"
+                class="extra-add-btn extra-add-btn--discount"
+                @click="handleAddExtra(2, item.categoryId)"
+              >
+                <span class="extra-add-btn__plus">+</span>
+                优惠
+              </button>
+            </div>
+            <div
+              v-for="extraIdx in getExtraIndexesByCategory(item.categoryId)"
+              :key="extraIdx"
+              :class="[
+                'extra-row',
+                formData.extras[extraIdx].extraType === 1
+                  ? 'extra-row--fee'
+                  : 'extra-row--discount'
+              ]"
+            >
+              <span
+                :class="[
+                  'extra-chip',
+                  formData.extras[extraIdx].extraType === 1
+                    ? 'extra-chip--fee'
+                    : 'extra-chip--discount'
+                ]"
+              >
+                {{
+                  formData.extras[extraIdx].extraType === 1 ? "手续费" : "优惠"
+                }}
+              </span>
+              <el-input-number
+                v-model="formData.extras[extraIdx].amount"
+                :precision="2"
+                :controls="false"
+                placeholder="金额"
+                class="extra-amount"
+              />
+              <el-input
+                v-model="formData.extras[extraIdx].remark"
+                placeholder="备注（选填）"
+                class="extra-remark"
+              />
+              <el-button
+                type="danger"
+                size="small"
+                link
+                class="extra-remove-btn"
+                @click="removeExtra(extraIdx)"
+              >
+                删除
+              </el-button>
+            </div>
+          </div>
+        </el-form-item>
       </div>
 
       <el-row :gutter="30">
@@ -328,6 +400,88 @@
         </re-col>
       </el-row>
 
+      <!-- 转账场景：附加费用/优惠（无分类，须选择账户方向） -->
+      <el-form-item
+        v-if="formData.billType === 3"
+        label=" "
+        class="extra-form-item"
+      >
+        <div class="extra-panel">
+          <div class="extra-actions">
+            <button
+              type="button"
+              class="extra-add-btn extra-add-btn--fee"
+              @click="addExtra(1, null)"
+            >
+              <span class="extra-add-btn__plus">+</span>
+              手续费
+            </button>
+            <button
+              type="button"
+              class="extra-add-btn extra-add-btn--discount"
+              @click="addExtra(2, null)"
+            >
+              <span class="extra-add-btn__plus">+</span>
+              优惠
+            </button>
+          </div>
+          <div
+            v-for="idx in getExtraIndexesByCategory(null)"
+            :key="idx"
+            :class="[
+              'extra-row',
+              formData.extras[idx].extraType === 1
+                ? 'extra-row--fee'
+                : 'extra-row--discount'
+            ]"
+          >
+            <span
+              :class="[
+                'extra-chip',
+                formData.extras[idx].extraType === 1
+                  ? 'extra-chip--fee'
+                  : 'extra-chip--discount'
+              ]"
+            >
+              {{ formData.extras[idx].extraType === 1 ? "手续费" : "优惠" }}
+            </span>
+            <el-input-number
+              v-model="formData.extras[idx].amount"
+              :precision="2"
+              :controls="false"
+              placeholder="金额"
+              class="extra-amount"
+            />
+            <el-select
+              v-model="formData.extras[idx].accountSide"
+              placeholder="账户方向"
+              class="extra-side"
+            >
+              <el-option
+                v-for="opt in accountSideOptions"
+                :key="opt.value"
+                :label="opt.label"
+                :value="opt.value"
+              />
+            </el-select>
+            <el-input
+              v-model="formData.extras[idx].remark"
+              placeholder="备注（选填）"
+              class="extra-remark"
+            />
+            <el-button
+              type="danger"
+              size="small"
+              link
+              class="extra-remove-btn"
+              @click="removeExtra(idx)"
+            >
+              删除
+            </el-button>
+          </div>
+        </div>
+      </el-form-item>
+
       <el-form-item prop="remark" label="备注">
         <el-input
           v-model="formData.remark"
@@ -418,7 +572,8 @@ const formData = reactive<AddBillCommand | ModifyBillCommand>({
   billType: 1,
   confirm: true,
   include: true,
-  categoryAmountPair: [{ categoryId: null, amount: null }]
+  categoryAmountPair: [{ categoryId: null, amount: null }],
+  extras: []
 });
 
 const rules: FormRules = {
@@ -564,6 +719,7 @@ async function handleBillTypeChange(type: number) {
     formData.memberIdList = [];
     formData.categoryAmountPair = [];
     formData.payeeId = null;
+    formData.extras = [];
     formData.accountId = bookRes.data.defaultTransferOutAccountId;
     formData.toAccountId = bookRes.data.defaultTransferInAccountId;
   } else if (type === 7) {
@@ -585,6 +741,7 @@ async function handleBookOrBillTypeChange() {
   formData.amount = null;
   formData.toAccountId = null;
   formData.orderId = null;
+  formData.extras = [];
   categoryOptions.value = [];
   payeeOptions.value = [];
   tagOptions.value = [];
@@ -622,6 +779,10 @@ async function handleOpened() {
     formData.memberIdList = props.row.memberList
       ? props.row.memberList.map(item => item.memberId)
       : [];
+    // 不可变：创建新数组副本，避免修改原始 row.extras
+    formData.extras = props.row.extras
+      ? props.row.extras.map(e => ({ ...e }))
+      : [];
     handleCategoryPayeeTagRefresh();
     const financeOrderRes = await getUsingFinanceOrderApi(formData.bookId);
     financeOrderOptions.value = financeOrderRes.data;
@@ -643,6 +804,7 @@ async function handleOpened() {
     formData.bookId = props.bookId;
     formData.tradeTime = dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss");
     formData.memberIdList = [];
+    formData.extras = [];
     const bookRes = await getBookById(props.bookId);
     formData.accountId = bookRes.data.defaultExpenseAccountId;
     handleCategoryPayeeTagRefresh();
@@ -701,7 +863,15 @@ function insertCategory(index: number) {
 }
 
 function removeCategory(index: number) {
+  // 先记录将被删除分类对应的 categoryId，再清理同分类下的附加项
+  const removedCategoryId =
+    formData.categoryAmountPair[index]?.categoryId ?? null;
   formData.categoryAmountPair.splice(index, 1);
+  if (removedCategoryId != null) {
+    formData.extras = (formData.extras ?? []).filter(
+      e => e.categoryId !== removedCategoryId
+    );
+  }
   delete rules[`categoryAmountPair.${index}.categoryId`];
   delete rules[`categoryAmountPair.${index}.amount`];
 
@@ -717,6 +887,104 @@ function removeCategory(index: number) {
   const lastIndex = formData.categoryAmountPair.length;
   delete rules[`categoryAmountPair.${lastIndex}.categoryId`];
   delete rules[`categoryAmountPair.${lastIndex}.amount`];
+}
+
+// 附加项常量
+const ACCOUNT_SIDE = { FROM: 1, TO: 2 } as const;
+const accountSideOptions = [
+  { label: "转出账户", value: ACCOUNT_SIDE.FROM },
+  { label: "转入账户", value: ACCOUNT_SIDE.TO }
+];
+
+/**
+ * 添加一条附加费用/优惠
+ * @param extraType 1=手续费，2=优惠
+ * @param categoryId 关联的分类ID（来自 categoryAmountPair 行；转账场景为 null）
+ */
+function addExtra(extraType: 1 | 2, categoryId: number | null) {
+  // 不可变：创建新数组并附加新对象
+  const next = [
+    ...(formData.extras ?? []),
+    {
+      extraType,
+      amount: null,
+      accountSide: ACCOUNT_SIDE.FROM,
+      categoryId,
+      remark: ""
+    }
+  ];
+  formData.extras = next;
+}
+
+/**
+ * 分类金额组行内"添加手续费/优惠"按钮处理器。
+ * 若该行尚未选分类，则提示用户先选分类；否则追加一条附加项。
+ */
+function handleAddExtra(extraType: 1 | 2, categoryId: number | null) {
+  if (categoryId == null) {
+    message("请先选择分类后，再添加手续费/优惠", { type: "warning" });
+    return;
+  }
+  addExtra(extraType, categoryId);
+}
+
+function removeExtra(index: number) {
+  // 不可变：返回不包含该索引的新数组
+  formData.extras = (formData.extras ?? []).filter((_, i) => i !== index);
+}
+
+/** 获取属于指定分类的附加项的真实索引列表（在 formData.extras 中的索引） */
+function getExtraIndexesByCategory(categoryId: number | null): number[] {
+  const list = formData.extras ?? [];
+  return list.reduce<number[]>((acc, extra, i) => {
+    if ((extra.categoryId ?? null) === (categoryId ?? null)) {
+      acc.push(i);
+    }
+    return acc;
+  }, []);
+}
+
+/**
+ * 提交前清理 extras：
+ * - 过滤掉 amount 为空或 <= 0 的无效项
+ * - 非转账：仅保留 categoryId 在当前分类金额组中的项（清理"孤儿"）
+ * - 转账：categoryId 强制为 null，accountSide 必须填
+ * 返回新数组，不修改入参（不可变）
+ */
+function sanitizeExtrasForSubmit(
+  extras: Array<{
+    extraType?: number;
+    amount?: number;
+    accountSide?: number;
+    categoryId?: number;
+    remark?: string;
+  }>,
+  pairs: Array<{ categoryId?: number; amount?: number }>,
+  billType: number
+) {
+  const validCategoryIds = new Set(
+    (pairs ?? []).map(p => p?.categoryId).filter(id => id != null) as number[]
+  );
+  return extras
+    .filter(e => e && e.amount != null && Number(e.amount) > 0)
+    .map(e => {
+      if (billType === 3) {
+        // 不可变：返回新对象
+        return {
+          ...e,
+          categoryId: null,
+          accountSide: e.accountSide ?? ACCOUNT_SIDE.FROM
+        };
+      }
+      return {
+        ...e,
+        accountSide: ACCOUNT_SIDE.FROM
+      };
+    })
+    .filter(e => {
+      if (billType === 3) return true;
+      return e.categoryId != null && validCategoryIds.has(e.categoryId);
+    });
 }
 
 const isImageFile = (file: any) => {
@@ -821,10 +1089,19 @@ async function handleConfirm() {
     } else {
       formData.categoryAmountPair = [];
     }
+
+    // 清理孤儿附加项 + 标准化字段（不可变：构建新数组用于提交）
+    const cleanedExtras = sanitizeExtrasForSubmit(
+      formData.extras ?? [],
+      formData.categoryAmountPair ?? [],
+      formData.billType
+    );
+
+    const submitPayload = { ...formData, extras: cleanedExtras };
     const formDataObj = new FormData();
     formDataObj.append(
       "data",
-      new Blob([JSON.stringify({ ...formData })], {
+      new Blob([JSON.stringify(submitPayload)], {
         type: "application/json"
       })
     );
@@ -860,5 +1137,121 @@ async function handleConfirm() {
 
 .el-upload-list__item[data-filetype^="image/"] .el-upload-list__item-thumbnail {
   background: transparent;
+}
+
+/* ===== 附加费用/优惠 ===== */
+.extra-form-item {
+  margin-bottom: 12px;
+}
+
+/* 让 form-item 的 label 占位但不显示文字，从而天然对齐到 label 右侧 */
+.extra-form-item :deep(.el-form-item__label) {
+  visibility: hidden;
+}
+
+.extra-panel {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--el-fill-color-lighter, #fafafa);
+  border: 1px solid var(--el-border-color-lighter, #ebeef5);
+  border-radius: 8px;
+}
+
+.extra-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.extra-add-btn {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--el-text-color-regular, #606266);
+  cursor: pointer;
+  background: #fff;
+  border: 1px dashed var(--el-border-color, #dcdfe6);
+  border-radius: 14px;
+  transition: all 0.2s;
+}
+
+.extra-add-btn__plus {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.extra-add-btn--fee:hover {
+  color: #e6a23c;
+  background: #fdf6ec;
+  border-color: #e6a23c;
+}
+
+.extra-add-btn--discount:hover {
+  color: #67c23a;
+  background: #f0f9eb;
+  border-color: #67c23a;
+}
+
+.extra-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  margin-top: 8px;
+  background: #fff;
+  border: 1px solid var(--el-border-color-lighter, #ebeef5);
+  border-left-width: 3px;
+  border-radius: 6px;
+}
+
+.extra-row--fee {
+  border-left-color: #e6a23c;
+}
+
+.extra-row--discount {
+  border-left-color: #67c23a;
+}
+
+.extra-chip {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+.extra-chip--fee {
+  color: #b88230;
+  background: #fdf6ec;
+}
+
+.extra-chip--discount {
+  color: #529b2e;
+  background: #f0f9eb;
+}
+
+.extra-amount {
+  width: 140px;
+}
+
+.extra-side {
+  width: 128px;
+}
+
+.extra-remark {
+  flex: 1;
+  min-width: 180px;
+}
+
+.extra-remove-btn {
+  margin-left: auto;
 }
 </style>
