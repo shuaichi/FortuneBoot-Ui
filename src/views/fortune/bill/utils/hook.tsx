@@ -20,26 +20,86 @@ import {
 } from "@/api/fortune/include";
 import { getCurrencySymbol } from "@/utils/currency";
 
-// 千分位格式化（纯函数）
-const formatThousand = (val: unknown): string =>
-  val != null ? String(val).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "-";
+// 千分位 + 两位小数格式化（纯函数）
+const formatMoney = (val: unknown): string => {
+  if (val == null || val === "") return "-";
+  const num = Number(val);
+  if (Number.isNaN(num)) return "-";
+  return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
 
 // 带币种符号格式化
 const withSymbol = (sym: string, code: string, val: unknown): string =>
   sym && sym !== code
-    ? `${sym}${formatThousand(val)}`
-    : `${code} ${formatThousand(val)}`;
+    ? `${sym}${formatMoney(val)}`
+    : `${code} ${formatMoney(val)}`;
 
-// 账单金额主文案（不含附加费用/优惠提示）
+// 安全数字
+const toNum = (v: unknown): number => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+};
+
+interface ExtraSums {
+  fee: number; // 手续费总额（accountSide=1）
+  discount: number; // 优惠总额（accountSide=1）
+  feeTo: number; // 手续费总额（accountSide=2）
+  discountTo: number; // 优惠总额（accountSide=2）
+}
+
+/**
+ * 汇总附加费用/优惠：
+ * 默认 accountSide=1（转出方/主账户）。
+ * 转账场景下 accountSide=2 表示作用于转入方金额。
+ */
+function sumExtras(extras: any[] | undefined): ExtraSums {
+  const init: ExtraSums = { fee: 0, discount: 0, feeTo: 0, discountTo: 0 };
+  if (!Array.isArray(extras) || extras.length === 0) return init;
+  return extras.reduce<ExtraSums>((acc, e) => {
+    const amount = toNum(e?.amount);
+    if (amount <= 0) return acc;
+    const isToSide = e?.accountSide === 2;
+    if (e?.extraType === 1) {
+      return isToSide
+        ? { ...acc, feeTo: acc.feeTo + amount }
+        : { ...acc, fee: acc.fee + amount };
+    }
+    if (e?.extraType === 2) {
+      return isToSide
+        ? { ...acc, discountTo: acc.discountTo + amount }
+        : { ...acc, discount: acc.discount + amount };
+    }
+    return acc;
+  }, init);
+}
+
+// 计算实际金额：原始金额 + 手续费 - 优惠（不可变）
+const applyExtras = (base: unknown, fee: number, discount: number): number =>
+  toNum(base) + fee - discount;
+
+/**
+ * 账单金额主文案（已应用手续费/优惠）。
+ * - 非转账：实际金额 = amount + fee - discount
+ * - 转账（同币种）：仅展示转出方实际金额
+ * - 转账（不同币种）：转出方应用 from-side 的 fee/discount，转入方应用 to-side 的 fee/discount
+ */
 function formatBillAmount(params: {
   amount: number;
   convertedAmount: number;
   currencyCode: string;
   toCurrencyCode: string;
   billType: number;
+  sums: ExtraSums;
 }): string {
-  const { amount, convertedAmount, currencyCode, toCurrencyCode, billType } =
-    params;
+  const {
+    amount,
+    convertedAmount,
+    currencyCode,
+    toCurrencyCode,
+    billType,
+    sums
+  } = params;
+
   if (
     billType === 3 &&
     currencyCode &&
@@ -48,31 +108,41 @@ function formatBillAmount(params: {
   ) {
     const fromSym = getCurrencySymbol(currencyCode);
     const toSym = getCurrencySymbol(toCurrencyCode);
-    return `${withSymbol(fromSym, currencyCode, amount)} -> ${withSymbol(
+    const fromActual = applyExtras(amount, sums.fee, sums.discount);
+    const toActual = applyExtras(convertedAmount, sums.feeTo, sums.discountTo);
+    return `${withSymbol(fromSym, currencyCode, fromActual)} -> ${withSymbol(
       toSym,
       toCurrencyCode,
-      convertedAmount
+      toActual
     )}`;
   }
+
+  // 非转账或同币种转账：合并 from/to 两侧调整
+  const totalFee = sums.fee + sums.feeTo;
+  const totalDiscount = sums.discount + sums.discountTo;
   const sym = getCurrencySymbol(currencyCode);
-  return withSymbol(sym, currencyCode, amount);
+  const actual = applyExtras(amount, totalFee, totalDiscount);
+  return withSymbol(sym, currencyCode, actual);
 }
 
-// 附加费用/优惠汇总文案（不含样式，纯文本）
-function formatExtrasTip(extras: any[] | undefined): string {
-  if (!Array.isArray(extras) || extras.length === 0) return "";
-  const feeTotal = extras
-    .filter(e => e?.extraType === 1)
-    .reduce((sum, e) => sum + (Number(e?.amount) || 0), 0);
-  const discountTotal = extras
-    .filter(e => e?.extraType === 2)
-    .reduce((sum, e) => sum + (Number(e?.amount) || 0), 0);
-  const parts: string[] = [];
-  if (feeTotal > 0)
-    parts.push(`含手续费 ${formatThousand(feeTotal.toFixed(2))}`);
-  if (discountTotal > 0)
-    parts.push(`含优惠 ${formatThousand(discountTotal.toFixed(2))}`);
-  return parts.join("，");
+/**
+ * 附加费用/优惠副提示文案：展示原始金额与调整明细。
+ * 例：原 ¥3.00 +手续费 1.00 -优惠 2.00
+ */
+function formatExtrasTip(params: {
+  amount: number;
+  currencyCode: string;
+  sums: ExtraSums;
+}): string {
+  const { amount, currencyCode, sums } = params;
+  const totalFee = sums.fee + sums.feeTo;
+  const totalDiscount = sums.discount + sums.discountTo;
+  if (totalFee <= 0 && totalDiscount <= 0) return "";
+  const sym = getCurrencySymbol(currencyCode);
+  const parts: string[] = [`原 ${withSymbol(sym, currencyCode, amount)}`];
+  if (totalFee > 0) parts.push(`+手续费 ${formatMoney(totalFee)}`);
+  if (totalDiscount > 0) parts.push(`-优惠 ${formatMoney(totalDiscount)}`);
+  return parts.join(" ");
 }
 
 export function useHook() {
@@ -136,7 +206,7 @@ export function useHook() {
     {
       label: "金额",
       prop: "convertedAmount",
-      width: 180,
+      width: 300,
       sortable: "custom",
       cellRenderer: ({ row }) => {
         const {
@@ -147,23 +217,25 @@ export function useHook() {
           billType,
           extras
         } = row;
+        const sums = sumExtras(extras);
         const mainText = formatBillAmount({
           amount,
           convertedAmount,
           currencyCode,
           toCurrencyCode,
-          billType
+          billType,
+          sums
         });
-        const extrasTip = formatExtrasTip(extras);
+        const extrasTip = formatExtrasTip({ amount, currencyCode, sums });
         return (
           <span>
-            {mainText}
+            <span>{mainText}</span>
             {extrasTip ? (
               <span
                 style={{
                   color: "#909399",
                   fontSize: "12px",
-                  marginLeft: "4px"
+                  marginLeft: "6px"
                 }}
               >
                 ({extrasTip})
