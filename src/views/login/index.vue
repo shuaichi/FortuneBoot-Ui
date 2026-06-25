@@ -371,7 +371,7 @@ onBeforeUnmount(() => {
             type="primary"
             >{{ icp }}
           </el-link>
-          | version： 1.6.0 | api-version： {{ apiVersion }}
+          | version： 1.6.1 | api-version： {{ apiVersion }}
         </span>
       </div>
     </div>

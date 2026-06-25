@@ -5,7 +5,7 @@
 **FortuneBoot 财务记账平台 —— 现代化 Vue3 极速前端工程**
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v1.6.0-green.svg" alt="Release">
+  <img src="https://img.shields.io/badge/Release-v1.6.1-green.svg" alt="Release">
   <img src="https://img.shields.io/badge/Vue-3.5+-brightgreen.svg" alt="Vue">
   <img src="https://img.shields.io/badge/Vite-8.0+-646CFF.svg" alt="Vite">
   <img src="https://img.shields.io/badge/TailwindCSS-4.2-38B2AC.svg" alt="TailwindCSS">
