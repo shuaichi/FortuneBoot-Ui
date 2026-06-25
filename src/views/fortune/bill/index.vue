@@ -25,6 +25,14 @@
           新增账单
         </el-button>
         <el-button
+          type="success"
+          :icon="useRenderIcon(Upload)"
+          :disabled="!searchForm.groupId"
+          @click="importModalVisible = true"
+        >
+          导入账单
+        </el-button>
+        <el-button
           type="warning"
           :icon="useRenderIcon(Download)"
           @click="exportAllExcel"
@@ -94,6 +102,14 @@
       @success="onSearch"
     />
 
+    <bill-import-dialog
+      v-if="importModalVisible"
+      v-model="importModalVisible"
+      :group-id="searchForm.groupId"
+      :book-id="searchForm.bookId"
+      @success="onSearch"
+    />
+
     <GlobalAddBtn />
   </div>
 </template>
@@ -104,12 +120,14 @@ import { emitter } from "@/utils/mitt";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import Download from "@iconify-icons/ep/download";
+import Upload from "@iconify-icons/ep/upload";
 import { PureTableBar } from "@/components/RePureTableBar";
 import PureTable from "@pureadmin/table";
 import { useRoute } from "vue-router";
 import { message } from "@/utils/message";
 
 import BillForm from "./bill-form.vue";
+import BillImportDialog from "./bill-import-dialog.vue";
 import BillSearchForm from "./components/bill-search-form.vue";
 import GlobalAddBtn from "./global-add-bill-button.vue";
 
@@ -134,6 +152,7 @@ defineOptions({
 const opType = ref<"add" | "edit">("add");
 const currentRow = ref();
 const modalVisible = ref(false);
+const importModalVisible = ref(false);
 const groupIdProp = ref();
 const bookIdProp = ref();
 const groupOptions = ref<Array<GroupVo>>([]);

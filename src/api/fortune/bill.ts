@@ -1,5 +1,25 @@
+import Axios, { type AxiosResponse } from "axios";
 import { http } from "@/utils/http";
 import type { TagVo } from "@/api/fortune/tag";
+import { formatToken, getToken } from "@/utils/auth";
+
+const blobAxios = Axios.create({
+  baseURL: import.meta.env.VITE_APP_BASE_API,
+  timeout: 60000,
+  responseType: "blob",
+  headers: {
+    Accept: "application/json, text/plain, */*",
+    "X-Requested-With": "XMLHttpRequest"
+  }
+});
+
+blobAxios.interceptors.request.use(config => {
+  const token = getToken()?.token;
+  if (token) {
+    config.headers.Authorization = formatToken(token);
+  }
+  return config;
+});
 
 // 账单数据模型
 // 注意：文件上传需要单独处理，不包含在此接口中
@@ -138,5 +158,34 @@ export const excludeBillApi = (bookId: number, billId: number) => {
 export const exportBillExcelApi = (params: BillQuery, fileName: string) => {
   return http.download("/fortune/bill/excel", fileName, {
     params
+  });
+};
+
+export interface FortuneBillImportResultVo {
+  totalCount: number;
+  successCount: number;
+  failCount: number;
+  billIdList: number[];
+  message: string;
+}
+
+// 下载账单Excel导入模板
+export const downloadBillExcelTemplateApi = (
+  bookId: number
+): Promise<AxiosResponse<Blob>> => {
+  return blobAxios.get(`/fortune/bill/${bookId}/excelTemplate`);
+};
+
+// 账单Excel导入
+export const importBillApi = (
+  bookId: number,
+  file: File
+): Promise<AxiosResponse<Blob>> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  return blobAxios.post(`/fortune/bill/${bookId}/import`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data"
+    }
   });
 };
