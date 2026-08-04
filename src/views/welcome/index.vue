@@ -1,19 +1,14 @@
 <template>
   <div class="dashboard-container">
-    <!-- 顶部过滤器区域 -->
+    <!-- 顶部过滤器 -->
     <div class="filter-container">
       <div class="filter-title">
         <el-icon>
           <DataAnalysis />
         </el-icon>
-        <span>财富仪表盘</span>
+        <span>数据概览</span>
       </div>
-      <el-form
-        ref="formRef"
-        :inline="true"
-        :model="searchForm"
-        class="search-form"
-      >
+      <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="所属分组">
           <el-select
             v-model="searchForm.groupId"
@@ -44,249 +39,172 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item label="统计周期">
+          <el-radio-group
+            v-model="searchForm.periodType"
+            @change="loadDashboard"
+          >
+            <el-radio-button
+              v-for="item in periodTypeOptions.filter(o => o.value !== 3)"
+              :key="item.value"
+              :value="item.value"
+            >
+              {{ item.label }}
+            </el-radio-button>
+          </el-radio-group>
+        </el-form-item>
       </el-form>
     </div>
 
-    <!-- 资产概览卡片 -->
+    <!-- KPI 卡片 -->
     <div class="summary-cards">
-      <!-- 空状态处理 -->
-      <el-card v-if="!hasAssetsLiabilitiesData" class="summary-empty-card">
-        <el-empty description="暂无数据，请先创建账户">
-          <template #image>
-            <el-icon :size="80" color="#c0c4cc">
-              <Wallet />
-            </el-icon>
-          </template>
-        </el-empty>
-      </el-card>
-
-      <!-- 有数据时显示卡片 -->
-      <template v-else>
-        <el-card class="summary-card assets-card">
-          <div class="summary-icon">
-            <el-icon>
-              <Wallet />
-            </el-icon>
-          </div>
-          <div class="summary-content">
-            <div class="summary-label">总资产</div>
-            <div class="summary-value">
-              <span v-if="showAssets">
-                {{ formatCurrency(assetsLiabilities.totalAssets) }}
-              </span>
-              <el-icon @click="toggleShowAssets">
-                <View />
-              </el-icon>
-            </div>
-          </div>
-        </el-card>
-
-        <el-card class="summary-card liabilities-card">
-          <div class="summary-icon">
-            <el-icon>
-              <Money />
-            </el-icon>
-          </div>
-          <div class="summary-content">
-            <div class="summary-label">总负债</div>
-            <div class="summary-value">
-              <span v-if="showLiabilities">
-                {{ formatCurrency(assetsLiabilities.totalLiabilities) }}
-              </span>
-              <el-icon @click="toggleShowLiabilities">
-                <View />
-              </el-icon>
-            </div>
-          </div>
-        </el-card>
-
-        <el-card class="summary-card net-assets-card">
-          <div class="summary-icon">
-            <el-icon>
-              <TrendCharts />
-            </el-icon>
-          </div>
-          <div class="summary-content">
-            <div class="summary-label">净资产</div>
-            <div class="summary-value">
-              <span v-if="showNetAssets">
-                {{ formatCurrency(assetsLiabilities.netAssets) }}
-              </span>
-              <el-icon @click="toggleShowNetAssets">
-                <View />
-              </el-icon>
-            </div>
-          </div>
-        </el-card>
-      </template>
+      <summary-card
+        label="本期结余"
+        :value="dashboard.period.surplus"
+        :icon="Wallet"
+        accent="#409eff"
+        :currency="currentCurrency"
+      />
+      <summary-card
+        label="本期收入"
+        :value="dashboard.period.income"
+        :icon="TrendCharts"
+        accent="#67c23a"
+        :currency="currentCurrency"
+        :ring-rate="dashboard.ringIncomeRate"
+      />
+      <summary-card
+        label="本期支出"
+        :value="dashboard.period.expense"
+        :icon="Money"
+        accent="#f56c6c"
+        :currency="currentCurrency"
+        :ring-rate="dashboard.ringExpenseRate"
+      />
+      <summary-card
+        label="净资产"
+        :value="dashboard.netAssets"
+        :icon="Coin"
+        accent="#e6a23c"
+        :currency="currentCurrency"
+      />
     </div>
-    <!-- 图表区域 -->
+
+    <!-- 辅助指标 -->
+    <div class="metric-cards">
+      <summary-card
+        label="日均支出"
+        :value="dashboard.avgDailyExpense"
+        :icon="Histogram"
+        accent="#909399"
+        :currency="currentCurrency"
+      />
+      <summary-card
+        label="最大单笔支出"
+        :value="dashboard.maxSingleExpense"
+        :icon="TopRight"
+        accent="#909399"
+        :currency="currentCurrency"
+      />
+      <summary-card
+        label="待确认账单"
+        :value="`${dashboard.unconfirmedCount} 笔`"
+        :icon="Warning"
+        accent="#909399"
+        plain
+      />
+      <summary-card
+        label="待收回笔数"
+        :value="`${dashboard.pendingReceivable} 笔`"
+        :icon="Sell"
+        accent="#909399"
+        plain
+      />
+    </div>
+
+    <!-- 图表区 -->
     <div class="charts-container">
-      <!-- 总收入饼图 -->
       <el-card class="chart-card">
         <template #header>
           <div class="chart-header">
             <div class="chart-title">
-              <el-icon>
-                <PieChart />
-              </el-icon>
+              <el-icon><TrendCharts /></el-icon>
+              <span>近7天支出趋势</span>
+            </div>
+          </div>
+        </template>
+        <div class="chart-content">
+          <trend-chart
+            :data="dashboard.recentTrend"
+            :loading="loading"
+            :currency="currentCurrency"
+            color="#F56C6C"
+          />
+        </div>
+      </el-card>
+
+      <el-card class="chart-card">
+        <template #header>
+          <div class="chart-header">
+            <div class="chart-title">
+              <el-icon><PieChart /></el-icon>
               <span>资产账户</span>
-              <el-icon @click="toggleShowAssetsChart">
-                <View />
-              </el-icon>
             </div>
-            <el-tooltip content="刷新数据">
-              <el-button
-                :icon="Refresh"
-                circle
-                size="small"
-                @click="refreshAssetsPie"
-              />
-            </el-tooltip>
           </div>
         </template>
         <div class="chart-content">
-          <div v-if="loading" class="chart-loading">
-            <el-skeleton :rows="6" animated />
-          </div>
-          <div v-else-if="!hasData" class="chart-empty">
-            <el-empty description="暂无数据" />
-          </div>
           <TotalAssetsPie
-            v-if="showAssetsChart"
-            ref="assetsPieRef"
+            v-if="searchForm.groupId"
             :group-id="searchForm.groupId"
           />
         </div>
       </el-card>
 
-      <!-- 总支出饼图 -->
       <el-card class="chart-card">
         <template #header>
           <div class="chart-header">
             <div class="chart-title">
-              <el-icon>
-                <PieChart />
-              </el-icon>
-              <span>负债账户</span>
-              <el-icon @click="toggleShowLiabilitiesChart">
-                <View />
-              </el-icon>
+              <el-icon><Histogram /></el-icon>
+              <span>收支对比</span>
             </div>
-            <el-tooltip content="刷新数据">
-              <el-button
-                :icon="Refresh"
-                circle
-                size="small"
-                @click="refreshLiabilitiesPie"
-              />
-            </el-tooltip>
           </div>
         </template>
         <div class="chart-content">
-          <div v-if="loading" class="chart-loading">
-            <el-skeleton :rows="6" animated />
-          </div>
-          <div v-else-if="!hasData" class="chart-empty">
-            <el-empty description="暂无数据" />
-          </div>
-          <TotalLiabilitiesPie
-            v-if="showLiabilitiesChart"
-            ref="liabilitiesPieRef"
-            :group-id="searchForm.groupId"
+          <compare-chart
+            :data="compareData"
+            :loading="loading"
+            :currency="currentCurrency"
           />
         </div>
       </el-card>
 
-      <!-- 支出趋势图 -->
       <el-card class="chart-card">
         <template #header>
           <div class="chart-header">
             <div class="chart-title">
-              <el-icon>
-                <TrendCharts />
-              </el-icon>
-              <span>支出趋势</span>
-            </div>
-            <div class="chart-controls">
-              <el-date-picker
-                v-model="expenseSearchForm.timePoint"
-                type="date"
-                placeholder="选择日期"
-                size="small"
-              />
-              <el-radio-group
-                v-model="expenseSearchForm.timeGranularity"
-                size="small"
-              >
-                <el-radio-button :label="1">周</el-radio-button>
-                <el-radio-button :label="2">月</el-radio-button>
-                <el-radio-button :label="3">年</el-radio-button>
-                <el-radio-button :label="4">全部</el-radio-button>
-              </el-radio-group>
+              <el-icon><Sell /></el-icon>
+              <span>支出排行 TopN</span>
             </div>
           </div>
         </template>
-        <div class="chart-content">
-          <div v-if="loading" class="chart-loading">
-            <el-skeleton :rows="6" animated />
+        <div class="chart-content rank-content">
+          <div v-if="loading" class="rank-state">
+            <el-skeleton :rows="5" animated />
           </div>
-          <div v-else-if="!hasData" class="chart-empty">
-            <el-empty description="暂无数据" />
-          </div>
-          <ExpenseTrends
-            v-else
-            ref="expenseTrendsRef"
-            :book-id="searchForm.bookId"
-            :time-granularity="expenseSearchForm.timeGranularity"
-            :time-point="expenseSearchForm.timePoint"
-          />
-        </div>
-      </el-card>
-
-      <!-- 收入趋势图 -->
-      <el-card class="chart-card">
-        <template #header>
-          <div class="chart-header">
-            <div class="chart-title">
-              <el-icon>
-                <TrendCharts />
-              </el-icon>
-              <span>收入趋势</span>
-            </div>
-            <div class="chart-controls">
-              <el-date-picker
-                v-model="incomeSearchForm.timePoint"
-                type="date"
-                placeholder="选择日期"
-                size="small"
-              />
-              <el-radio-group
-                v-model="incomeSearchForm.timeGranularity"
-                size="small"
-              >
-                <el-radio-button :label="1">周</el-radio-button>
-                <el-radio-button :label="2">月</el-radio-button>
-                <el-radio-button :label="3">年</el-radio-button>
-                <el-radio-button :label="4">全部</el-radio-button>
-              </el-radio-group>
-            </div>
-          </div>
-        </template>
-        <div class="chart-content">
-          <div v-if="loading" class="chart-loading">
-            <el-skeleton :rows="6" animated />
-          </div>
-          <div v-else-if="!hasData" class="chart-empty">
-            <el-empty description="暂无数据" />
-          </div>
-          <IncomeTrends
-            v-else
-            ref="incomeTrendsRef"
-            :book-id="searchForm.bookId"
-            :time-granularity="incomeSearchForm.timeGranularity"
-            :time-point="incomeSearchForm.timePoint"
-          />
+          <el-empty v-else-if="rankData.length === 0" description="暂无数据" />
+          <ul v-else class="rank-list">
+            <li
+              v-for="(item, index) in rankData"
+              :key="item.name"
+              class="rank-item"
+            >
+              <span class="rank-index" :class="{ 'is-top': index < 3 }">
+                {{ index + 1 }}
+              </span>
+              <span class="rank-name">{{ item.name }}</span>
+              <span class="rank-value">{{ formatCurrency(item.value) }}</span>
+            </li>
+          </ul>
         </div>
       </el-card>
     </div>
@@ -294,73 +212,71 @@
 </template>
 
 <script setup lang="ts">
-import TotalLiabilitiesPie from "./chart/TotalLiabilitiesPie.vue";
-import TotalAssetsPie from "./chart/TotalAssetsPie.vue";
-import ExpenseTrends from "./chart/ExpenseTrends.vue";
-import IncomeTrends from "@/views/welcome/chart/IncomeTrends.vue";
 import { onMounted, reactive, ref, watch, computed } from "vue";
+import TotalAssetsPie from "./chart/TotalAssetsPie.vue";
+import SummaryCard from "@/views/fortune/statistics/base/summaryCard.vue";
+import TrendChart from "@/views/fortune/statistics/base/trendChart.vue";
+import CompareChart from "@/views/fortune/statistics/base/compareChart.vue";
+import { periodTypeOptions } from "@/views/fortune/statistics/base/constants";
 import {
-  AssetsLiabilitiesVo,
-  BaseQuery,
-  ExpenseTrendsQuery,
-  getAssetsLiabilities,
-  IncomeTrendsQuery,
-  getDisplayConfig
+  type DashboardQuery,
+  type DashboardVo,
+  type BillCompareVo,
+  type BarVo,
+  getDashboard,
+  getBillCompare,
+  getBillRank
 } from "@/api/fortune/include";
 import {
   getDefaultGroupId,
   getEnableGroupList,
-  GroupVo
+  type GroupVo
 } from "@/api/fortune/group";
+import { type BookVo, getEnableBookList } from "@/api/fortune/book";
 import { message } from "@/utils/message";
-import { BookVo, getEnableBookList } from "@/api/fortune/book";
 import {
-  Refresh,
   DataAnalysis,
   Wallet,
   Money,
+  Coin,
   TrendCharts,
   PieChart,
-  View
+  Histogram,
+  TopRight,
+  Warning,
+  Sell
 } from "@element-plus/icons-vue";
 
 defineOptions({
   name: "Welcome"
 });
 
-const searchForm = reactive<BaseQuery>({ groupId: 0, bookId: 0 });
+const searchForm = reactive<DashboardQuery>({ periodType: 1 });
 const groupOptions = ref<Array<GroupVo>>([]);
 const bookOptions = ref<Array<BookVo>>([]);
-const assetsLiabilities = ref<AssetsLiabilitiesVo>({
+const loading = ref(true);
+
+function emptyStatistics() {
+  return { income: 0, expense: 0, surplus: 0 };
+}
+
+const dashboard = ref<DashboardVo>({
+  period: emptyStatistics(),
+  previous: emptyStatistics(),
+  ringIncomeRate: 0,
+  ringExpenseRate: 0,
   totalAssets: 0,
   totalLiabilities: 0,
-  netAssets: 0
+  netAssets: 0,
+  avgDailyExpense: 0,
+  maxSingleExpense: 0,
+  unconfirmedCount: 0,
+  pendingReceivable: 0,
+  recentTrend: []
 });
-const incomeSearchForm = reactive<IncomeTrendsQuery>({
-  timeGranularity: 2, // 默认显示月视图
-  timePoint: new Date()
-});
-const expenseSearchForm = reactive<ExpenseTrendsQuery>({
-  timeGranularity: 2, // 默认显示月视图
-  timePoint: new Date()
-});
+const compareData = ref<Array<BillCompareVo>>([]);
+const rankData = ref<Array<BarVo>>([]);
 
-// 新增状态
-const loading = ref(true);
-// 修改判断条件，只要不是初始加载状态就显示图表
-const hasData = computed(() => {
-  return !loading.value;
-});
-
-// 判断资产负债数据是否为空
-const hasAssetsLiabilitiesData = computed(() => {
-  return (
-    assetsLiabilities.value.totalAssets !== 0 ||
-    assetsLiabilities.value.totalLiabilities !== 0
-  );
-});
-
-// 计算当前分组的默认币种
 const currentCurrency = computed(() => {
   const currentGroup = groupOptions.value.find(
     group => group.groupId === searchForm.groupId
@@ -368,216 +284,95 @@ const currentCurrency = computed(() => {
   return currentGroup?.defaultCurrency || "CNY";
 });
 
-// 格式化货币
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("zh-CN", {
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat("zh-CN", {
     style: "currency",
     currency: currentCurrency.value,
     minimumFractionDigits: 2
   }).format(value);
-};
 
-// 图表组件引用
-const assetsPieRef = ref(null);
-const liabilitiesPieRef = ref(null);
-const expenseTrendsRef = ref(null);
-const incomeTrendsRef = ref(null);
-
-// 全局缓存显示配置
-let cachedDisplayConfig = null;
-
-// 新增控制显示隐藏的变量
-const showAssets = ref(false);
-const showLiabilities = ref(false);
-const showNetAssets = ref(false);
-
-// 新增控制图表显示隐藏的变量
-const showAssetsChart = ref(false);
-const showLiabilitiesChart = ref(false);
-
-// 新增切换图表显示隐藏的方法
-const toggleShowAssetsChart = () => {
-  showAssetsChart.value = !showAssetsChart.value;
-};
-const toggleShowLiabilitiesChart = () => {
-  showLiabilitiesChart.value = !showLiabilitiesChart.value;
-};
-
-// 新增切换显示隐藏的方法
-const toggleShowAssets = () => {
-  showAssets.value = !showAssets.value;
-};
-const toggleShowLiabilities = () => {
-  showLiabilities.value = !showLiabilities.value;
-};
-const toggleShowNetAssets = () => {
-  showNetAssets.value = !showNetAssets.value;
-};
-
-// 刷新总收入图表
-const refreshAssetsPie = async () => {
-  if (assetsPieRef.value) {
-    await assetsPieRef.value.refresh();
-  }
-};
-
-// 刷新总支出图表
-const refreshLiabilitiesPie = async () => {
-  if (liabilitiesPieRef.value) {
-    await liabilitiesPieRef.value.refresh();
-  }
-};
-
-// 加载数据
-const loadData = async () => {
+async function loadDashboard() {
+  if (!searchForm.bookId) return;
+  loading.value = true;
   try {
-    // 计算资产负债
-    if (searchForm.groupId) {
-      const res = await getAssetsLiabilities(searchForm.groupId);
-      assetsLiabilities.value = res.data;
-    }
+    const [dashboardRes, compareRes, rankRes] = await Promise.all([
+      getDashboard(searchForm),
+      getBillCompare({ bookId: searchForm.bookId, compareType: 1 }),
+      getBillRank({ bookId: searchForm.bookId, billType: 1, topN: 10 })
+    ]);
+    dashboard.value = dashboardRes.data;
+    compareData.value = compareRes.data || [];
+    rankData.value = rankRes.data || [];
   } catch (error) {
-    console.error("加载数据失败", error);
     message("加载数据失败，请稍后重试", { type: "error" });
+  } finally {
+    loading.value = false;
   }
-};
+}
 
 onMounted(async () => {
-  loading.value = true;
   try {
     const [groupRes, defaultGroupId] = await Promise.all([
       getEnableGroupList(),
       getDefaultGroupId()
     ]);
-
     groupOptions.value = groupRes.data || [];
-
     if (groupOptions.value.length === 0) {
       message("请先启用或创建分组", { type: "warning" });
       loading.value = false;
       return;
     }
-
-    searchForm.groupId = defaultGroupId.data
-      ? defaultGroupId.data
-      : groupOptions.value[0].groupId;
-
+    searchForm.groupId = defaultGroupId.data || groupOptions.value[0].groupId;
     const bookRes = await getEnableBookList(searchForm.groupId);
     bookOptions.value = bookRes.data || [];
-
     if (bookOptions.value.length === 0) {
       message("请先启用或创建账本", { type: "warning" });
       loading.value = false;
       return;
     }
-
     const currentGroup = groupOptions.value.find(
       group => group.groupId === searchForm.groupId
     );
-
     searchForm.bookId =
       currentGroup?.defaultBookId || bookOptions.value[0].bookId;
-
-    // 初始化搜索表单
-    incomeSearchForm.bookId = searchForm.bookId;
-    incomeSearchForm.groupId = searchForm.groupId;
-    expenseSearchForm.bookId = searchForm.bookId;
-    expenseSearchForm.groupId = searchForm.groupId;
-
-    // 加载资产负债数据
-    await loadData();
-
-    // 获取显示配置
-    if (!cachedDisplayConfig) {
-      const configRes = await getDisplayConfig();
-      cachedDisplayConfig = JSON.parse(String(configRes.data));
-    }
-    // 设置默认显示状态
-    showAssets.value = cachedDisplayConfig;
-    showLiabilities.value = cachedDisplayConfig;
-    showNetAssets.value = cachedDisplayConfig;
-    showAssetsChart.value = cachedDisplayConfig;
-    showLiabilitiesChart.value = cachedDisplayConfig;
-    // 手动触发一次趋势图表的数据更新
-    // 这里模拟点击了一下时间粒度按钮，强制触发图表更新
-    const currentIncomeGranularity = incomeSearchForm.timeGranularity;
-    const currentExpenseGranularity = expenseSearchForm.timeGranularity;
-
-    // 临时改变值再改回来，触发watch
-    incomeSearchForm.timeGranularity = currentIncomeGranularity === 1 ? 2 : 1;
-    expenseSearchForm.timeGranularity = currentExpenseGranularity === 1 ? 2 : 1;
-
-    // 使用setTimeout确保DOM更新后再改回原值
-    setTimeout(() => {
-      incomeSearchForm.timeGranularity = currentIncomeGranularity;
-      expenseSearchForm.timeGranularity = currentExpenseGranularity;
-    }, 100);
+    await loadDashboard();
   } catch (error) {
-    console.error("初始化失败", error);
     message("初始化失败，请刷新页面重试", { type: "error" });
-  } finally {
     loading.value = false;
   }
 });
 
 watch(
   () => searchForm.groupId,
-  async newGroupId => {
-    if (!newGroupId) return;
-
-    loading.value = true;
-    try {
-      const bookRes = await getEnableBookList(newGroupId);
-      bookOptions.value = bookRes.data || [];
-
-      if (bookOptions.value.length === 0) {
-        message("请先启用或创建账本", { type: "warning" });
-        return;
-      }
-
-      const currentGroup = groupOptions.value.find(
-        group => group.groupId === newGroupId
-      );
-      searchForm.bookId =
-        currentGroup?.defaultBookId || bookOptions.value[0].bookId;
-
-      // 更新搜索表单
-      incomeSearchForm.groupId = newGroupId;
-      expenseSearchForm.groupId = newGroupId;
-
-      // 重新加载数据
-      await loadData();
-      await refreshAssetsPie();
-      await refreshLiabilitiesPie();
-    } catch (error) {
-      console.error("切换分组失败", error);
-      message("切换分组失败", { type: "error" });
-    } finally {
-      loading.value = false;
+  async (newGroupId, oldGroupId) => {
+    if (!newGroupId || newGroupId === oldGroupId) return;
+    const bookRes = await getEnableBookList(newGroupId);
+    bookOptions.value = bookRes.data || [];
+    if (bookOptions.value.length === 0) {
+      message("请先启用或创建账本", { type: "warning" });
+      return;
     }
+    const currentGroup = groupOptions.value.find(
+      group => group.groupId === newGroupId
+    );
+    searchForm.bookId =
+      currentGroup?.defaultBookId || bookOptions.value[0].bookId;
   }
 );
 
 watch(
   () => searchForm.bookId,
-  async newBookId => {
-    if (!newBookId) {
-      return;
-    }
-    // 更新搜索表单
-    incomeSearchForm.groupId = searchForm.groupId;
-    expenseSearchForm.groupId = searchForm.groupId;
+  async (newBookId, oldBookId) => {
+    if (!newBookId || newBookId === oldBookId) return;
+    await loadDashboard();
   }
 );
 </script>
 
 <style scoped lang="scss">
-/* 响应式布局 */
 @media (width <= 1200px) {
   .charts-container {
     grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: minmax(350px, auto);
-    min-height: 750px;
   }
 }
 
@@ -588,35 +383,10 @@ watch(
     align-items: flex-start;
   }
 
-  .summary-cards {
-    grid-template-columns: 1fr;
-  }
-
+  .summary-cards,
+  .metric-cards,
   .charts-container {
     grid-template-columns: 1fr;
-    grid-auto-rows: minmax(400px, auto);
-    min-height: 1600px;
-
-    .chart-content {
-      padding: 12px;
-
-      .chart-container {
-        min-height: 350px;
-      }
-    }
-  }
-}
-
-/* 针对更小屏幕的优化 */
-@media (width <= 480px) {
-  .charts-container {
-    .chart-content {
-      padding: 8px;
-
-      .chart-container {
-        min-height: 320px;
-      }
-    }
   }
 }
 
@@ -624,13 +394,11 @@ watch(
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: 100vh;
-  min-height: 600px;
+  min-height: 100vh;
   padding: 16px;
   background-color: #f5f7fa;
 }
 
-/* 过滤器区域样式 */
 .filter-container {
   display: flex;
   align-items: center;
@@ -665,129 +433,21 @@ watch(
   }
 }
 
-/* 资产概览卡片样式 */
-.summary-cards {
+.summary-cards,
+.metric-cards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-
-  .summary-empty-card {
-    display: flex;
-    grid-column: 1 / -1;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
-    border-radius: 8px;
-
-    :deep(.el-card__body) {
-      display: flex;
-      flex: 1;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-    }
-  }
-
-  .summary-card {
-    display: flex;
-    align-items: center;
-    padding: 20px;
-    border-radius: 8px;
-    transition: transform 0.3s;
-
-    &:hover {
-      transform: translateY(-5px);
-    }
-
-    .summary-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 60px;
-      height: 60px;
-      margin-right: 16px;
-      border-radius: 50%;
-
-      .el-icon {
-        font-size: 24px;
-        color: #fff;
-      }
-    }
-
-    .summary-content {
-      flex: 1;
-
-      .summary-label {
-        margin-bottom: 8px;
-        font-size: 14px;
-        color: #909399;
-      }
-
-      .summary-value {
-        font-size: 24px;
-        font-weight: 600;
-      }
-    }
-  }
-
-  .assets-card {
-    .summary-icon {
-      background-color: #67c23a;
-    }
-
-    .summary-value {
-      color: #67c23a;
-    }
-
-    :deep(.el-card__body) {
-      display: flex;
-      flex: 1;
-    }
-  }
-
-  .liabilities-card {
-    .summary-icon {
-      background-color: #f56c6c;
-    }
-
-    .summary-value {
-      color: #f56c6c;
-    }
-
-    :deep(.el-card__body) {
-      display: flex;
-      flex: 1;
-    }
-  }
-
-  .net-assets-card {
-    .summary-icon {
-      background-color: #409eff;
-    }
-
-    .summary-value {
-      color: #409eff;
-    }
-
-    :deep(.el-card__body) {
-      display: flex;
-      flex: 1;
-    }
-  }
 }
 
-/* 图表区域样式 */
 .charts-container {
   display: grid;
-  flex: 1;
-  grid-template-rows: repeat(2, 1fr);
   grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: minmax(340px, auto);
   gap: 16px;
-  min-height: 900px;
 
   .chart-card {
-    height: 100%;
-    overflow: hidden; /* 确保内容不溢出 */
+    overflow: hidden;
     border-radius: 8px;
     box-shadow: 0 2px 12px 0 rgb(0 0 0 / 5%);
     transition: box-shadow 0.3s;
@@ -799,7 +459,6 @@ watch(
     :deep(.el-card__body) {
       height: calc(100% - 60px);
       padding: 0;
-      overflow: hidden; /* 防止内容溢出 */
     }
   }
 
@@ -807,7 +466,6 @@ watch(
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 16px;
 
     .chart-title {
       display: flex;
@@ -820,35 +478,66 @@ watch(
         color: #409eff;
       }
     }
-
-    .chart-controls {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
   }
 
   .chart-content {
-    position: relative;
     height: 100%;
     padding: 16px;
-    overflow: hidden; /* 确保图表内容不溢出容器 */
-
-    /* 为饼图组件提供足够的显示空间 */
-    .chart-container {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      min-height: 300px;
-    }
   }
 
-  .chart-loading,
-  .chart-empty {
+  .rank-content {
+    overflow: auto;
+  }
+
+  .rank-state {
+    padding: 16px;
+  }
+
+  .rank-list {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+
+    .rank-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 4px;
+      border-bottom: 1px solid var(--el-border-color-lighter);
+
+      .rank-index {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        margin-right: 12px;
+        font-size: 12px;
+        color: #909399;
+        background-color: var(--el-fill-color-light);
+        border-radius: 50%;
+
+        &.is-top {
+          color: #fff;
+          background-color: #409eff;
+        }
+      }
+
+      .rank-name {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .rank-value {
+        margin-left: 12px;
+        font-weight: 600;
+        color: #f56c6c;
+      }
+    }
   }
 }
 </style>

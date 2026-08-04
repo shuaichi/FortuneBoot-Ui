@@ -177,3 +177,283 @@ export function getDisplayConfig() {
     {}
   );
 }
+
+/* ========== 统计模块扩展（Dashboard / 报表 / 资产负债 / 借贷理财） ========== */
+
+/** 通用筛选入参基类 */
+export interface BillIncludeQuery {
+  bookId?: number;
+  startDate?: Date;
+  endDate?: Date;
+  title?: string;
+  billType?: number;
+  categoryIds?: Array<number>;
+  tagIds?: Array<number>;
+  payeeIds?: Array<number>;
+  accountIds?: Array<number>;
+  memberIds?: Array<number>;
+  confirm?: boolean;
+  include?: boolean;
+}
+
+/* ---------- 场景 A · 概览看板 ---------- */
+
+export interface DashboardQuery {
+  bookId?: number;
+  groupId?: number;
+  /** 1=本月（默认）2=本年 3=自定义 */
+  periodType?: number;
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export interface DashboardVo {
+  period: BillStatisticsVo;
+  previous: BillStatisticsVo;
+  ringIncomeRate: number;
+  ringExpenseRate: number;
+  totalAssets: number;
+  totalLiabilities: number;
+  netAssets: number;
+  avgDailyExpense: number;
+  maxSingleExpense: number;
+  unconfirmedCount: number;
+  pendingReceivable: number;
+  recentTrend: Array<LineVo>;
+}
+
+export function getDashboard(params: DashboardQuery) {
+  return http.request<ResponseData<DashboardVo>>(
+    "get",
+    "/fortune/include/dashboard",
+    { params }
+  );
+}
+
+/** 净资产趋势 periodType：3=近12月 / 4=近5年 */
+export function getNetAssetsTrend(groupId: number, periodType: number) {
+  return http.request<ResponseData<Array<LineVo>>>(
+    "get",
+    `/fortune/include/${groupId}/netAssetsTrend`,
+    { params: { periodType } }
+  );
+}
+
+/* ---------- 场景 B · 收支报表增强 ---------- */
+
+export interface BillCompareVo {
+  name: string;
+  income: number;
+  expense: number;
+}
+
+export interface BillCompareQuery extends BillIncludeQuery {
+  /** 1=按月对比 / 2=按年对比 */
+  compareType?: number;
+}
+
+export function getBillCompare(params: BillCompareQuery) {
+  return http.request<ResponseData<Array<BillCompareVo>>>(
+    "get",
+    "/fortune/include/getBillCompare",
+    { params }
+  );
+}
+
+export interface BillRankQuery extends BillIncludeQuery {
+  /** 1 支出 / 2 收入 */
+  billType?: number;
+  /** 默认 10 */
+  topN?: number;
+}
+
+export function getBillRank(params: BillRankQuery) {
+  return http.request<ResponseData<Array<BarVo>>>(
+    "get",
+    "/fortune/include/getBillRank",
+    { params }
+  );
+}
+
+export interface HeatmapVo {
+  date: string;
+  amount: number;
+  count: number;
+}
+
+export interface CalendarHeatmapQuery {
+  bookId?: number;
+  year?: number;
+  billType?: number;
+}
+
+/** 日历热力图 billType 默认支出 */
+export function getCalendarHeatmap(params: CalendarHeatmapQuery) {
+  return http.request<ResponseData<Array<HeatmapVo>>>(
+    "get",
+    "/fortune/include/getCalendarHeatmap",
+    { params }
+  );
+}
+
+export interface DateIncludeQuery {
+  bookId?: number;
+  startDate?: Date;
+  endDate?: Date;
+}
+
+/** 日期统计：每日金额 */
+export function getDateInclude(params: DateIncludeQuery) {
+  return http.request<ResponseData<Array<LineVo>>>(
+    "get",
+    "/fortune/include/getDateInclude",
+    { params }
+  );
+}
+
+/* ---------- 场景 C · 多维度统计扩展 ---------- */
+
+export interface AccountIncludeVo {
+  accountId: number;
+  accountName: string;
+  accountType: number;
+  amount: number;
+  percent: number;
+}
+
+export interface DimensionIncludeQuery extends BillIncludeQuery {
+  /** 1 支出 / 2 收入 */
+  billType?: number;
+}
+
+/** 账户维度统计 */
+export function getAccountInclude(params: DimensionIncludeQuery) {
+  return http.request<ResponseData<Array<AccountIncludeVo>>>(
+    "get",
+    "/fortune/include/getAccountInclude",
+    { params }
+  );
+}
+
+/** 成员维度统计 */
+export function getMemberInclude(params: DimensionIncludeQuery) {
+  return http.request<ResponseData<Array<BarVo>>>(
+    "get",
+    "/fortune/include/getMemberInclude",
+    { params }
+  );
+}
+
+/** 账单类型分布 */
+export function getBillTypeDistribution(params: BillIncludeQuery) {
+  return http.request<ResponseData<Array<PieVo>>>(
+    "get",
+    "/fortune/include/getBillTypeDistribution",
+    { params }
+  );
+}
+
+/* ---------- 场景 D · 资产负债增强 ---------- */
+
+export interface AccountTypeAssetsVo {
+  accountType: number;
+  accountTypeName: string;
+  assets: number;
+  liabilities: number;
+  accountCount: number;
+}
+
+/** 账户类型资产分布 */
+export function getAssetsByAccountType(groupId: number) {
+  return http.request<ResponseData<Array<AccountTypeAssetsVo>>>(
+    "get",
+    `/fortune/include/${groupId}/getAssetsByAccountType`
+  );
+}
+
+export interface CreditCardVo {
+  accountId: number;
+  accountName: string;
+  creditLimit: number;
+  usedAmount: number;
+  available: number;
+  usageRate: number;
+}
+
+/** 信用卡额度看板 */
+export function getCreditCardOverview(groupId: number) {
+  return http.request<ResponseData<Array<CreditCardVo>>>(
+    "get",
+    `/fortune/include/${groupId}/getCreditCardOverview`
+  );
+}
+
+/** 账户余额趋势 periodType：3=近12月 / 4=近5年 */
+export function getAccountBalanceTrend(accountId: number, periodType: number) {
+  return http.request<ResponseData<Array<LineVo>>>(
+    "get",
+    "/fortune/include/getAccountBalanceTrend",
+    { params: { accountId, periodType } }
+  );
+}
+
+/* ---------- 场景 E · 借贷与理财 ---------- */
+
+export interface LoanDetailVo {
+  payeeName: string;
+  amount: number;
+  lastTradeTime: string;
+}
+
+export interface LoanOverviewVo {
+  totalReceivable: number;
+  totalPayable: number;
+  receivableCount: number;
+  payableCount: number;
+  topReceivables: Array<LoanDetailVo>;
+}
+
+/** 借贷总览 */
+export function getLoanOverview(bookId: number) {
+  return http.request<ResponseData<LoanOverviewVo>>(
+    "get",
+    `/fortune/include/${bookId}/getLoanOverview`
+  );
+}
+
+export interface FinanceProfitVo {
+  orderId: number;
+  title: string;
+  outAmount: number;
+  inAmount: number;
+  profit: number;
+  profitRate: number;
+}
+
+/** 理财收益统计 */
+export function getFinanceProfit(
+  bookId: number,
+  params: { startDate?: Date; endDate?: Date }
+) {
+  return http.request<ResponseData<Array<FinanceProfitVo>>>(
+    "get",
+    `/fortune/include/${bookId}/getFinanceProfit`,
+    { params }
+  );
+}
+
+/* ---------- 场景 F · 通用能力 ---------- */
+
+export interface IncludePolicyVo {
+  excludeTransferFromExpense: boolean;
+  excludeLoanFromExpense: boolean;
+  includeUnconfirmed: boolean;
+}
+
+/** 统计口径开关说明 */
+export function getIncludePolicy() {
+  return http.request<ResponseData<IncludePolicyVo>>(
+    "get",
+    "/fortune/include/getIncludePolicy"
+  );
+}
