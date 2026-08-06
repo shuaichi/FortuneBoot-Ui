@@ -309,11 +309,21 @@ onMounted(() => {
   }
 }
 
-.dimension-chart,
 .chart-box {
   height: 420px;
 
   /* 复用的 report 图表组件默认高度为 83vh，这里约束到卡片内 */
+  :deep(.chart-container) {
+    height: 100%;
+    padding: 0;
+  }
+}
+
+/* 维度区主图：舒展展示，对齐旧报表沉浸感但不占满整屏 */
+.dimension-chart {
+  height: 60vh;
+  min-height: 420px;
+
   :deep(.chart-container) {
     height: 100%;
     padding: 0;
