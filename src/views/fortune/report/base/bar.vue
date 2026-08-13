@@ -8,7 +8,7 @@
             :icon="Refresh"
             circle
             size="small"
-            @click="$emit('refresh')"
+            @click="emit('refresh')"
           />
         </el-tooltip>
         <el-tooltip content="下载图表">
@@ -16,15 +16,14 @@
             :icon="Download"
             circle
             size="small"
+            :disabled="!hasData"
             @click="downloadChart"
           />
         </el-tooltip>
         <el-dropdown @command="handleViewChange">
           <el-button size="small">
             图表视图
-            <el-icon class="el-icon--right">
-              <arrow-down />
-            </el-icon>
+            <el-icon class="el-icon--right"><arrow-down /></el-icon>
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
@@ -37,55 +36,45 @@
       </div>
     </div>
 
-    <div v-show="loading" class="loading">
+    <div v-if="loading" class="chart-state">
       <el-skeleton :rows="6" animated />
     </div>
-    <div v-show="error" class="error">{{ error }}</div>
-
-    <div
-      v-show="!loading && !error && currentView !== 'table'"
-      ref="chartRef"
-      class="bar-chart"
-    />
-
-    <div
-      v-if="!loading && !error && currentView === 'table'"
-      class="table-view"
-    >
+    <div v-else-if="error" class="chart-state">
+      <el-empty description="加载失败">
+        <el-button type="primary" @click="emit('refresh')">重试</el-button>
+      </el-empty>
+    </div>
+    <div v-else-if="!hasData" class="chart-state">
+      <el-empty description="暂无数据" />
+    </div>
+    <div v-else-if="currentView === 'table'" class="table-view">
       <el-table :data="tableData" border stripe>
         <el-table-column prop="name" label="名称" />
         <el-table-column prop="value" label="金额">
-          <template #default="scope">
-            {{ formatCurrency(scope.row.value) }}
-          </template>
+          <template #default="scope">{{
+            formatCurrency(scope.row.value)
+          }}</template>
         </el-table-column>
         <el-table-column prop="percent" label="占比">
-          <template #default="scope"> {{ scope.row.percent }}%</template>
+          <template #default="scope">{{ scope.row.percent }}%</template>
         </el-table-column>
       </el-table>
     </div>
-
-    <div
-      v-if="!loading && !error && data.length === 0"
-      class="no-data flex justify-center items-center"
-    >
-      <el-empty description="暂无数据" />
-    </div>
+    <div v-else ref="chartRef" class="bar-chart" />
   </div>
 </template>
 
 <script setup lang="ts">
 import {
-  ref,
-  onMounted,
-  onBeforeUnmount,
+  computed,
   nextTick,
-  watch,
-  computed
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch
 } from "vue";
+import { ArrowDown, Download, Refresh } from "@element-plus/icons-vue";
 import * as echarts from "echarts";
-import { ArrowDown } from "@element-plus/icons-vue";
-import { Download, Refresh } from "@element-plus/icons-vue";
 import { sumBy } from "@/utils/decimal";
 
 interface BarVo {
@@ -93,260 +82,146 @@ interface BarVo {
   value: number;
 }
 
-const props = defineProps({
-  data: {
-    type: Array as PropType<BarVo[]>,
-    default: () => []
-  },
-  title: {
-    type: String,
-    default: ""
-  },
-  currency: {
-    type: String,
-    default: "CNY"
-  }
-});
-
+const props = withDefaults(
+  defineProps<{
+    data: BarVo[];
+    title?: string;
+    currency?: string;
+    loading?: boolean;
+    error?: boolean;
+  }>(),
+  { title: "", currency: "CNY", loading: false, error: false }
+);
+const emit = defineEmits<{ refresh: [] }>();
 const chartRef = ref<HTMLElement | null>(null);
-const loading = ref(true);
-const error = ref<string | null>(null);
 const currentView = ref<"bar" | "line" | "table">("bar");
 let chartInstance: echarts.ECharts | null = null;
 
-// 计算表格数据，添加百分比
+const hasData = computed(() => props.data.length > 0);
 const tableData = computed(() => {
-  if (!props.data || props.data.length === 0) return [];
-
   const total = sumBy(props.data, "value");
-
   return props.data.map(item => ({
     ...item,
-    percent: ((item.value / total) * 100).toFixed(2)
+    percent: total ? ((item.value / total) * 100).toFixed(2) : "0.00"
   }));
 });
 
-onMounted(() => {
-  window.addEventListener("resize", handleResize);
-});
-
-watch(
-  () => props.data,
-  async () => {
-    await fetchData();
-  },
-  { deep: true }
-);
-
-watch(
-  () => currentView.value,
-  () => {
-    if (currentView.value !== "table") {
-      nextTick(() => {
-        updateChart();
-      });
-    }
-  }
-);
-
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", handleResize);
-  chartInstance?.dispose();
-});
-
-const initChart = () => {
-  if (!chartRef.value) return;
-  chartInstance = echarts.init(chartRef.value);
-  updateChart();
-  // 添加延时，确保在DOM渲染完成后再触发resize
-  setTimeout(() => {
-    chartInstance?.resize();
-  }, 0);
-};
-
-const updateChart = () => {
-  if (!chartInstance) return;
-
-  const isLineChart = currentView.value === "line";
-
-  // 亮丽的渐变色配置
-  const lineColor = {
-    type: "linear",
-    x: 0,
-    y: 0,
-    x2: 0,
-    y2: 1,
-    colorStops: [
-      { offset: 0, color: "#00BFFF" }, // 深天蓝
-      { offset: 1, color: "#00FF7F" } // 春绿色
-    ]
-  };
-
-  // 柱状图渐变色配置
-  const barColor = {
-    type: "linear",
-    x: 0,
-    y: 0,
-    x2: 0,
-    y2: 1,
-    colorStops: [
-      { offset: 0, color: "#4169E1" }, // 皇家蓝
-      { offset: 1, color: "#00BFFF" } // 深天蓝
-    ]
-  };
-
-  chartInstance.setOption({
-    tooltip: {
-      trigger: "item",
-      formatter: ({ data }: { data: { name: string; value: number } }) =>
-        `${data.name}<br/>金额: ${formatCurrency(data.value)}`
-    },
-    grid: {
-      left: "3%",
-      right: "4%",
-      bottom: "3%",
-      containLabel: true
-    },
-    xAxis: {
-      type: "category",
-      data: props.data.map(item => item.name),
-      axisLabel: {
-        interval: 0,
-        rotate: props.data.length > 10 ? 45 : 0
-      }
-    },
-    yAxis: {
-      type: "value",
-      axisLabel: {
-        formatter: (value: number) => {
-          if (value >= 10000) {
-            return value / 10000 + "万";
-          }
-          return value;
-        }
-      }
-    },
-    series: [
-      {
-        type: isLineChart ? "line" : "bar",
-        data: props.data.map(item => ({
-          name: item.name,
-          value: item.value
-        })),
-        itemStyle: isLineChart
-          ? {
-              color: lineColor
-            }
-          : {
-              color: barColor,
-              borderRadius: [5, 5, 0, 0],
-              borderColor: "#fff",
-              borderWidth: 0
-            },
-        label: {
-          show: true,
-          position: isLineChart ? "top" : "top",
-          formatter: ({ value }: { value: number }) => formatCurrency(value)
-        },
-        emphasis: {
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: "rgba(0, 0, 0, 0.5)"
-          }
-        },
-        // 折线图特有配置
-        ...(isLineChart
-          ? {
-              smooth: true,
-              symbolSize: 8,
-              lineStyle: {
-                width: 3,
-                color: lineColor
-              },
-              areaStyle: {
-                opacity: 0.3,
-                color: {
-                  type: "linear",
-                  x: 0,
-                  y: 0,
-                  x2: 0,
-                  y2: 1,
-                  colorStops: [
-                    { offset: 0, color: "rgba(0, 191, 255, 0.5)" },
-                    { offset: 1, color: "rgba(0, 255, 127, 0.1)" }
-                  ]
-                }
-              }
-            }
-          : {})
-      }
-    ]
-  });
-};
-
-const fetchData = async () => {
-  try {
-    loading.value = true;
-    await nextTick();
-    if (!chartInstance) initChart();
-    else updateChart();
-    loading.value = false;
-  } catch (err) {
-    error.value = "加载失败";
-    loading.value = false;
-  }
-};
-
-const handleResize = () => chartInstance?.resize();
-
-const handleViewChange = (view: "bar" | "line" | "table") => {
-  currentView.value = view;
-};
-
-const downloadChart = () => {
-  if (!chartInstance) return;
-
-  // 如果是表格视图，则导出表格数据
-  if (currentView.value === "table") {
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      "名称,金额,占比\n" +
-      tableData.value
-        .map(row => `${row.name},${row.value},${row.percent}%`)
-        .join("\n");
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `${props.title || "数据统计"}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    return;
-  }
-
-  // 导出图表为图片
-  const dataURL = chartInstance.getDataURL({
-    pixelRatio: 2,
-    backgroundColor: "#fff"
-  });
-
-  const link = document.createElement("a");
-  link.download = `${props.title || "数据统计"}.png`;
-  link.href = dataURL;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
-
-const formatCurrency = (value: number) => {
+function formatCurrency(value: number) {
   return new Intl.NumberFormat("zh-CN", {
     style: "currency",
     currency: props.currency,
     minimumFractionDigits: 2
   }).format(value);
-};
+}
+
+function disposeChart() {
+  chartInstance?.dispose();
+  chartInstance = null;
+}
+
+function updateChart() {
+  if (!chartInstance) return;
+  const isLineChart = currentView.value === "line";
+  chartInstance.setOption(
+    {
+      tooltip: {
+        trigger: "item",
+        formatter: ({ data }: { data: BarVo }) =>
+          `${data.name}<br/>金额: ${formatCurrency(data.value)}`
+      },
+      grid: { left: "3%", right: "4%", bottom: "3%", containLabel: true },
+      xAxis: {
+        type: "category",
+        data: props.data.map(item => item.name),
+        axisLabel: { interval: 0, rotate: props.data.length > 10 ? 45 : 0 }
+      },
+      yAxis: {
+        type: "value",
+        axisLabel: {
+          formatter: (value: number) =>
+            value >= 10000 ? `${value / 10000}万` : value
+        }
+      },
+      series: [
+        {
+          type: isLineChart ? "line" : "bar",
+          data: props.data,
+          itemStyle: {
+            color: isLineChart ? "#00BFFF" : "#4169E1",
+            borderRadius: [5, 5, 0, 0]
+          },
+          label: {
+            show: true,
+            position: "top",
+            formatter: ({ value }: { value: number }) => formatCurrency(value)
+          },
+          ...(isLineChart
+            ? { smooth: true, symbolSize: 8, areaStyle: { opacity: 0.3 } }
+            : {})
+        }
+      ]
+    },
+    true
+  );
+}
+
+async function renderChart() {
+  if (
+    props.loading ||
+    props.error ||
+    !hasData.value ||
+    currentView.value === "table"
+  ) {
+    disposeChart();
+    return;
+  }
+  await nextTick();
+  if (!chartRef.value) return;
+  if (!chartInstance) chartInstance = echarts.init(chartRef.value);
+  updateChart();
+  chartInstance.resize();
+}
+
+function handleViewChange(view: "bar" | "line" | "table") {
+  currentView.value = view;
+}
+
+function handleResize() {
+  chartInstance?.resize();
+}
+
+function downloadChart() {
+  if (!hasData.value) return;
+  if (currentView.value === "table") {
+    const csvContent = `data:text/csv;charset=utf-8,名称,金额,占比\n${tableData.value
+      .map(row => `${row.name},${row.value},${row.percent}%`)
+      .join("\n")}`;
+    const link = document.createElement("a");
+    link.href = encodeURI(csvContent);
+    link.download = `${props.title || "数据统计"}.csv`;
+    link.click();
+    return;
+  }
+  if (!chartInstance) return;
+  const link = document.createElement("a");
+  link.download = `${props.title || "数据统计"}.png`;
+  link.href = chartInstance.getDataURL({
+    pixelRatio: 2,
+    backgroundColor: "#fff"
+  });
+  link.click();
+}
+
+watch(
+  () => [props.data, props.loading, props.error, currentView.value],
+  renderChart,
+  { deep: true, immediate: true }
+);
+onMounted(() => window.addEventListener("resize", handleResize));
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", handleResize);
+  disposeChart();
+});
 </script>
 
 <style scoped>
@@ -359,28 +234,20 @@ const formatCurrency = (value: number) => {
   border-radius: 4px;
 }
 
-.bar-chart {
+.bar-chart,
+.table-view,
+.chart-state {
   width: 100%;
   height: calc(100% - 60px);
 }
 
 .table-view {
-  width: 100%;
-  height: calc(100% - 60px);
   overflow: auto;
 }
 
-.loading,
-.error,
-.no-data {
+.chart-state {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: calc(100% - 60px);
-  font-size: 18px;
-}
-
-.error {
-  color: #f56c6c;
 }
 </style>

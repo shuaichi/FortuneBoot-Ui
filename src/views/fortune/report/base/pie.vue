@@ -8,7 +8,7 @@
             :icon="Refresh"
             circle
             size="small"
-            @click="$emit('refresh')"
+            @click="emit('refresh')"
           />
         </el-tooltip>
         <el-tooltip content="下载图表">
@@ -16,15 +16,14 @@
             :icon="Download"
             circle
             size="small"
+            :disabled="!hasData"
             @click="downloadChart"
           />
         </el-tooltip>
         <el-dropdown @command="handleViewChange">
           <el-button size="small">
             图表视图
-            <el-icon class="el-icon--right">
-              <arrow-down />
-            </el-icon>
+            <el-icon class="el-icon--right"><arrow-down /></el-icon>
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
@@ -37,229 +36,91 @@
       </div>
     </div>
 
-    <div v-show="loading" class="loading">
+    <div v-if="loading" class="chart-state">
       <el-skeleton :rows="6" animated />
     </div>
-    <div v-show="error" class="error">{{ error }}</div>
-
-    <div
-      v-show="!loading && !error && currentView !== 'table'"
-      ref="chartRef"
-      class="pie-chart"
-    />
-
-    <div
-      v-if="!loading && !error && currentView === 'table'"
-      class="table-view"
-    >
+    <div v-else-if="error" class="chart-state">
+      <el-empty description="加载失败">
+        <el-button type="primary" @click="emit('refresh')">重试</el-button>
+      </el-empty>
+    </div>
+    <div v-else-if="!hasData" class="chart-state">
+      <el-empty description="暂无数据" />
+    </div>
+    <div v-else-if="currentView === 'table'" class="table-view">
       <el-table :data="tableData" border stripe>
         <el-table-column prop="name" label="名称" />
         <el-table-column prop="value" label="金额">
-          <template #default="scope">
-            {{ formatCurrency(scope.row.value) }}
-          </template>
+          <template #default="scope">{{
+            formatCurrency(scope.row.value)
+          }}</template>
         </el-table-column>
         <el-table-column prop="percent" label="占比">
-          <template #default="scope"> {{ scope.row.percent }}% </template>
+          <template #default="scope">{{ scope.row.percent }}%</template>
         </el-table-column>
       </el-table>
     </div>
-
-    <div
-      v-if="!loading && !error && data.length === 0"
-      class="no-data flex justify-center items-center"
-    >
-      <el-empty description="暂无数据" />
-    </div>
+    <div v-else ref="chartRef" class="pie-chart" />
   </div>
 </template>
 
 <script setup lang="ts">
 import {
-  ref,
-  onMounted,
-  onBeforeUnmount,
+  computed,
   nextTick,
-  watch,
-  computed
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch
 } from "vue";
+import { ArrowDown, Download, Refresh } from "@element-plus/icons-vue";
 import * as echarts from "echarts";
-import { ArrowDown } from "@element-plus/icons-vue";
-import { Download, Refresh } from "@element-plus/icons-vue";
 import { sumBy } from "@/utils/decimal";
 
-interface PieVo {
+interface ChartPieItem {
   name: string;
   value: number;
-  percent?: string;
 }
 
-const props = defineProps({
-  data: {
-    type: Array as PropType<PieVo[]>,
-    default: () => []
-  },
-  title: {
-    type: String,
-    default: ""
-  },
-  currency: {
-    type: String,
-    default: "CNY"
-  }
-});
-
+const props = withDefaults(
+  defineProps<{
+    data: ChartPieItem[];
+    title?: string;
+    currency?: string;
+    loading?: boolean;
+    error?: boolean;
+  }>(),
+  { title: "", currency: "CNY", loading: false, error: false }
+);
+const emit = defineEmits<{ refresh: [] }>();
 const chartRef = ref<HTMLElement | null>(null);
-const loading = ref(true);
-const error = ref<string | null>(null);
 const currentView = ref<"pie" | "rose" | "table">("pie");
 let chartInstance: echarts.ECharts | null = null;
 
-// 计算表格数据，添加百分比
+const hasData = computed(() => props.data.length > 0);
 const tableData = computed(() => {
-  if (!props.data || props.data.length === 0) return [];
-
   const total = sumBy(props.data, "value");
-
   return props.data.map(item => ({
     ...item,
-    percent: ((item.value / total) * 100).toFixed(2)
+    percent: total ? ((item.value / total) * 100).toFixed(2) : "0.00"
   }));
 });
+const totalAmount = computed(() => sumBy(props.data, "value"));
 
-// 计算总金额
-const totalAmount = computed(() => {
-  if (!props.data || props.data.length === 0) return 0;
-  return sumBy(props.data, "value");
-});
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("zh-CN", {
+    style: "currency",
+    currency: props.currency,
+    minimumFractionDigits: 2
+  }).format(value);
+}
 
-onMounted(() => {
-  window.addEventListener("resize", handleResize);
-});
-
-watch(
-  () => props.data,
-  async () => {
-    await fetchData();
-  },
-  { deep: true }
-);
-
-watch(
-  () => currentView.value,
-  () => {
-    if (currentView.value !== "table") {
-      nextTick(() => {
-        updateChart();
-      });
-    }
-  }
-);
-
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", handleResize);
+function disposeChart() {
   chartInstance?.dispose();
-});
+  chartInstance = null;
+}
 
-const initChart = () => {
-  if (!chartRef.value) return;
-  chartInstance = echarts.init(chartRef.value);
-  updateChart();
-  // 添加延时，确保在DOM渲染完成后再触发resize
-  setTimeout(() => {
-    chartInstance?.resize();
-  }, 0);
-};
-
-const updateChart = () => {
-  if (!chartInstance) return;
-
-  const isRoseChart = currentView.value === "rose";
-  const chartData = tableData.value;
-
-  const colors = generateColors(chartData.length);
-
-  chartInstance.setOption({
-    tooltip: {
-      trigger: "item",
-      formatter: ({ data }: { data: PieVo }) =>
-        `${data.name}<br/>金额: ${formatCurrency(data.value)}<br/>占比: ${
-          data.percent
-        }%`
-    },
-    legend: {
-      type: "scroll",
-      orient: "vertical",
-      right: 10,
-      top: "center",
-      formatter: (name: string) => {
-        const item = chartData.find(d => d.name === name);
-        if (item) {
-          return `${name} (${item.percent}%)`;
-        }
-        return name;
-      }
-    },
-    color: colors,
-    series: [
-      {
-        name: props.title || "数据统计",
-        type: "pie",
-        radius: isRoseChart ? ["20%", "70%"] : ["40%", "70%"],
-        center: ["50%", "50%"],
-        roseType: isRoseChart ? "area" : undefined,
-        avoidLabelOverlap: true,
-        itemStyle: {
-          borderRadius: 10,
-          borderColor: "#fff",
-          borderWidth: 2
-        },
-        label: {
-          show: true,
-          formatter: ({ percent }: { percent: number }) =>
-            `${percent.toFixed(0)}%`,
-          position: "inner"
-        },
-        emphasis: {
-          label: {
-            show: true,
-            fontSize: 20,
-            fontWeight: "bold"
-          },
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: "rgba(0, 0, 0, 0.5)"
-          }
-        },
-        data: chartData
-      }
-    ],
-    graphic: [
-      {
-        type: "group",
-        left: "center",
-        top: "50%",
-        children: [
-          {
-            type: "text",
-            z: 100,
-            style: {
-              text: formatCurrency(totalAmount.value),
-              fontSize: 20,
-              fontWeight: "bold",
-              textAlign: "center",
-              fill: "#333"
-            }
-          }
-        ]
-      }
-    ]
-  });
-};
-
-// 生成渐变色
-const generateColors = (count: number) => {
+function generateColors(count: number): echarts.LinearGradientObject[] {
   const baseColors = [
     ["#83bff6", "#188df0"],
     ["#66e2da", "#23b7e5"],
@@ -272,88 +133,140 @@ const generateColors = (count: number) => {
     ["#9a7fd1", "#588dd5"],
     ["#c1232b", "#27727b"]
   ];
+  return Array.from({ length: count }, (_, index) => ({
+    type: "linear" as const,
+    x: 0,
+    y: 0,
+    x2: 0,
+    y2: 1,
+    colorStops: [
+      { offset: 0, color: baseColors[index % baseColors.length][0] },
+      { offset: 1, color: baseColors[index % baseColors.length][1] }
+    ]
+  }));
+}
 
-  const colors = [];
-  for (let i = 0; i < count; i++) {
-    const colorPair = baseColors[i % baseColors.length];
-    colors.push({
-      type: "linear",
-      x: 0,
-      y: 0,
-      x2: 0,
-      y2: 1,
-      colorStops: [
-        { offset: 0, color: colorPair[0] },
-        { offset: 1, color: colorPair[1] }
+function updateChart() {
+  if (!chartInstance) return;
+  const isRoseChart = currentView.value === "rose";
+  chartInstance.setOption(
+    {
+      tooltip: {
+        trigger: "item",
+        formatter: ({ data }: { data: ChartPieItem & { percent?: string } }) =>
+          `${data.name}<br/>金额: ${formatCurrency(data.value)}<br/>占比: ${data.percent}%`
+      },
+      legend: {
+        type: "scroll",
+        orient: "vertical",
+        right: 10,
+        top: "center",
+        formatter: (name: string) => {
+          const item = tableData.value.find(data => data.name === name);
+          return item ? `${name} (${item.percent}%)` : name;
+        }
+      },
+      color: generateColors(tableData.value.length),
+      series: [
+        {
+          name: props.title || "数据统计",
+          type: "pie",
+          radius: isRoseChart ? ["20%", "70%"] : ["40%", "70%"],
+          center: ["50%", "50%"],
+          roseType: isRoseChart ? "area" : undefined,
+          avoidLabelOverlap: true,
+          itemStyle: { borderRadius: 10, borderColor: "#fff", borderWidth: 2 },
+          label: {
+            show: true,
+            formatter: ({ percent }: { percent: number }) =>
+              `${percent.toFixed(0)}%`,
+            position: "inner"
+          },
+          data: tableData.value
+        }
+      ],
+      graphic: [
+        {
+          type: "group",
+          left: "center",
+          top: "50%",
+          children: [
+            {
+              type: "text",
+              z: 100,
+              style: {
+                text: formatCurrency(totalAmount.value),
+                fontSize: 20,
+                fontWeight: "bold",
+                textAlign: "center",
+                fill: "#333"
+              }
+            }
+          ]
+        }
       ]
-    });
-  }
+    },
+    true
+  );
+}
 
-  return colors;
-};
-
-const fetchData = async () => {
-  try {
-    loading.value = true;
-    await nextTick();
-    if (!chartInstance) initChart();
-    else updateChart();
-    loading.value = false;
-  } catch (err) {
-    error.value = "加载失败";
-    loading.value = false;
-  }
-};
-
-const handleResize = () => chartInstance?.resize();
-
-const handleViewChange = (view: "pie" | "rose" | "table") => {
-  currentView.value = view;
-};
-
-const downloadChart = () => {
-  if (!chartInstance && currentView.value !== "table") return;
-
-  // 如果是表格视图，则导出表格数据
-  if (currentView.value === "table") {
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      "名称,金额,占比\n" +
-      tableData.value
-        .map(row => `${row.name},${row.value},${row.percent}%`)
-        .join("\n");
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `${props.title || "数据统计"}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+async function renderChart() {
+  if (
+    props.loading ||
+    props.error ||
+    !hasData.value ||
+    currentView.value === "table"
+  ) {
+    disposeChart();
     return;
   }
+  await nextTick();
+  if (!chartRef.value) return;
+  if (!chartInstance) chartInstance = echarts.init(chartRef.value);
+  updateChart();
+  chartInstance.resize();
+}
 
-  // 导出图表为图片
-  const dataURL = chartInstance.getDataURL({
+function handleViewChange(view: "pie" | "rose" | "table") {
+  currentView.value = view;
+}
+
+function handleResize() {
+  chartInstance?.resize();
+}
+
+function downloadChart() {
+  if (!hasData.value) return;
+  if (currentView.value === "table") {
+    const csvContent = `data:text/csv;charset=utf-8,名称,金额,占比\n${tableData.value
+      .map(row => `${row.name},${row.value},${row.percent}%`)
+      .join("\n")}`;
+    const link = document.createElement("a");
+    link.href = encodeURI(csvContent);
+    link.download = `${props.title || "数据统计"}.csv`;
+    link.click();
+    return;
+  }
+  if (!chartInstance) return;
+  const link = document.createElement("a");
+  link.download = `${props.title || "数据统计"}.png`;
+  link.href = chartInstance.getDataURL({
     pixelRatio: 2,
     backgroundColor: "#fff"
   });
-
-  const link = document.createElement("a");
-  link.download = `${props.title || "数据统计"}.png`;
-  link.href = dataURL;
-  document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
-};
+}
 
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("zh-CN", {
-    style: "currency",
-    currency: props.currency,
-    minimumFractionDigits: 2
-  }).format(value);
-};
+watch(
+  () => [props.data, props.loading, props.error, currentView.value],
+  renderChart,
+  { deep: true, immediate: true }
+);
+onMounted(() => window.addEventListener("resize", handleResize));
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", handleResize);
+  disposeChart();
+});
 </script>
 
 <style scoped>
@@ -366,28 +279,20 @@ const formatCurrency = (value: number) => {
   border-radius: 4px;
 }
 
-.pie-chart {
+.pie-chart,
+.table-view,
+.chart-state {
   width: 100%;
   height: calc(100% - 60px);
 }
 
 .table-view {
-  width: 100%;
-  height: calc(100% - 60px);
   overflow: auto;
 }
 
-.loading,
-.error,
-.no-data {
+.chart-state {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: calc(100% - 60px);
-  font-size: 18px;
-}
-
-.error {
-  color: #f56c6c;
 }
 </style>

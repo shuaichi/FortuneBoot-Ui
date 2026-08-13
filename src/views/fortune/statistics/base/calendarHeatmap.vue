@@ -1,27 +1,28 @@
 <template>
   <div class="stat-chart">
-    <div v-show="loading" class="stat-chart__state">
+    <div v-if="loading" class="stat-chart__state">
       <el-skeleton :rows="5" animated />
     </div>
-    <div v-show="!loading && data.length === 0" class="stat-chart__state">
+    <div v-else-if="error" class="stat-chart__state">
+      <el-empty description="加载失败">
+        <el-button type="primary" @click="emit('retry')">重试</el-button>
+      </el-empty>
+    </div>
+    <div v-else-if="data.length === 0" class="stat-chart__state">
       <el-empty description="暂无数据" />
     </div>
-    <div
-      v-show="!loading && data.length > 0"
-      ref="chartRef"
-      class="stat-chart__canvas"
-    />
+    <div v-else ref="chartRef" class="stat-chart__canvas" />
   </div>
 </template>
 
 <script setup lang="ts">
 import {
-  ref,
-  onMounted,
-  onBeforeUnmount,
+  computed,
   nextTick,
-  watch,
-  computed
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch
 } from "vue";
 import * as echarts from "echarts";
 import type { HeatmapVo } from "@/api/fortune/include";
@@ -29,17 +30,15 @@ import { compare } from "@/utils/decimal";
 
 const props = withDefaults(
   defineProps<{
-    data: Array<HeatmapVo>;
+    data: HeatmapVo[];
     year: number;
     loading?: boolean;
+    error?: boolean;
     currency?: string;
   }>(),
-  {
-    loading: false,
-    currency: "CNY"
-  }
+  { loading: false, error: false, currency: "CNY" }
 );
-
+const emit = defineEmits<{ retry: [] }>();
 const chartRef = ref<HTMLElement | null>(null);
 let chartInstance: echarts.ECharts | null = null;
 
@@ -50,12 +49,18 @@ const maxAmount = computed(() =>
   )
 );
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("zh-CN", {
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("zh-CN", {
     style: "currency",
     currency: props.currency,
     minimumFractionDigits: 2
   }).format(value);
+}
+
+function disposeChart() {
+  chartInstance?.dispose();
+  chartInstance = null;
+}
 
 function updateChart() {
   if (!chartInstance) return;
@@ -63,10 +68,8 @@ function updateChart() {
   chartInstance.setOption(
     {
       tooltip: {
-        formatter: (p: any) =>
-          `${p.data[0]}<br/>金额: ${formatCurrency(
-            p.data[1]
-          )}<br/>笔数: ${p.data[2]}`
+        formatter: (params: { data: [string, number, number] }) =>
+          `${params.data[0]}<br/>金额: ${formatCurrency(params.data[1])}<br/>笔数: ${params.data[2]}`
       },
       visualMap: {
         min: 0,
@@ -74,9 +77,7 @@ function updateChart() {
         orient: "horizontal",
         left: "center",
         bottom: 0,
-        inRange: {
-          color: ["#e8f5e9", "#66bb6a", "#f56c6c"]
-        }
+        inRange: { color: ["#e8f5e9", "#66bb6a", "#f56c6c"] }
       },
       calendar: {
         top: 40,
@@ -90,46 +91,38 @@ function updateChart() {
         monthLabel: { nameMap: "cn" }
       },
       series: [
-        {
-          type: "heatmap",
-          coordinateSystem: "calendar",
-          data: heatData
-        }
+        { type: "heatmap", coordinateSystem: "calendar", data: heatData }
       ]
     },
     true
   );
 }
 
-function initChart() {
+async function renderChart() {
+  if (props.loading || props.error || props.data.length === 0) {
+    disposeChart();
+    return;
+  }
+  await nextTick();
   if (!chartRef.value) return;
-  chartInstance = echarts.init(chartRef.value);
+  if (!chartInstance) chartInstance = echarts.init(chartRef.value);
   updateChart();
+  chartInstance.resize();
 }
 
-const handleResize = () => chartInstance?.resize();
+function handleResize() {
+  chartInstance?.resize();
+}
 
-onMounted(() => {
-  window.addEventListener("resize", handleResize);
+watch(() => [props.data, props.year, props.loading, props.error], renderChart, {
+  deep: true,
+  immediate: true
 });
-
+onMounted(() => window.addEventListener("resize", handleResize));
 onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
-  chartInstance?.dispose();
-  chartInstance = null;
+  disposeChart();
 });
-
-watch(
-  () => [props.data, props.year, props.loading],
-  async () => {
-    if (props.loading) return;
-    await nextTick();
-    if (!chartInstance) initChart();
-    else updateChart();
-    setTimeout(() => chartInstance?.resize(), 0);
-  },
-  { deep: true }
-);
 </script>
 
 <style scoped>
@@ -140,7 +133,8 @@ watch(
   min-height: 240px;
 }
 
-.stat-chart__canvas {
+.stat-chart__canvas,
+.stat-chart__state {
   width: 100%;
   height: 100%;
 }
@@ -149,7 +143,5 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
 }
 </style>

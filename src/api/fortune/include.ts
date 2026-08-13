@@ -275,6 +275,46 @@ export function getBillRank(params: BillRankQuery) {
   );
 }
 
+/** 收支日历粒度：1=月度每日 / 2=年度每月 / 3=历史年度 */
+export enum IncomeExpenseCalendarGranularity {
+  MonthlyDaily = 1,
+  YearlyMonthly = 2,
+  HistoricalYearly = 3
+}
+
+export interface IncomeExpenseCalendarQuery extends BillIncludeQuery {
+  bookId: number;
+  granularity: IncomeExpenseCalendarGranularity;
+  year?: number;
+  month?: number;
+  startYear?: number;
+  endYear?: number;
+}
+
+export interface IncomeExpenseCalendarItemVo {
+  period: string;
+  income: number;
+  expense: number;
+  incomeCount: number;
+  expenseCount: number;
+}
+
+export interface IncomeExpenseCalendarVo {
+  startDate: string;
+  endDate: string;
+  granularity: IncomeExpenseCalendarGranularity;
+  items: Array<IncomeExpenseCalendarItemVo>;
+}
+
+/** 收支日历：按日、月或历史年度聚合收支金额及笔数 */
+export function getIncomeExpenseCalendar(params: IncomeExpenseCalendarQuery) {
+  return http.request<ResponseData<IncomeExpenseCalendarVo>>(
+    "get",
+    "/fortune/include/getIncomeExpenseCalendar",
+    { params }
+  );
+}
+
 export interface HeatmapVo {
   date: string;
   amount: number;

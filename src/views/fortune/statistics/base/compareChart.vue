@@ -1,45 +1,50 @@
 <template>
   <div class="stat-chart">
-    <div v-show="loading" class="stat-chart__state">
+    <div v-if="loading" class="stat-chart__state">
       <el-skeleton :rows="5" animated />
     </div>
-    <div v-show="!loading && data.length === 0" class="stat-chart__state">
+    <div v-else-if="error" class="stat-chart__state">
+      <el-empty description="加载失败">
+        <el-button type="primary" @click="emit('retry')">重试</el-button>
+      </el-empty>
+    </div>
+    <div v-else-if="data.length === 0" class="stat-chart__state">
       <el-empty description="暂无数据" />
     </div>
-    <div
-      v-show="!loading && data.length > 0"
-      ref="chartRef"
-      class="stat-chart__canvas"
-    />
+    <div v-else ref="chartRef" class="stat-chart__canvas" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import * as echarts from "echarts";
 import type { BillCompareVo } from "@/api/fortune/include";
 
 const props = withDefaults(
   defineProps<{
-    data: Array<BillCompareVo>;
+    data: BillCompareVo[];
     loading?: boolean;
+    error?: boolean;
     currency?: string;
   }>(),
-  {
-    loading: false,
-    currency: "CNY"
-  }
+  { loading: false, error: false, currency: "CNY" }
 );
-
+const emit = defineEmits<{ retry: [] }>();
 const chartRef = ref<HTMLElement | null>(null);
 let chartInstance: echarts.ECharts | null = null;
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("zh-CN", {
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("zh-CN", {
     style: "currency",
     currency: props.currency,
     minimumFractionDigits: 2
   }).format(value);
+}
+
+function disposeChart() {
+  chartInstance?.dispose();
+  chartInstance = null;
+}
 
 function updateChart() {
   if (!chartInstance) return;
@@ -47,9 +52,17 @@ function updateChart() {
     {
       tooltip: {
         trigger: "axis",
-        formatter: (params: any) => {
+        formatter: (
+          params: {
+            marker: string;
+            seriesName: string;
+            value: number;
+            name: string;
+          }[]
+        ) => {
           const lines = params.map(
-            (p: any) => `${p.marker}${p.seriesName}: ${formatCurrency(p.value)}`
+            item =>
+              `${item.marker}${item.seriesName}: ${formatCurrency(item.value)}`
           );
           return `${params[0].name}<br/>${lines.join("<br/>")}`;
         }
@@ -65,16 +78,13 @@ function updateChart() {
       xAxis: {
         type: "category",
         data: props.data.map(item => item.name),
-        axisLabel: {
-          interval: 0,
-          rotate: props.data.length > 10 ? 45 : 0
-        }
+        axisLabel: { interval: 0, rotate: props.data.length > 10 ? 45 : 0 }
       },
       yAxis: {
         type: "value",
         axisLabel: {
           formatter: (value: number) =>
-            value >= 10000 ? value / 10000 + "万" : value
+            value >= 10000 ? `${value / 10000}万` : value
         }
       },
       series: [
@@ -96,35 +106,31 @@ function updateChart() {
   );
 }
 
-function initChart() {
+async function renderChart() {
+  if (props.loading || props.error || props.data.length === 0) {
+    disposeChart();
+    return;
+  }
+  await nextTick();
   if (!chartRef.value) return;
-  chartInstance = echarts.init(chartRef.value);
+  if (!chartInstance) chartInstance = echarts.init(chartRef.value);
   updateChart();
+  chartInstance.resize();
 }
 
-const handleResize = () => chartInstance?.resize();
+function handleResize() {
+  chartInstance?.resize();
+}
 
-onMounted(() => {
-  window.addEventListener("resize", handleResize);
+watch(() => [props.data, props.loading, props.error], renderChart, {
+  deep: true,
+  immediate: true
 });
-
+onMounted(() => window.addEventListener("resize", handleResize));
 onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
-  chartInstance?.dispose();
-  chartInstance = null;
+  disposeChart();
 });
-
-watch(
-  () => [props.data, props.loading],
-  async () => {
-    if (props.loading) return;
-    await nextTick();
-    if (!chartInstance) initChart();
-    else updateChart();
-    setTimeout(() => chartInstance?.resize(), 0);
-  },
-  { deep: true }
-);
 </script>
 
 <style scoped>
@@ -135,7 +141,8 @@ watch(
   min-height: 300px;
 }
 
-.stat-chart__canvas {
+.stat-chart__canvas,
+.stat-chart__state {
   width: 100%;
   height: 100%;
 }
@@ -144,7 +151,5 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
 }
 </style>

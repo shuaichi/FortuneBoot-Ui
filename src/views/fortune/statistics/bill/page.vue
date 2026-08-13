@@ -42,6 +42,8 @@
         <bar
           v-if="activeDimension === 'member'"
           :data="dimensionData"
+          :loading="dimensionLoading"
+          :error="dimensionError"
           :title="dimensionTitle"
           :currency="currentCurrency"
           @refresh="loadDimension"
@@ -49,6 +51,8 @@
         <pie
           v-else
           :data="dimensionData"
+          :loading="dimensionLoading"
+          :error="dimensionError"
           :title="dimensionTitle"
           :currency="currentCurrency"
           @refresh="loadDimension"
@@ -66,7 +70,9 @@
           <compare-chart
             :data="compareData"
             :loading="compareLoading"
+            :error="compareError"
             :currency="currentCurrency"
+            @retry="loadCompare"
           />
         </div>
       </el-card>
@@ -80,6 +86,8 @@
         <div class="chart-box">
           <bar
             :data="rankData"
+            :loading="rankLoading"
+            :error="rankError"
             title="支出排行"
             :currency="currentCurrency"
             @refresh="loadRank"
@@ -88,7 +96,98 @@
       </el-card>
     </div>
 
-    <!-- 日历热力图 -->
+    <!-- 收支日历 -->
+    <el-card class="statistics-card">
+      <template #header>
+        <div class="card-header calendar-header">
+          <span>收支日历</span>
+          <div class="calendar-header__controls">
+            <el-radio-group
+              v-model="calendarGranularity"
+              size="small"
+              @change="loadIncomeExpenseCalendar"
+            >
+              <el-radio-button
+                :value="IncomeExpenseCalendarGranularity.MonthlyDaily"
+              >
+                月度每日
+              </el-radio-button>
+              <el-radio-button
+                :value="IncomeExpenseCalendarGranularity.YearlyMonthly"
+              >
+                年度每月
+              </el-radio-button>
+              <el-radio-button
+                :value="IncomeExpenseCalendarGranularity.HistoricalYearly"
+              >
+                历史年度
+              </el-radio-button>
+            </el-radio-group>
+            <el-date-picker
+              v-if="
+                calendarGranularity ===
+                IncomeExpenseCalendarGranularity.MonthlyDaily
+              "
+              v-model="calendarMonth"
+              type="month"
+              placeholder="选择月份"
+              aria-label="统计月份"
+              size="small"
+              value-format="YYYY-MM"
+              :clearable="false"
+              @change="loadIncomeExpenseCalendar"
+            />
+            <el-date-picker
+              v-else-if="
+                calendarGranularity ===
+                IncomeExpenseCalendarGranularity.YearlyMonthly
+              "
+              v-model="calendarYear"
+              type="year"
+              placeholder="选择年份"
+              aria-label="统计年份"
+              size="small"
+              value-format="YYYY"
+              :clearable="false"
+              @change="loadIncomeExpenseCalendar"
+            />
+            <template v-else>
+              <el-date-picker
+                v-model="calendarStartYear"
+                type="year"
+                placeholder="开始年份"
+                aria-label="历史开始年份"
+                size="small"
+                value-format="YYYY"
+                :clearable="false"
+                @change="loadIncomeExpenseCalendar"
+              />
+              <el-date-picker
+                v-model="calendarEndYear"
+                type="year"
+                placeholder="结束年份"
+                aria-label="历史结束年份"
+                size="small"
+                value-format="YYYY"
+                :clearable="false"
+                @change="loadIncomeExpenseCalendar"
+              />
+            </template>
+          </div>
+        </div>
+      </template>
+      <div class="income-expense-calendar-box">
+        <income-expense-calendar
+          :data="incomeExpenseCalendarData"
+          :loading="incomeExpenseCalendarLoading"
+          :error="incomeExpenseCalendarError"
+          :currency="currentCurrency"
+          @retry="loadIncomeExpenseCalendar"
+        />
+      </div>
+    </el-card>
+
+    <!-- 消费日历热力图 -->
     <el-card class="statistics-card">
       <template #header>
         <div class="card-header">
@@ -97,6 +196,7 @@
             v-model="heatmapYear"
             type="year"
             placeholder="选择年份"
+            aria-label="热力图年份"
             size="small"
             value-format="YYYY"
             :clearable="false"
@@ -109,7 +209,9 @@
           :data="heatmapData"
           :year="Number(heatmapYear)"
           :loading="heatmapLoading"
+          :error="heatmapError"
           :currency="currentCurrency"
+          @retry="loadHeatmap"
         />
       </div>
     </el-card>
@@ -122,14 +224,17 @@ import { message } from "@/utils/message";
 import StatisticsSearchForm from "../base/statisticsSearchForm.vue";
 import CompareChart from "../base/compareChart.vue";
 import CalendarHeatmap from "../base/calendarHeatmap.vue";
+import IncomeExpenseCalendar from "../base/incomeExpenseCalendar.vue";
 import Pie from "@/views/fortune/report/base/pie.vue";
 import Bar from "@/views/fortune/report/base/bar.vue";
 import { useStatisticsSearch } from "../base/useStatisticsSearch";
 import {
-  type PieVo,
   type BarVo,
   type BillCompareVo,
   type HeatmapVo,
+  type IncomeExpenseCalendarQuery,
+  type IncomeExpenseCalendarVo,
+  IncomeExpenseCalendarGranularity,
   getCategoryExpenseApi,
   getCategoryIncomeApi,
   getTagExpenseApi,
@@ -141,18 +246,43 @@ import {
   getBillTypeDistribution,
   getBillCompare,
   getBillRank,
-  getCalendarHeatmap
+  getCalendarHeatmap,
+  getIncomeExpenseCalendar
 } from "@/api/fortune/include";
 
 const billType = ref<number>(1);
 const activeDimension = ref<string>("category");
-const dimensionData = ref<Array<PieVo | BarVo>>([]);
+const dimensionData = ref<Array<BarVo>>([]);
+const dimensionLoading = ref<boolean>(false);
+const dimensionError = ref<boolean>(false);
+let dimensionRequestId = 0;
 const compareData = ref<Array<BillCompareVo>>([]);
 const compareLoading = ref<boolean>(false);
+const compareError = ref<boolean>(false);
+let compareRequestId = 0;
 const rankData = ref<Array<BarVo>>([]);
+const rankLoading = ref<boolean>(false);
+const rankError = ref<boolean>(false);
+let rankRequestId = 0;
 const heatmapData = ref<Array<HeatmapVo>>([]);
 const heatmapLoading = ref<boolean>(false);
+const heatmapError = ref<boolean>(false);
+let heatmapRequestId = 0;
 const heatmapYear = ref<string>(String(new Date().getFullYear()));
+const currentYear = new Date().getFullYear();
+const calendarGranularity = ref<IncomeExpenseCalendarGranularity>(
+  IncomeExpenseCalendarGranularity.MonthlyDaily
+);
+const calendarMonth = ref<string>(
+  `${currentYear}-${String(new Date().getMonth() + 1).padStart(2, "0")}`
+);
+const calendarYear = ref<string>(String(currentYear));
+const calendarStartYear = ref<string>(String(currentYear - 4));
+const calendarEndYear = ref<string>(String(currentYear));
+const incomeExpenseCalendarData = ref<IncomeExpenseCalendarVo | null>(null);
+const incomeExpenseCalendarLoading = ref<boolean>(false);
+const incomeExpenseCalendarError = ref<boolean>(false);
+let incomeExpenseCalendarRequestId = 0;
 
 const dimensionLabelMap: Record<string, string> = {
   category: "分类",
@@ -191,82 +321,246 @@ const {
   syncTradeTimeRange
 } = useStatisticsSearch(onSearch);
 
+function resetDimensionState() {
+  dimensionData.value = [];
+  dimensionLoading.value = false;
+  dimensionError.value = false;
+}
+
 async function loadDimension() {
-  if (!searchForm.bookId) return;
-  const params = { ...searchForm, billType: billType.value };
+  const requestId = ++dimensionRequestId;
+  if (!searchForm.bookId) {
+    resetDimensionState();
+    return;
+  }
+
+  const selectedBillType = billType.value;
+  const params = { ...searchForm, billType: selectedBillType };
+  const dimension = activeDimension.value;
+  dimensionData.value = [];
+  dimensionLoading.value = true;
+  dimensionError.value = false;
+
   try {
-    switch (activeDimension.value) {
+    let data: BarVo[] = [];
+    switch (dimension) {
       case "category":
-        dimensionData.value = (
-          billType.value === 1
+        data =
+          (selectedBillType === 1
             ? await getCategoryExpenseApi(params)
             : await getCategoryIncomeApi(params)
-        ).data;
+          ).data || [];
         break;
       case "tag":
-        dimensionData.value = (
-          billType.value === 1
+        data =
+          (selectedBillType === 1
             ? await getTagExpenseApi(params)
             : await getTagIncomeApi(params)
-        ).data;
+          ).data || [];
         break;
       case "payee":
-        dimensionData.value = (
-          billType.value === 1
+        data =
+          (selectedBillType === 1
             ? await getPayeeExpenseApi(params)
             : await getPayeeIncomeApi(params)
-        ).data;
+          ).data || [];
         break;
       case "account":
-        dimensionData.value = (await getAccountInclude(params)).data.map(
-          item => ({
-            name: item.accountName,
-            value: item.amount,
-            percent: item.percent
-          })
-        );
+        data = ((await getAccountInclude(params)).data || []).map(item => ({
+          name: item.accountName,
+          value: item.amount,
+          percent: item.percent
+        }));
         break;
       case "member":
-        dimensionData.value = (await getMemberInclude(params)).data;
+        data = (await getMemberInclude(params)).data || [];
         break;
       case "billType":
-        dimensionData.value = (await getBillTypeDistribution(params)).data;
+        data = (await getBillTypeDistribution(params)).data || [];
         break;
     }
+    if (requestId === dimensionRequestId) dimensionData.value = data;
   } catch (error) {
-    message("加载维度统计失败", { type: "error" });
+    if (requestId === dimensionRequestId) {
+      dimensionError.value = true;
+      message("加载维度统计失败", { type: "error" });
+    }
+  } finally {
+    if (requestId === dimensionRequestId) dimensionLoading.value = false;
   }
+}
+
+function resetCompareState() {
+  compareData.value = [];
+  compareLoading.value = false;
+  compareError.value = false;
 }
 
 async function loadCompare() {
-  if (!searchForm.bookId) return;
+  const requestId = ++compareRequestId;
+  if (!searchForm.bookId) {
+    resetCompareState();
+    return;
+  }
+
+  const params = { ...searchForm, compareType: 1 };
+  compareData.value = [];
   compareLoading.value = true;
+  compareError.value = false;
   try {
-    const res = await getBillCompare({ ...searchForm, compareType: 1 });
-    compareData.value = res.data || [];
+    const res = await getBillCompare(params);
+    if (requestId === compareRequestId) compareData.value = res.data || [];
+  } catch (error) {
+    if (requestId === compareRequestId) {
+      compareError.value = true;
+      message("加载收支对比失败", { type: "error" });
+    }
   } finally {
-    compareLoading.value = false;
+    if (requestId === compareRequestId) compareLoading.value = false;
   }
 }
 
+function resetRankState() {
+  rankData.value = [];
+  rankLoading.value = false;
+  rankError.value = false;
+}
+
 async function loadRank() {
-  if (!searchForm.bookId) return;
-  const res = await getBillRank({ ...searchForm, billType: 1, topN: 10 });
-  rankData.value = res.data || [];
+  const requestId = ++rankRequestId;
+  if (!searchForm.bookId) {
+    resetRankState();
+    return;
+  }
+
+  const params = { ...searchForm, billType: 1, topN: 10 };
+  rankData.value = [];
+  rankLoading.value = true;
+  rankError.value = false;
+  try {
+    const res = await getBillRank(params);
+    if (requestId === rankRequestId) rankData.value = res.data || [];
+  } catch (error) {
+    if (requestId === rankRequestId) {
+      rankError.value = true;
+      message("加载支出排行失败", { type: "error" });
+    }
+  } finally {
+    if (requestId === rankRequestId) rankLoading.value = false;
+  }
 }
 
 async function loadHeatmap() {
-  if (!searchForm.bookId) return;
+  const requestId = ++heatmapRequestId;
+  if (!searchForm.bookId) {
+    heatmapData.value = [];
+    heatmapLoading.value = false;
+    heatmapError.value = false;
+    return;
+  }
+
+  heatmapData.value = [];
   heatmapLoading.value = true;
+  heatmapError.value = false;
   try {
     const res = await getCalendarHeatmap({
       bookId: searchForm.bookId,
       year: Number(heatmapYear.value),
       billType: 1
     });
-    heatmapData.value = res.data || [];
+    if (requestId === heatmapRequestId) heatmapData.value = res.data || [];
+  } catch (error) {
+    if (requestId === heatmapRequestId) {
+      heatmapError.value = true;
+      message("加载消费日历热力图失败", { type: "error" });
+    }
   } finally {
-    heatmapLoading.value = false;
+    if (requestId === heatmapRequestId) heatmapLoading.value = false;
+  }
+}
+
+function getIncomeExpenseCalendarQuery(): IncomeExpenseCalendarQuery | null {
+  if (!searchForm.bookId) return null;
+
+  if (
+    calendarGranularity.value === IncomeExpenseCalendarGranularity.MonthlyDaily
+  ) {
+    const [year, month] = calendarMonth.value.split("-").map(Number);
+    if (!year || month < 1 || month > 12) {
+      message("请选择有效月份", { type: "warning" });
+      return null;
+    }
+    return {
+      ...searchForm,
+      bookId: searchForm.bookId,
+      granularity: IncomeExpenseCalendarGranularity.MonthlyDaily,
+      year,
+      month
+    };
+  }
+
+  if (
+    calendarGranularity.value === IncomeExpenseCalendarGranularity.YearlyMonthly
+  ) {
+    const year = Number(calendarYear.value);
+    if (!year) {
+      message("请选择有效年份", { type: "warning" });
+      return null;
+    }
+    return {
+      ...searchForm,
+      bookId: searchForm.bookId,
+      granularity: IncomeExpenseCalendarGranularity.YearlyMonthly,
+      year
+    };
+  }
+
+  const startYear = Number(calendarStartYear.value);
+  const endYear = Number(calendarEndYear.value);
+  if (!startYear || !endYear || startYear > endYear) {
+    message("开始年份不能晚于结束年份", { type: "warning" });
+    return null;
+  }
+  if (endYear - startYear + 1 > 10) {
+    message("历史年度最多可查询 10 年", { type: "warning" });
+    return null;
+  }
+  return {
+    ...searchForm,
+    bookId: searchForm.bookId,
+    granularity: IncomeExpenseCalendarGranularity.HistoricalYearly,
+    startYear,
+    endYear
+  };
+}
+
+async function loadIncomeExpenseCalendar() {
+  const requestId = ++incomeExpenseCalendarRequestId;
+  const params = getIncomeExpenseCalendarQuery();
+  if (!params) {
+    incomeExpenseCalendarData.value = null;
+    incomeExpenseCalendarError.value = false;
+    incomeExpenseCalendarLoading.value = false;
+    return;
+  }
+
+  incomeExpenseCalendarLoading.value = true;
+  incomeExpenseCalendarError.value = false;
+  incomeExpenseCalendarData.value = null;
+  try {
+    const res = await getIncomeExpenseCalendar(params);
+    if (requestId === incomeExpenseCalendarRequestId) {
+      incomeExpenseCalendarData.value = res.data;
+    }
+  } catch (error) {
+    if (requestId === incomeExpenseCalendarRequestId) {
+      incomeExpenseCalendarError.value = true;
+      message("加载收支日历失败，请稍后重试", { type: "error" });
+    }
+  } finally {
+    if (requestId === incomeExpenseCalendarRequestId) {
+      incomeExpenseCalendarLoading.value = false;
+    }
   }
 }
 
@@ -276,6 +570,7 @@ async function onSearch() {
     loadDimension(),
     loadCompare(),
     loadRank(),
+    loadIncomeExpenseCalendar(),
     loadHeatmap()
   ]);
 }
@@ -309,6 +604,34 @@ onMounted(() => {
   }
 }
 
+.calendar-header {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.calendar-header__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+@media (width <= 768px) {
+  .calendar-header {
+    align-items: stretch !important;
+  }
+
+  .calendar-header__controls {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .calendar-header__controls :deep(.el-radio-group),
+  .calendar-header__controls :deep(.el-date-editor) {
+    width: 100%;
+  }
+}
+
 .chart-box {
   height: 420px;
 
@@ -328,6 +651,10 @@ onMounted(() => {
     height: 100%;
     padding: 0;
   }
+}
+
+.income-expense-calendar-box {
+  min-height: 0;
 }
 
 .heatmap-box {
