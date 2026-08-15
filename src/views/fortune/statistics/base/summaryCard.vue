@@ -10,7 +10,9 @@
       <div class="summary-value">
         <span>{{ displayValue }}</span>
         <span
-          v-if="ringRate !== undefined && ringRate !== null"
+          v-if="
+            showAmount !== false && ringRate !== undefined && ringRate !== null
+          "
           class="summary-ring"
           :class="ringClass"
         >
@@ -34,6 +36,8 @@ const props = defineProps<{
   ringRate?: number;
   /** 直接展示文本时置 true，不做货币格式化 */
   plain?: boolean;
+  /** 是否显示金额 */
+  showAmount?: boolean;
 }>();
 
 const accent = computed(() => props.accent || "#409eff");
@@ -42,6 +46,7 @@ const displayValue = computed(() => {
   if (props.plain || typeof props.value === "string") {
     return props.value;
   }
+  if (props.showAmount === false) return "****";
   return new Intl.NumberFormat("zh-CN", {
     style: "currency",
     currency: props.currency || "CNY",

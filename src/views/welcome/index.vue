@@ -7,6 +7,16 @@
           <DataAnalysis />
         </el-icon>
         <span>数据概览</span>
+        <el-tooltip :content="isAmountVisible ? '隐藏金额' : '显示金额'">
+          <el-button
+            circle
+            text
+            :aria-label="isAmountVisible ? '隐藏金额' : '显示金额'"
+            @click="isAmountVisible = !isAmountVisible"
+          >
+            <el-icon><component :is="isAmountVisible ? View : Hide" /></el-icon>
+          </el-button>
+        </el-tooltip>
       </div>
       <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="所属分组">
@@ -64,22 +74,25 @@
         :icon="Wallet"
         accent="#409eff"
         :currency="currentCurrency"
+        :show-amount="isAmountVisible"
       />
       <summary-card
         label="本期收入"
         :value="dashboard.period.income"
         :icon="TrendCharts"
-        accent="#67c23a"
+        accent="#f56c6c"
         :currency="currentCurrency"
         :ring-rate="dashboard.ringIncomeRate"
+        :show-amount="isAmountVisible"
       />
       <summary-card
         label="本期支出"
         :value="dashboard.period.expense"
         :icon="Money"
-        accent="#f56c6c"
+        accent="#67c23a"
         :currency="currentCurrency"
         :ring-rate="dashboard.ringExpenseRate"
+        :show-amount="isAmountVisible"
       />
       <summary-card
         label="净资产"
@@ -87,6 +100,7 @@
         :icon="Coin"
         accent="#e6a23c"
         :currency="currentCurrency"
+        :show-amount="isAmountVisible"
       />
     </div>
 
@@ -98,6 +112,7 @@
         :icon="Histogram"
         accent="#909399"
         :currency="currentCurrency"
+        :show-amount="isAmountVisible"
       />
       <summary-card
         label="最大单笔支出"
@@ -105,6 +120,7 @@
         :icon="TopRight"
         accent="#909399"
         :currency="currentCurrency"
+        :show-amount="isAmountVisible"
       />
       <summary-card
         label="待确认账单"
@@ -138,7 +154,8 @@
             :data="dashboard.recentTrend"
             :loading="loading"
             :currency="currentCurrency"
-            color="#F56C6C"
+            color="#67C23A"
+            :show-amount="isAmountVisible"
           />
         </div>
       </el-card>
@@ -156,6 +173,7 @@
           <TotalAssetsPie
             v-if="searchForm.groupId"
             :group-id="searchForm.groupId"
+            :show-amount="isAmountVisible"
           />
         </div>
       </el-card>
@@ -174,6 +192,7 @@
             :data="compareData"
             :loading="loading"
             :currency="currentCurrency"
+            :show-amount="isAmountVisible"
           />
         </div>
       </el-card>
@@ -225,7 +244,8 @@ import {
   type BarVo,
   getDashboard,
   getBillCompare,
-  getBillRank
+  getBillRank,
+  getDisplayConfig
 } from "@/api/fortune/include";
 import {
   getDefaultGroupId,
@@ -244,7 +264,9 @@ import {
   Histogram,
   TopRight,
   Warning,
-  Sell
+  Sell,
+  View,
+  Hide
 } from "@element-plus/icons-vue";
 
 defineOptions({
@@ -284,86 +306,146 @@ const currentCurrency = computed(() => {
   return currentGroup?.defaultCurrency || "CNY";
 });
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("zh-CN", {
+const isAmountVisible = ref(false);
+const isInitializing = ref(true);
+let bookRequestId = 0;
+let dashboardRequestId = 0;
+
+const formatCurrency = (value: number) => {
+  if (!isAmountVisible.value) return "****";
+  return new Intl.NumberFormat("zh-CN", {
     style: "currency",
     currency: currentCurrency.value,
     minimumFractionDigits: 2
   }).format(value);
+};
 
 async function loadDashboard() {
-  if (!searchForm.bookId) return;
+  const requestId = ++dashboardRequestId;
+  if (!searchForm.bookId) {
+    if (requestId === dashboardRequestId) loading.value = false;
+    return;
+  }
+
+  const params = { ...searchForm };
   loading.value = true;
   try {
     const [dashboardRes, compareRes, rankRes] = await Promise.all([
-      getDashboard(searchForm),
-      getBillCompare({ bookId: searchForm.bookId, compareType: 1 }),
-      getBillRank({ bookId: searchForm.bookId, billType: 1, topN: 10 })
+      getDashboard(params),
+      getBillCompare({
+        bookId: params.bookId,
+        startDate: params.startDate,
+        endDate: params.endDate,
+        compareType: 1
+      }),
+      getBillRank({
+        bookId: params.bookId,
+        startDate: params.startDate,
+        endDate: params.endDate,
+        billType: 1,
+        topN: 10
+      })
     ]);
+    if (requestId !== dashboardRequestId) return;
     dashboard.value = dashboardRes.data;
     compareData.value = compareRes.data || [];
     rankData.value = rankRes.data || [];
   } catch (error) {
-    message("加载数据失败，请稍后重试", { type: "error" });
+    if (requestId === dashboardRequestId) {
+      message("加载数据失败，请稍后重试", { type: "error" });
+    }
   } finally {
-    loading.value = false;
+    if (requestId === dashboardRequestId) loading.value = false;
   }
+}
+
+async function loadBooks(groupId: number) {
+  const requestId = ++bookRequestId;
+  const bookRes = await getEnableBookList(groupId);
+  if (requestId !== bookRequestId) return;
+
+  bookOptions.value = bookRes.data || [];
+  if (bookOptions.value.length === 0) {
+    searchForm.bookId = undefined;
+    message("请先启用或创建账本", { type: "warning" });
+    return;
+  }
+
+  const currentGroup = groupOptions.value.find(
+    group => group.groupId === groupId
+  );
+  const defaultBook = bookOptions.value.find(
+    book => book.bookId === currentGroup?.defaultBookId
+  );
+  searchForm.bookId = defaultBook?.bookId || bookOptions.value[0].bookId;
 }
 
 onMounted(async () => {
   try {
-    const [groupRes, defaultGroupId] = await Promise.all([
+    const displayConfigPromise = getDisplayConfig().catch(() => {
+      message("加载金额显示配置失败，已默认隐藏金额", { type: "warning" });
+      return null;
+    });
+    const [displayConfigRes, groupRes, defaultGroupId] = await Promise.all([
+      displayConfigPromise,
       getEnableGroupList(),
       getDefaultGroupId()
     ]);
+    isAmountVisible.value = displayConfigRes?.data === true;
     groupOptions.value = groupRes.data || [];
     if (groupOptions.value.length === 0) {
       message("请先启用或创建分组", { type: "warning" });
       loading.value = false;
       return;
     }
+
     searchForm.groupId = defaultGroupId.data || groupOptions.value[0].groupId;
-    const bookRes = await getEnableBookList(searchForm.groupId);
-    bookOptions.value = bookRes.data || [];
-    if (bookOptions.value.length === 0) {
-      message("请先启用或创建账本", { type: "warning" });
-      loading.value = false;
-      return;
-    }
-    const currentGroup = groupOptions.value.find(
-      group => group.groupId === searchForm.groupId
-    );
-    searchForm.bookId =
-      currentGroup?.defaultBookId || bookOptions.value[0].bookId;
+    await loadBooks(searchForm.groupId);
     await loadDashboard();
   } catch (error) {
+    isAmountVisible.value = false;
     message("初始化失败，请刷新页面重试", { type: "error" });
     loading.value = false;
+  } finally {
+    isInitializing.value = false;
   }
 });
 
 watch(
   () => searchForm.groupId,
   async (newGroupId, oldGroupId) => {
-    if (!newGroupId || newGroupId === oldGroupId) return;
-    const bookRes = await getEnableBookList(newGroupId);
-    bookOptions.value = bookRes.data || [];
-    if (bookOptions.value.length === 0) {
-      message("请先启用或创建账本", { type: "warning" });
+    if (isInitializing.value || !newGroupId || newGroupId === oldGroupId) {
       return;
     }
-    const currentGroup = groupOptions.value.find(
-      group => group.groupId === newGroupId
-    );
-    searchForm.bookId =
-      currentGroup?.defaultBookId || bookOptions.value[0].bookId;
+
+    dashboardRequestId += 1;
+    searchForm.bookId = undefined;
+    dashboard.value = {
+      ...dashboard.value,
+      period: emptyStatistics(),
+      previous: emptyStatistics(),
+      recentTrend: []
+    };
+    compareData.value = [];
+    rankData.value = [];
+    loading.value = true;
+
+    try {
+      await loadBooks(newGroupId);
+    } catch (error) {
+      message("加载账本失败，请稍后重试", { type: "error" });
+      loading.value = false;
+    }
+    if (!searchForm.bookId) loading.value = false;
   }
 );
 
 watch(
   () => searchForm.bookId,
   async (newBookId, oldBookId) => {
-    if (!newBookId || newBookId === oldBookId) return;
+    if (isInitializing.value || !newBookId || newBookId === oldBookId) {
+      return;
+    }
     await loadDashboard();
   }
 );

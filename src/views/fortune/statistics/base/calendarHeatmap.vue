@@ -26,7 +26,15 @@ import {
 } from "vue";
 import * as echarts from "echarts";
 import type { HeatmapVo } from "@/api/fortune/include";
-import { compare } from "@/utils/decimal";
+import { compare, subtract } from "@/utils/decimal";
+import {
+  EXPENSE_COLOR,
+  EXPENSE_LIGHT_COLOR,
+  INCOME_COLOR,
+  INCOME_LIGHT_COLOR
+} from "./constants";
+
+type HeatmapData = [string, number, number, number, number, number];
 
 const props = withDefaults(
   defineProps<{
@@ -42,9 +50,21 @@ const emit = defineEmits<{ retry: [] }>();
 const chartRef = ref<HTMLElement | null>(null);
 let chartInstance: echarts.ECharts | null = null;
 
-const maxAmount = computed(() =>
-  props.data.reduce(
-    (max, item) => (compare(item.amount, max) > 0 ? item.amount : max),
+const heatData = computed<HeatmapData[]>(() =>
+  props.data.map(item => [
+    item.date,
+    subtract(item.income || 0, item.expense || 0),
+    item.income || 0,
+    item.expense || 0,
+    item.incomeCount || 0,
+    item.expenseCount || 0
+  ])
+);
+
+const maxAbsoluteNetAmount = computed(() =>
+  heatData.value.reduce(
+    (max, [, netAmount]) =>
+      compare(Math.abs(netAmount), max) > 0 ? Math.abs(netAmount) : max,
     0
   )
 );
@@ -64,20 +84,31 @@ function disposeChart() {
 
 function updateChart() {
   if (!chartInstance) return;
-  const heatData = props.data.map(item => [item.date, item.amount, item.count]);
+  const range = maxAbsoluteNetAmount.value || 1;
   chartInstance.setOption(
     {
       tooltip: {
-        formatter: (params: { data: [string, number, number] }) =>
-          `${params.data[0]}<br/>金额: ${formatCurrency(params.data[1])}<br/>笔数: ${params.data[2]}`
+        formatter: (params: { data: HeatmapData }) => {
+          const [, netAmount, income, expense, incomeCount, expenseCount] =
+            params.data;
+          return `${params.data[0]}<br/>收入: ${formatCurrency(income)}（${incomeCount} 笔）<br/>支出: ${formatCurrency(expense)}（${expenseCount} 笔）<br/>净额: ${formatCurrency(netAmount)}`;
+        }
       },
       visualMap: {
-        min: 0,
-        max: maxAmount.value || 1,
+        min: -range,
+        max: range,
         orient: "horizontal",
         left: "center",
         bottom: 0,
-        inRange: { color: ["#e8f5e9", "#66bb6a", "#f56c6c"] }
+        inRange: {
+          color: [
+            EXPENSE_COLOR,
+            EXPENSE_LIGHT_COLOR,
+            "#F5F7FA",
+            INCOME_LIGHT_COLOR,
+            INCOME_COLOR
+          ]
+        }
       },
       calendar: {
         top: 40,
@@ -91,7 +122,7 @@ function updateChart() {
         monthLabel: { nameMap: "cn" }
       },
       series: [
-        { type: "heatmap", coordinateSystem: "calendar", data: heatData }
+        { type: "heatmap", coordinateSystem: "calendar", data: heatData.value }
       ]
     },
     true

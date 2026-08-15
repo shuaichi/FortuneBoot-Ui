@@ -27,6 +27,8 @@ const props = withDefaults(
     /** bar | line */
     chartType?: "bar" | "line";
     color?: string;
+    /** 是否显示金额 */
+    showAmount?: boolean;
   }>(),
   {
     loading: false,
@@ -53,9 +55,11 @@ function updateChart() {
     {
       tooltip: {
         trigger: "axis",
-        formatter: (params: any) => {
+        formatter: (params: { name: string; value: number }[]) => {
           const item = params[0];
-          return `${item.name}<br/>${formatCurrency(item.value)}`;
+          const value =
+            props.showAmount === false ? "****" : formatCurrency(item.value);
+          return `${item.name}<br/>${value}`;
         }
       },
       grid: { left: "3%", right: "4%", bottom: "3%", containLabel: true },
@@ -71,7 +75,11 @@ function updateChart() {
         type: "value",
         axisLabel: {
           formatter: (value: number) =>
-            value >= 10000 ? value / 10000 + "万" : value
+            props.showAmount === false
+              ? "****"
+              : value >= 10000
+                ? value / 10000 + "万"
+                : value
         }
       },
       series: [
@@ -116,7 +124,7 @@ onBeforeUnmount(() => {
 });
 
 watch(
-  () => [props.data, props.chartType, props.loading],
+  () => [props.data, props.chartType, props.loading, props.showAmount],
   async () => {
     if (props.loading) return;
     await nextTick();

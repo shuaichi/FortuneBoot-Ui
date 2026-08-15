@@ -442,8 +442,8 @@ function getPeriodLabel(item: CalendarPeriod) {
 
 <style scoped lang="scss">
 .income-expense-calendar {
-  --calendar-income: var(--el-color-success);
-  --calendar-expense: var(--el-color-danger);
+  --calendar-income: #f56c6c;
+  --calendar-expense: #67c23a;
   --calendar-divider: var(--el-border-color-lighter);
   --calendar-muted: var(--el-text-color-secondary);
   --calendar-hover: var(--el-fill-color-light);

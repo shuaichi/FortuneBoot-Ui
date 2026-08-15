@@ -315,19 +315,21 @@ export function getIncomeExpenseCalendar(params: IncomeExpenseCalendarQuery) {
   );
 }
 
+/** 日历热力图单日收支汇总 */
 export interface HeatmapVo {
   date: string;
-  amount: number;
-  count: number;
+  income: number;
+  expense: number;
+  incomeCount: number;
+  expenseCount: number;
 }
 
-export interface CalendarHeatmapQuery {
-  bookId?: number;
-  year?: number;
-  billType?: number;
+/** 日历热力图：按日汇总收入和支出金额 */
+export interface CalendarHeatmapQuery extends BillIncludeQuery {
+  bookId: number;
+  year: number;
 }
 
-/** 日历热力图 billType 默认支出 */
 export function getCalendarHeatmap(params: CalendarHeatmapQuery) {
   return http.request<ResponseData<Array<HeatmapVo>>>(
     "get",

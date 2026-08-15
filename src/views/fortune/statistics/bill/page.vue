@@ -187,11 +187,11 @@
       </div>
     </el-card>
 
-    <!-- 消费日历热力图 -->
+    <!-- 收支日历热力图 -->
     <el-card class="statistics-card">
       <template #header>
         <div class="card-header">
-          <span>消费日历热力图</span>
+          <span>收支日历热力图</span>
           <el-date-picker
             v-model="heatmapYear"
             type="year"
@@ -464,15 +464,15 @@ async function loadHeatmap() {
   heatmapError.value = false;
   try {
     const res = await getCalendarHeatmap({
+      ...searchForm,
       bookId: searchForm.bookId,
-      year: Number(heatmapYear.value),
-      billType: 1
+      year: Number(heatmapYear.value)
     });
     if (requestId === heatmapRequestId) heatmapData.value = res.data || [];
   } catch (error) {
     if (requestId === heatmapRequestId) {
       heatmapError.value = true;
-      message("加载消费日历热力图失败", { type: "error" });
+      message("加载收支日历热力图失败", { type: "error" });
     }
   } finally {
     if (requestId === heatmapRequestId) heatmapLoading.value = false;

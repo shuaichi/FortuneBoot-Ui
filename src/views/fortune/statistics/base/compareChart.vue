@@ -19,6 +19,7 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import * as echarts from "echarts";
 import type { BillCompareVo } from "@/api/fortune/include";
+import { EXPENSE_COLOR, INCOME_COLOR } from "./constants";
 
 const props = withDefaults(
   defineProps<{
@@ -26,6 +27,8 @@ const props = withDefaults(
     loading?: boolean;
     error?: boolean;
     currency?: string;
+    /** 是否显示金额 */
+    showAmount?: boolean;
   }>(),
   { loading: false, error: false, currency: "CNY" }
 );
@@ -62,7 +65,7 @@ function updateChart() {
         ) => {
           const lines = params.map(
             item =>
-              `${item.marker}${item.seriesName}: ${formatCurrency(item.value)}`
+              `${item.marker}${item.seriesName}: ${props.showAmount === false ? "****" : formatCurrency(item.value)}`
           );
           return `${params[0].name}<br/>${lines.join("<br/>")}`;
         }
@@ -84,7 +87,11 @@ function updateChart() {
         type: "value",
         axisLabel: {
           formatter: (value: number) =>
-            value >= 10000 ? `${value / 10000}万` : value
+            props.showAmount === false
+              ? "****"
+              : value >= 10000
+                ? `${value / 10000}万`
+                : value
         }
       },
       series: [
@@ -92,13 +99,13 @@ function updateChart() {
           name: "收入",
           type: "bar",
           data: props.data.map(item => item.income),
-          itemStyle: { color: "#67C23A", borderRadius: [4, 4, 0, 0] }
+          itemStyle: { color: INCOME_COLOR, borderRadius: [4, 4, 0, 0] }
         },
         {
           name: "支出",
           type: "bar",
           data: props.data.map(item => item.expense),
-          itemStyle: { color: "#F56C6C", borderRadius: [4, 4, 0, 0] }
+          itemStyle: { color: EXPENSE_COLOR, borderRadius: [4, 4, 0, 0] }
         }
       ]
     },
@@ -122,10 +129,14 @@ function handleResize() {
   chartInstance?.resize();
 }
 
-watch(() => [props.data, props.loading, props.error], renderChart, {
-  deep: true,
-  immediate: true
-});
+watch(
+  () => [props.data, props.loading, props.error, props.showAmount],
+  renderChart,
+  {
+    deep: true,
+    immediate: true
+  }
+);
 onMounted(() => window.addEventListener("resize", handleResize));
 onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);

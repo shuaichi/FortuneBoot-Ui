@@ -5,74 +5,59 @@
     <div v-else ref="chartRef" class="pie-chart" />
   </div>
 </template>
+
 <script setup lang="ts">
-import {
-  ref,
-  onBeforeUnmount,
-  onUnmounted,
-  nextTick,
-  watch,
-  onMounted
-} from "vue";
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import * as echarts from "echarts";
-import { getTotalAssets } from "@/api/fortune/include";
+import { getTotalAssets, type PieVo } from "@/api/fortune/include";
 import { sumBy } from "@/utils/decimal";
+
+interface PieChartData {
+  name: string;
+  value: number;
+}
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
   name: "TotalAssetsPie"
 });
 
-const chartRef = ref(null);
+const props = defineProps<{
+  groupId: number;
+  showAmount: boolean;
+}>();
+const chartRef = ref<HTMLElement | null>(null);
 const loading = ref(true);
-const error = ref(null);
-let chartInstance = null;
-const props = defineProps<{ groupId: number }>();
-let chartData: Array<{ name: string; value: number }> = [];
+const error = ref<string | null>(null);
+let chartInstance: echarts.ECharts | null = null;
+let chartData: PieChartData[] = [];
+let selectedLegend: Record<string, boolean> = {};
+let requestId = 0;
 
-// 暴露刷新方法给父组件
-const refresh = async () => {
-  loading.value = true;
-  await fetchData();
-};
-defineExpose({ refresh });
+function formatNumber(value: number) {
+  return value.toLocaleString("en-US");
+}
 
-// 监听groupId变化
-watch(
-  () => props.groupId,
-  async () => {
-    await fetchData();
-    window.addEventListener("resize", () => chartInstance?.resize());
-  }
-);
+function formatAmount(value: number) {
+  return props.showAmount ? `${formatNumber(value)}元` : "****";
+}
 
-// 组件挂载时初始化数据
-onMounted(async () => {
-  if (props.groupId) {
-    await fetchData();
-    window.addEventListener("resize", handleResize);
-  }
-});
+function getSelectedTotal(selected: Record<string, boolean>) {
+  return sumBy(
+    chartData.filter(item => selected[item.name]),
+    "value"
+  );
+}
 
-onUnmounted(() => chartInstance?.dispose());
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", handleResize);
-  chartInstance?.dispose();
-});
-const initChart = () => {
-  if (!chartRef.value) {
-    return;
-  }
-  chartInstance = echarts.init(chartRef.value);
-  chartInstance.setOption({
+function createChartOption(totalValue: number): echarts.EChartsOption {
+  const option = {
     tooltip: {
       trigger: "item",
-      formatter: ({ data }) =>
-        `${data.name}<br/>
-        金额: ￥${data.value}<br/>
-        占比: ${data.percent}%`
+      formatter: (params: { data: PieChartData; percent: number }) =>
+        `${params.data.name}<br/>金额: ${formatAmount(params.data.value)}<br/>占比: ${params.percent}%`
     },
     legend: {
+      selected: selectedLegend,
       orient: "vertical",
       right: 10,
       top: 20,
@@ -80,12 +65,36 @@ const initChart = () => {
       type: "scroll",
       pageIconColor: "#409eff",
       pageIconInactiveColor: "#c0c4cc",
-      pageTextStyle: {
-        color: "#666"
-      },
-      animation: true,
-      animationDurationUpdate: 800
+      pageTextStyle: { color: "#666" },
+      formatter: name => {
+        const item = chartData.find(data => data.name === name);
+        return item ? `${name} ${formatAmount(item.value)}` : name;
+      }
     },
+    graphic: [
+      {
+        type: "group",
+        left: "center",
+        top: "center",
+        children: [
+          {
+            type: "text",
+            style: {
+              text: formatAmount(totalValue),
+              fontSize: window.innerWidth < 768 ? 18 : 24,
+              fontWeight: "bold",
+              fill: "#333",
+              textAlign: "center",
+              textVerticalAlign: "middle"
+            },
+            left: "center",
+            top: "center",
+            z: 100
+          }
+        ],
+        z: 100
+      }
+    ],
     series: [
       {
         type: "pie",
@@ -98,163 +107,108 @@ const initChart = () => {
         },
         label: {
           show: true,
-          formatter: ({ percent }) => `${percent}%`,
+          formatter: (params: { percent: number }) => `${params.percent}%`,
           fontSize: 12,
           color: "#666",
           fontWeight: "bold"
         },
-        labelLine: {
-          show: true,
-          length: 10,
-          length2: 15
-        },
-        emphasis: {
-          label: {
-            show: true,
-            fontSize: 20
-          }
-        },
-        color: null,
-        data: []
+        labelLine: { show: true, length: 10, length2: 15 },
+        emphasis: { label: { show: true, fontSize: 20 } },
+        data: chartData
       }
     ]
-  });
-  // 监听图例选中/取消选中事件
-  chartInstance.on("legendselectchanged", params => {
-    // 取出当前被选中的图例名称
-    const selectedNames = Object.keys(params.selected).filter(
-      name => params.selected[name]
-    );
-    console.log(chartData);
-    // 重新计算被选中的总金额
-    const newSum = sumBy(
-      chartData.filter(item => selectedNames.includes(item.name)),
-      "value"
-    );
-    // 更新中心显示的文字
-    chartInstance!.setOption({
-      graphic: [
-        {
-          // 这里仅更新 text 字段，其他属性保持不变
-          children: [
-            {
-              style: {
-                text: `${formatNumber(newSum)}元`
-              }
-            }
-          ]
-        }
-      ]
-    });
-  });
-};
-const fetchData = async () => {
+  };
+  return option as echarts.EChartsOption;
+}
+
+function updateChart(totalValue = getSelectedTotal(selectedLegend)) {
+  chartInstance?.setOption(createChartOption(totalValue), true);
+}
+
+function initChart() {
+  if (!chartRef.value) return;
+  chartInstance?.dispose();
+  chartInstance = echarts.init(chartRef.value);
+  chartInstance.on(
+    "legendselectchanged",
+    (params: { selected: Record<string, boolean> }) => {
+      selectedLegend = params.selected;
+      updateChart();
+    }
+  );
+  updateChart();
+}
+
+async function fetchData() {
+  const currentRequestId = ++requestId;
+  loading.value = true;
+  error.value = null;
   try {
     const res = await getTotalAssets(props.groupId);
-    loading.value = false;
-    // 对数据进行从大到小排序
-    chartData = [...res.data].sort((a, b) => b.value - a.value);
-    // 计算总值（确保数据结构中包含value字段）
-    const totalValue = sumBy(chartData, "value");
+    if (currentRequestId !== requestId) return;
+    chartData = [...(res.data || [])]
+      .map((item: PieVo) => ({ name: item.name, value: item.value }))
+      .sort((a, b) => b.value - a.value);
+    selectedLegend = Object.fromEntries(
+      chartData.map(item => [item.name, true])
+    );
     await nextTick();
-    initChart();
-    chartInstance.setOption({
-      legend: {
-        orient: "vertical",
-        right: 10,
-        top: 20,
-        bottom: 20,
-        type: "scroll",
-        pageIconColor: "#409eff",
-        pageIconInactiveColor: "#c0c4cc",
-        pageTextStyle: {
-          color: "#666"
-        },
-        animation: true,
-        animationDurationUpdate: 800,
-        formatter: (name: any) => {
-          const item = chartData.find(d => d.name === name);
-          return item ? `${name} ￥${formatNumber(item.value)}` : name;
-        }
-      },
-      graphic: [
-        {
-          type: "group",
-          left: "center",
-          top: "center",
-          children: [
-            {
-              type: "text",
-              style: {
-                text: `${formatNumber(totalValue)}元`,
-                fontSize: window.innerWidth < 768 ? 18 : 24,
-                fontWeight: "bold",
-                fill: "#333",
-                textAlign: "center",
-                textVerticalAlign: "middle"
-              },
-              left: "center",
-              top: "center",
-              z: 100
-            }
-          ],
-          z: 100
-        }
-      ],
-      series: [
-        {
-          data: chartData
-        }
-      ]
-    });
-  } catch (err) {
-    error.value = "加载失败";
-    loading.value = false;
+    if (currentRequestId === requestId) initChart();
+  } catch (requestError) {
+    if (currentRequestId === requestId) error.value = "加载失败";
+  } finally {
+    if (currentRequestId === requestId) loading.value = false;
   }
-};
+}
 
-const handleResize = () => {
+function handleResize() {
   chartInstance?.resize();
-};
+}
 
-// 在<script setup>中添加汇总值计算
-const formatNumber = (num: number) => {
-  return num.toLocaleString("en-US"); // 添加千分位分隔符
-};
+watch(
+  () => props.groupId,
+  () => fetchData()
+);
+watch(
+  () => props.showAmount,
+  () => updateChart()
+);
+onMounted(() => {
+  window.addEventListener("resize", handleResize);
+  fetchData();
+});
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", handleResize);
+  chartInstance?.dispose();
+  chartInstance = null;
+});
 </script>
-<style scoped>
-/* 响应式优化 */
-@media (width <= 768px) {
-  .chart-container {
-    min-height: 350px;
-  }
 
+<style scoped>
+@media (width <= 768px) {
+  .chart-container,
   .pie-chart {
     min-height: 350px;
   }
 }
 
 @media (width <= 480px) {
-  .chart-container {
-    min-height: 320px;
-  }
-
+  .chart-container,
   .pie-chart {
     min-height: 320px;
   }
 }
 
-.chart-container {
-  position: relative;
+.chart-container,
+.pie-chart,
+.loading,
+.error {
   width: 100%;
   height: 100%;
-  min-height: 300px;
-  overflow: hidden;
 }
 
-.pie-chart {
-  width: 100%;
-  height: 100%;
+.chart-container {
+  position: relative;
   min-height: 300px;
 }
 
@@ -263,12 +217,9 @@ const formatNumber = (num: number) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  font-size: 18px;
-  color: #666;
 }
 
 .error {
-  color: #f56c6c;
+  color: var(--el-color-danger);
 }
 </style>

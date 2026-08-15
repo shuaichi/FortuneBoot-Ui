@@ -28,6 +28,12 @@ export const billTypeOptions = [
   { value: 12, label: "归还" }
 ];
 
+/** 支出与收入在统计报表中的语义颜色 */
+export const EXPENSE_COLOR = "#67C23A";
+export const EXPENSE_LIGHT_COLOR = "#E8F5E9";
+export const INCOME_COLOR = "#F56C6C";
+export const INCOME_LIGHT_COLOR = "#FDECEC";
+
 /** 概览周期类型 */
 export const periodTypeOptions = [
   { value: 1, label: "本月" },
