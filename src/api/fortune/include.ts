@@ -26,15 +26,22 @@ export interface BaseQuery {
   bookId?: number;
 }
 
-export interface IncomeTrendsQuery extends BaseQuery {
-  timeGranularity?: number;
-  timePoint?: Date;
+/** 首页收支趋势粒度：1=近7天 / 2=月度每日 / 3=年度每月 / 4=历史年度 */
+export enum TrendTimeGranularity {
+  Weekly = 1,
+  Monthly = 2,
+  Yearly = 3,
+  HistoricalYearly = 4
 }
 
-export interface ExpenseTrendsQuery extends BaseQuery {
-  timeGranularity?: number;
-  timePoint?: Date;
+export interface TrendQuery extends BaseQuery {
+  timeGranularity?: TrendTimeGranularity;
+  timePoint?: Date | string;
 }
+
+export type IncomeTrendsQuery = TrendQuery;
+
+export type ExpenseTrendsQuery = TrendQuery;
 
 export interface AssetsLiabilitiesVo {
   totalAssets: number;

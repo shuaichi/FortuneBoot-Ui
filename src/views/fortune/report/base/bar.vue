@@ -16,7 +16,7 @@
             :icon="Download"
             circle
             size="small"
-            :disabled="!hasData"
+            :disabled="!hasData || !showAmount"
             @click="downloadChart"
           />
         </el-tooltip>
@@ -76,6 +76,10 @@ import {
 import { ArrowDown, Download, Refresh } from "@element-plus/icons-vue";
 import * as echarts from "echarts";
 import { sumBy } from "@/utils/decimal";
+import {
+  EXPENSE_COLOR,
+  INCOME_COLOR
+} from "@/views/fortune/statistics/base/constants";
 
 interface BarVo {
   name: string;
@@ -89,8 +93,17 @@ const props = withDefaults(
     currency?: string;
     loading?: boolean;
     error?: boolean;
+    semantic?: "expense" | "income" | "neutral";
+    showAmount?: boolean;
   }>(),
-  { title: "", currency: "CNY", loading: false, error: false }
+  {
+    title: "",
+    currency: "CNY",
+    loading: false,
+    error: false,
+    semantic: "neutral",
+    showAmount: true
+  }
 );
 const emit = defineEmits<{ refresh: [] }>();
 const chartRef = ref<HTMLElement | null>(null);
@@ -106,7 +119,14 @@ const tableData = computed(() => {
   }));
 });
 
+const chartColor = computed(() => {
+  if (props.semantic === "expense") return EXPENSE_COLOR;
+  if (props.semantic === "income") return INCOME_COLOR;
+  return "#4169E1";
+});
+
 function formatCurrency(value: number) {
+  if (!props.showAmount) return "****";
   return new Intl.NumberFormat("zh-CN", {
     style: "currency",
     currency: props.currency,
@@ -139,7 +159,11 @@ function updateChart() {
         type: "value",
         axisLabel: {
           formatter: (value: number) =>
-            value >= 10000 ? `${value / 10000}万` : value
+            props.showAmount
+              ? value >= 10000
+                ? `${value / 10000}万`
+                : value
+              : "****"
         }
       },
       series: [
@@ -147,9 +171,12 @@ function updateChart() {
           type: isLineChart ? "line" : "bar",
           data: props.data,
           itemStyle: {
-            color: isLineChart ? "#00BFFF" : "#4169E1",
+            color: chartColor.value,
             borderRadius: [5, 5, 0, 0]
           },
+          lineStyle: isLineChart
+            ? { color: chartColor.value, width: 2 }
+            : undefined,
           label: {
             show: true,
             position: "top",
@@ -213,7 +240,14 @@ function downloadChart() {
 }
 
 watch(
-  () => [props.data, props.loading, props.error, currentView.value],
+  () => [
+    props.data,
+    props.loading,
+    props.error,
+    props.semantic,
+    props.showAmount,
+    currentView.value
+  ],
   renderChart,
   { deep: true, immediate: true }
 );

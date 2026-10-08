@@ -80,7 +80,7 @@
         label="本期收入"
         :value="dashboard.period.income"
         :icon="TrendCharts"
-        accent="#f56c6c"
+        :accent="INCOME_COLOR"
         :currency="currentCurrency"
         :ring-rate="dashboard.ringIncomeRate"
         :show-amount="isAmountVisible"
@@ -89,7 +89,7 @@
         label="本期支出"
         :value="dashboard.period.expense"
         :icon="Money"
-        accent="#67c23a"
+        :accent="EXPENSE_COLOR"
         :currency="currentCurrency"
         :ring-rate="dashboard.ringExpenseRate"
         :show-amount="isAmountVisible"
@@ -145,16 +145,14 @@
           <div class="chart-header">
             <div class="chart-title">
               <el-icon><TrendCharts /></el-icon>
-              <span>近7天支出趋势</span>
+              <span>收支趋势</span>
             </div>
           </div>
         </template>
         <div class="chart-content">
-          <trend-chart
-            :data="dashboard.recentTrend"
-            :loading="loading"
+          <income-expense-trend
+            :book-id="searchForm.bookId"
             :currency="currentCurrency"
-            color="#67C23A"
             :show-amount="isAmountVisible"
           />
         </div>
@@ -221,7 +219,9 @@
                 {{ index + 1 }}
               </span>
               <span class="rank-name">{{ item.name }}</span>
-              <span class="rank-value">{{ formatCurrency(item.value) }}</span>
+              <span class="rank-value" :style="{ color: EXPENSE_COLOR }">{{
+                formatCurrency(item.value)
+              }}</span>
             </li>
           </ul>
         </div>
@@ -233,10 +233,14 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch, computed } from "vue";
 import TotalAssetsPie from "./chart/TotalAssetsPie.vue";
+import IncomeExpenseTrend from "./chart/IncomeExpenseTrend.vue";
 import SummaryCard from "@/views/fortune/statistics/base/summaryCard.vue";
-import TrendChart from "@/views/fortune/statistics/base/trendChart.vue";
 import CompareChart from "@/views/fortune/statistics/base/compareChart.vue";
-import { periodTypeOptions } from "@/views/fortune/statistics/base/constants";
+import {
+  EXPENSE_COLOR,
+  INCOME_COLOR,
+  periodTypeOptions
+} from "@/views/fortune/statistics/base/constants";
 import {
   type DashboardQuery,
   type DashboardVo,
@@ -617,7 +621,6 @@ watch(
       .rank-value {
         margin-left: 12px;
         font-weight: 600;
-        color: #f56c6c;
       }
     }
   }

@@ -16,7 +16,7 @@
             :icon="Download"
             circle
             size="small"
-            :disabled="!hasData"
+            :disabled="!hasData || !showAmount"
             @click="downloadChart"
           />
         </el-tooltip>
@@ -76,6 +76,10 @@ import {
 import { ArrowDown, Download, Refresh } from "@element-plus/icons-vue";
 import * as echarts from "echarts";
 import { sumBy } from "@/utils/decimal";
+import {
+  EXPENSE_COLOR,
+  INCOME_COLOR
+} from "@/views/fortune/statistics/base/constants";
 
 interface ChartPieItem {
   name: string;
@@ -89,8 +93,17 @@ const props = withDefaults(
     currency?: string;
     loading?: boolean;
     error?: boolean;
+    semantic?: "expense" | "income" | "neutral";
+    showAmount?: boolean;
   }>(),
-  { title: "", currency: "CNY", loading: false, error: false }
+  {
+    title: "",
+    currency: "CNY",
+    loading: false,
+    error: false,
+    semantic: "neutral",
+    showAmount: true
+  }
 );
 const emit = defineEmits<{ refresh: [] }>();
 const chartRef = ref<HTMLElement | null>(null);
@@ -108,6 +121,7 @@ const tableData = computed(() => {
 const totalAmount = computed(() => sumBy(props.data, "value"));
 
 function formatCurrency(value: number) {
+  if (!props.showAmount) return "****";
   return new Intl.NumberFormat("zh-CN", {
     style: "currency",
     currency: props.currency,
@@ -120,30 +134,17 @@ function disposeChart() {
   chartInstance = null;
 }
 
-function generateColors(count: number): echarts.LinearGradientObject[] {
-  const baseColors = [
-    ["#83bff6", "#188df0"],
-    ["#66e2da", "#23b7e5"],
-    ["#ffb980", "#ff7c7c"],
-    ["#5ab1ef", "#2ec7c9"],
-    ["#d87a80", "#ffb980"],
-    ["#8d98b3", "#e5cf0d"],
-    ["#97b552", "#95706d"],
-    ["#dc69aa", "#07a2a4"],
-    ["#9a7fd1", "#588dd5"],
-    ["#c1232b", "#27727b"]
-  ];
-  return Array.from({ length: count }, (_, index) => ({
-    type: "linear" as const,
-    x: 0,
-    y: 0,
-    x2: 0,
-    y2: 1,
-    colorStops: [
-      { offset: 0, color: baseColors[index % baseColors.length][0] },
-      { offset: 1, color: baseColors[index % baseColors.length][1] }
-    ]
-  }));
+function generateColors(count: number): string[] {
+  const semanticColors =
+    props.semantic === "expense"
+      ? ["#E8F5E9", "#C8E6C9", "#A5D6A7", "#81C784", EXPENSE_COLOR]
+      : props.semantic === "income"
+        ? ["#FDECEC", "#F9C9C9", "#F5A5A5", "#F18181", INCOME_COLOR]
+        : ["#83BFF6", "#66E2DA", "#FFB980", "#8D98B3", "#9A7FD1"];
+  return Array.from(
+    { length: count },
+    (_, index) => semanticColors[index % semanticColors.length]
+  );
 }
 
 function updateChart() {
@@ -258,7 +259,14 @@ function downloadChart() {
 }
 
 watch(
-  () => [props.data, props.loading, props.error, currentView.value],
+  () => [
+    props.data,
+    props.loading,
+    props.error,
+    props.semantic,
+    props.showAmount,
+    currentView.value
+  ],
   renderChart,
   { deep: true, immediate: true }
 );

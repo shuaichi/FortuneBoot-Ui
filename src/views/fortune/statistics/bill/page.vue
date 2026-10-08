@@ -46,6 +46,7 @@
           :error="dimensionError"
           :title="dimensionTitle"
           :currency="currentCurrency"
+          :semantic="billType === 1 ? 'expense' : 'income'"
           @refresh="loadDimension"
         />
         <pie
@@ -55,6 +56,7 @@
           :error="dimensionError"
           :title="dimensionTitle"
           :currency="currentCurrency"
+          :semantic="billType === 1 ? 'expense' : 'income'"
           @refresh="loadDimension"
         />
       </div>
@@ -90,6 +92,7 @@
             :error="rankError"
             title="支出排行"
             :currency="currentCurrency"
+            semantic="expense"
             @refresh="loadRank"
           />
         </div>

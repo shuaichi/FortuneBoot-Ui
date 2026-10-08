@@ -46,3 +46,11 @@ export const trendGranularityOptions = [
   { value: 3, label: "近12月" },
   { value: 4, label: "近5年" }
 ];
+
+/** 首页收支趋势时间粒度 */
+export const homeTrendGranularityOptions = [
+  { value: 1, label: "近7天" },
+  { value: 2, label: "月度" },
+  { value: 3, label: "年度" },
+  { value: 4, label: "历史年度" }
+];
