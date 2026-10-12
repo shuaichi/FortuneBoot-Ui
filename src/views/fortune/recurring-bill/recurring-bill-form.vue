@@ -149,7 +149,15 @@
                 :key="item.accountId"
                 :label="item.accountName"
                 :value="item.accountId"
-              />
+              >
+                <span class="flex items-center">
+                  <IconifyIconOnline
+                    :icon="getAccountIcon(item)"
+                    class="mr-1 shrink-0"
+                  />
+                  <span>{{ item.accountName }}</span>
+                </span>
+              </el-option>
             </el-select>
           </el-form-item>
         </re-col>
@@ -198,7 +206,17 @@
                 style="width: 100%"
                 :props="categoryTreeProps"
                 clearable
-              />
+              >
+                <template #default="{ data }">
+                  <span class="flex items-center">
+                    <IconifyIconOnline
+                      :icon="data.icon || 'ep:menu'"
+                      class="mr-1 shrink-0"
+                    />
+                    <span>{{ data.categoryName }}</span>
+                  </span>
+                </template>
+              </el-tree-select>
             </el-form-item>
           </re-col>
           <el-col :span="3" class="category-actions">
@@ -241,7 +259,15 @@
                 :key="item.accountId"
                 :label="item.accountName"
                 :value="item.accountId"
-              />
+              >
+                <span class="flex items-center">
+                  <IconifyIconOnline
+                    :icon="getAccountIcon(item)"
+                    class="mr-1 shrink-0"
+                  />
+                  <span>{{ item.accountName }}</span>
+                </span>
+              </el-option>
             </el-select>
           </el-form-item>
         </re-col>
@@ -279,7 +305,17 @@
               filterable
               multiple
               :props="tagTreeProps"
-            />
+            >
+              <template #default="{ data }">
+                <span class="flex items-center">
+                  <IconifyIconOnline
+                    :icon="data.icon || 'ep:collection-tag'"
+                    class="mr-1 shrink-0"
+                  />
+                  <span>{{ data.tagName }}</span>
+                </span>
+              </template>
+            </el-tree-select>
           </el-form-item>
         </re-col>
         <re-col v-if="formData.billRequest.billType !== 3" :value="12">
@@ -295,7 +331,15 @@
                 :key="item.payeeId"
                 :label="item.payeeName"
                 :value="item.payeeId"
-              />
+              >
+                <span class="flex items-center">
+                  <IconifyIconOnline
+                    :icon="item.icon || 'ep:shop'"
+                    class="mr-1 shrink-0"
+                  />
+                  <span>{{ item.payeeName }}</span>
+                </span>
+              </el-option>
             </el-select>
           </el-form-item>
         </re-col>
@@ -371,6 +415,8 @@ import { CategoryVo, getEnableCategoryList } from "@/api/fortune/category";
 import { getEnablePayeeList, PayeeVo } from "@/api/fortune/payee";
 import { getEnableTagList, TagVo } from "@/api/fortune/tag";
 import { QuestionFilled } from "@element-plus/icons-vue";
+import { IconifyIconOnline } from "@/components/ReIcon";
+import { getAccountIcon } from "@/utils/accountIcon";
 import {
   addRecurringBillApi,
   AddRecurringBillCommand,

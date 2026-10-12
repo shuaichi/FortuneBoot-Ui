@@ -112,7 +112,9 @@ import PureTableBar from "@/components/RePureTableBar/src/bar";
 import Search from "@iconify-icons/ep/search";
 import PureTable from "@pureadmin/table";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, reactive, ref, h } from "vue";
+import { IconifyIconOnline } from "@/components/ReIcon";
+import { getAccountIcon } from "@/utils/accountIcon";
 import {
   accountPutBackApi,
   AccountQuery,
@@ -157,7 +159,18 @@ const columns: TableColumnList = [
     label: "账户名称",
     prop: "accountName",
     minWidth: 150,
-    align: "left"
+    align: "left",
+    cellRenderer: ({ row }) => {
+      const icon = getAccountIcon(row);
+      return h("div", { class: "flex items-center whitespace-nowrap" }, [
+        icon ? h(IconifyIconOnline, { icon, class: "mr-1 shrink-0" }) : null,
+        h(
+          "span",
+          { class: "min-w-0 truncate", title: row.accountName },
+          row.accountName
+        )
+      ]);
+    }
   },
   {
     label: "账户类型",

@@ -116,7 +116,13 @@
           :key="card.accountId"
           class="credit-card"
         >
-          <div class="credit-card__name">{{ card.accountName }}</div>
+          <div class="credit-card__name">
+            <IconifyIconOnline
+              :icon="getAccountIcon(card)"
+              class="mr-1 shrink-0"
+            />
+            <span>{{ card.accountName }}</span>
+          </div>
           <el-progress
             :percentage="Math.min(Number(card.usageRate) || 0, 100)"
             :color="progressColor(card.usageRate)"
@@ -147,7 +153,15 @@
               :key="item.accountId"
               :label="item.accountName"
               :value="item.accountId"
-            />
+            >
+              <span class="flex items-center">
+                <IconifyIconOnline
+                  :icon="getAccountIcon(item)"
+                  class="mr-1 shrink-0"
+                />
+                <span>{{ item.accountName }}</span>
+              </span>
+            </el-option>
           </el-select>
         </div>
       </template>
@@ -174,6 +188,8 @@ import {
   type GroupVo
 } from "@/api/fortune/group";
 import { type AccountVo, getEnableAccountList } from "@/api/fortune/account";
+import { IconifyIconOnline } from "@/components/ReIcon";
+import { getAccountIcon } from "@/utils/accountIcon";
 import {
   type AssetsLiabilitiesVo,
   type AccountTypeAssetsVo,
@@ -355,6 +371,8 @@ onMounted(async () => {
     border-radius: 8px;
 
     &__name {
+      display: flex;
+      align-items: center;
       margin-bottom: 12px;
       font-weight: 600;
     }

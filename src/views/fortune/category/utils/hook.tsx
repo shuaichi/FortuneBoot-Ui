@@ -5,13 +5,14 @@ import { usePublicHooks } from "@/views/system/hooks";
 import {
   categoryDisableApi,
   categoryEnableApi,
-  CategoryQuery,
-  CategoryVo,
   getCategoryPageApi,
-  moveCategory2RecycleBinApi
+  moveCategory2RecycleBinApi,
+  type CategoryQuery,
+  type CategoryVo
 } from "@/api/fortune/category";
 import type { PaginationProps } from "@pureadmin/table";
 import { getBookById } from "@/api/fortune/book";
+import { IconifyIconOnline } from "@/components/ReIcon";
 
 const { tagStyle } = usePublicHooks();
 
@@ -80,7 +81,7 @@ export function useHook() {
       }
       message(`${action}成功`, { type: "success" });
       await onSearch();
-    } catch (error) {
+    } catch {
       console.log("操作取消");
     }
   }
@@ -97,12 +98,26 @@ export function useHook() {
       loading.value = false;
     }
   }
+  /** 分类默认图标（用户未自定义图标时的回退） */
+  const defaultIcon = "ep:menu";
+
   const columns: TableColumnList = [
     {
       label: "分类名称",
       prop: "categoryName",
       minWidth: 200,
-      align: "left"
+      align: "left",
+      cellRenderer: ({ row }) => (
+        <div class="flex items-center whitespace-nowrap">
+          <IconifyIconOnline
+            icon={row.icon || defaultIcon}
+            class="mr-1 shrink-0"
+          />
+          <span class="min-w-0 truncate" title={row.categoryName}>
+            {row.categoryName}
+          </span>
+        </div>
+      )
     },
     {
       label: "启用状态",

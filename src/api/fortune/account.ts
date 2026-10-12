@@ -3,6 +3,8 @@ import { http } from "@/utils/http";
 export interface AddAccountCommand {
   groupId?: number;
   accountName?: string;
+  /** 账户图标（Iconify 图标名，如 ep:wallet） */
+  icon?: string;
   currencyCode?: string;
   balance?: number;
   accountType?: number;

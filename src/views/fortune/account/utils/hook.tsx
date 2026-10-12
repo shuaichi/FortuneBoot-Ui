@@ -29,6 +29,8 @@ import {
 import dayjs from "dayjs";
 import { useRouter } from "vue-router";
 import { getCurrencySymbol } from "@/utils/currency";
+import { getAccountIcon } from "@/utils/accountIcon";
+import { IconifyIconOnline } from "@/components/ReIcon";
 
 export function useHook() {
   const { tagStyle } = usePublicHooks();
@@ -65,8 +67,21 @@ export function useHook() {
     {
       label: "账户名称",
       prop: "accountName",
-      width: 150,
-      align: "left"
+      width: 180,
+      align: "left",
+      cellRenderer: ({ row }) => {
+        const icon = getAccountIcon(row);
+        return (
+          <div class="flex items-center whitespace-nowrap">
+            {icon ? (
+              <IconifyIconOnline icon={icon} class="mr-1 shrink-0" />
+            ) : null}
+            <span class="min-w-0 truncate" title={row.accountName}>
+              {row.accountName}
+            </span>
+          </div>
+        );
+      }
     },
     {
       label: "账户类型",

@@ -12,6 +12,7 @@ import {
   type MemberVo
 } from "@/api/fortune/member";
 import { getBookById } from "@/api/fortune/book";
+import { IconifyIconOnline } from "@/components/ReIcon";
 
 const { tagStyle } = usePublicHooks();
 
@@ -100,12 +101,26 @@ export function useHook() {
     }
   }
 
+  /** 成员默认图标（用户未自定义图标时的回退） */
+  const defaultIcon = "ep:user";
+
   const columns: TableColumnList = [
     {
       label: "名称",
       prop: "memberName",
       minWidth: 200,
-      align: "left"
+      align: "left",
+      cellRenderer: ({ row }) => (
+        <div class="flex items-center whitespace-nowrap">
+          <IconifyIconOnline
+            icon={row.icon || defaultIcon}
+            class="mr-1 shrink-0"
+          />
+          <span class="min-w-0 truncate" title={row.memberName}>
+            {row.memberName}
+          </span>
+        </div>
+      )
     },
     {
       label: "启用状态",

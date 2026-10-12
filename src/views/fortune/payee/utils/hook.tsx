@@ -12,10 +12,11 @@ import {
   payeeCannotIncomeApi,
   payeeDisableApi,
   payeeEnableApi,
-  PayeeQuery,
-  PayeeVo
+  type PayeeQuery,
+  type PayeeVo
 } from "@/api/fortune/payee";
 import { getBookById } from "@/api/fortune/book";
+import { IconifyIconOnline } from "@/components/ReIcon";
 
 const { tagStyle } = usePublicHooks();
 export function useHook() {
@@ -27,7 +28,6 @@ export function useHook() {
   const pagination = reactive<PaginationProps>({
     total: 0,
     pageSize: 10,
-    pageSizes: [10, 20, 50, 100],
     pageSizes: [10, 20, 50, 100],
     currentPage: 1,
     background: true
@@ -87,7 +87,7 @@ export function useHook() {
       }
       message(`${action}成功`, { type: "success" });
       await onSearch();
-    } catch (error) {
+    } catch {
       console.log("操作取消");
     }
   }
@@ -111,7 +111,7 @@ export function useHook() {
       }
       message(`${action}成功`, { type: "success" });
       await onSearch();
-    } catch (error) {
+    } catch {
       console.log("操作取消");
     }
   }
@@ -135,7 +135,7 @@ export function useHook() {
       }
       message(`${action}成功`, { type: "success" });
       await onSearch();
-    } catch (error) {
+    } catch {
       console.log("操作取消");
     }
   }
@@ -153,12 +153,26 @@ export function useHook() {
     }
   }
 
+  /** 交易对象默认图标（用户未自定义图标时的回退） */
+  const defaultIcon = "ep:shop";
+
   const columns: TableColumnList = [
     {
       label: "名称",
       prop: "payeeName",
       minWidth: 200,
-      align: "left"
+      align: "left",
+      cellRenderer: ({ row }) => (
+        <div class="flex items-center whitespace-nowrap">
+          <IconifyIconOnline
+            icon={row.icon || defaultIcon}
+            class="mr-1 shrink-0"
+          />
+          <span class="min-w-0 truncate" title={row.payeeName}>
+            {row.payeeName}
+          </span>
+        </div>
+      )
     },
     {
       label: "支出状态",

@@ -423,6 +423,8 @@ export function getAssetsByAccountType(groupId: number) {
 export interface CreditCardVo {
   accountId: number;
   accountName: string;
+  /** 账户图标（Iconify 图标名，如 ep:credit-card） */
+  icon?: string;
   creditLimit: number;
   usedAmount: number;
   available: number;

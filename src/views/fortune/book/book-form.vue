@@ -117,7 +117,15 @@
                 :key="item.accountId"
                 :label="item.accountName"
                 :value="item.accountId"
-              />
+              >
+                <span class="flex items-center">
+                  <IconifyIconOnline
+                    :icon="getAccountIcon(item)"
+                    class="mr-1 shrink-0"
+                  />
+                  <span>{{ item.accountName }}</span>
+                </span>
+              </el-option>
             </el-select>
           </el-form-item>
         </re-col>
@@ -133,7 +141,15 @@
                 :key="item.accountId"
                 :label="item.accountName"
                 :value="item.accountId"
-              />
+              >
+                <span class="flex items-center">
+                  <IconifyIconOnline
+                    :icon="getAccountIcon(item)"
+                    class="mr-1 shrink-0"
+                  />
+                  <span>{{ item.accountName }}</span>
+                </span>
+              </el-option>
             </el-select>
           </el-form-item>
         </re-col>
@@ -151,7 +167,15 @@
                 :key="item.accountId"
                 :label="item.accountName"
                 :value="item.accountId"
-              />
+              >
+                <span class="flex items-center">
+                  <IconifyIconOnline
+                    :icon="getAccountIcon(item)"
+                    class="mr-1 shrink-0"
+                  />
+                  <span>{{ item.accountName }}</span>
+                </span>
+              </el-option>
             </el-select>
           </el-form-item>
         </re-col>
@@ -167,7 +191,15 @@
                 :key="item.accountId"
                 :label="item.accountName"
                 :value="item.accountId"
-              />
+              >
+                <span class="flex items-center">
+                  <IconifyIconOnline
+                    :icon="getAccountIcon(item)"
+                    class="mr-1 shrink-0"
+                  />
+                  <span>{{ item.accountName }}</span>
+                </span>
+              </el-option>
             </el-select>
           </el-form-item>
         </re-col>
@@ -192,6 +224,8 @@
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { FormRules } from "element-plus";
 import VDialog from "@/components/VDialog/VDialog.vue";
+import { IconifyIconOnline } from "@/components/ReIcon";
+import { getAccountIcon } from "@/utils/accountIcon";
 import ReCol from "@/components/ReCol";
 import {
   addBookApi,

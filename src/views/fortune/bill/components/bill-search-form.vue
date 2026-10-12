@@ -32,7 +32,15 @@
           :key="item.accountId"
           :label="item.accountName"
           :value="item.accountId"
-        />
+        >
+          <span class="flex items-center">
+            <IconifyIconOnline
+              :icon="getAccountIcon(item)"
+              class="mr-1 shrink-0"
+            />
+            <span>{{ item.accountName }}</span>
+          </span>
+        </el-option>
       </el-select>
     </el-form-item>
     <el-form-item v-show="isVisible(3)" label="标题：" prop="title">
@@ -96,7 +104,17 @@
         clearable
         node-key="categoryId"
         :filter-node-method="filterNodeMethod('categoryName')"
-      />
+      >
+        <template #default="{ data }">
+          <span class="flex items-center">
+            <IconifyIconOnline
+              :icon="data.icon || 'ep:menu'"
+              class="mr-1 shrink-0"
+            />
+            <span>{{ data.categoryName }}</span>
+          </span>
+        </template>
+      </el-tree-select>
     </el-form-item>
     <el-form-item v-show="isVisible(8)" prop="tagIds" label="标签：">
       <el-tree-select
@@ -111,7 +129,17 @@
         clearable
         node-key="tagId"
         :filter-node-method="filterNodeMethod('tagName')"
-      />
+      >
+        <template #default="{ data }">
+          <span class="flex items-center">
+            <IconifyIconOnline
+              :icon="data.icon || 'ep:collection-tag'"
+              class="mr-1 shrink-0"
+            />
+            <span>{{ data.tagName }}</span>
+          </span>
+        </template>
+      </el-tree-select>
     </el-form-item>
     <el-form-item v-show="isVisible(9)" prop="payeeId" label="交易对象：">
       <el-select
@@ -126,7 +154,15 @@
           :key="item.payeeId"
           :label="item.payeeName"
           :value="item.payeeId"
-        />
+        >
+          <span class="flex items-center">
+            <IconifyIconOnline
+              :icon="item.icon || 'ep:shop'"
+              class="mr-1 shrink-0"
+            />
+            <span>{{ item.payeeName }}</span>
+          </span>
+        </el-option>
       </el-select>
     </el-form-item>
     <el-form-item v-show="isVisible(10)" prop="memberIds" label="成员：">
@@ -143,7 +179,15 @@
           :key="item.memberId"
           :label="item.memberName"
           :value="item.memberId"
-        />
+        >
+          <span class="flex items-center">
+            <IconifyIconOnline
+              :icon="item.icon || 'ep:user'"
+              class="mr-1 shrink-0"
+            />
+            <span>{{ item.memberName }}</span>
+          </span>
+        </el-option>
       </el-select>
     </el-form-item>
     <el-form-item v-show="isVisible(11)" prop="confirm" label="确认状态：">
@@ -201,6 +245,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+import { IconifyIconOnline } from "@/components/ReIcon";
+import { getAccountIcon } from "@/utils/accountIcon";
 import Search from "@iconify-icons/ep/search";
 import Refresh from "@iconify-icons/ep/refresh";
 import { useResponsiveForm } from "@/views/fortune/hooks/useResponsiveForm";
