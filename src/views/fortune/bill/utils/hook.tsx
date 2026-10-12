@@ -198,7 +198,10 @@ export function useHook() {
       label: "所属账本",
       prop: "bookName",
       width: 180,
-      align: "left"
+      align: "left",
+      // 默认隐藏：账单列表已按当前账本过滤，逐行展示所属账本意义不大
+      // 用户如需查看，可在表格右上角「列设置」中自行勾选显示
+      hide: true
     },
     {
       label: "标题",
