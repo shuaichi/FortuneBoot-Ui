@@ -58,7 +58,7 @@ export interface BillExtraVo {
   extraType?: number;
   amount?: number;
   accountSide?: number;
-  categoryId?: number;
+  categoryId?: number | string;
   remark?: string;
 }
 
@@ -104,6 +104,9 @@ export interface BillVo {
   /** 转入账户图标（Iconify 图标名，如 ep:wallet） */
   toAccountIcon?: string;
   convertedAmount?: number;
+  /** 9-12本金类流水金额；V2为十进制字符串 */
+  amount?: number | string;
+  orderId?: number | string;
   categoryAmountPair?: Array<{
     categoryId?: number;
     categoryName: string;
@@ -122,6 +125,15 @@ export interface BillVo {
   confirm?: boolean;
   include?: boolean;
   extras?: Array<BillExtraVo>;
+  /** 单据组件（关联流水）：PRINCIPAL / INTEREST / FEE / WRITE_OFF */
+  orderComponent?: "PRINCIPAL" | "INTEREST" | "FEE" | "WRITE_OFF";
+  /** 单据流水规则版本：0=旧规则，1=单据新规则 */
+  orderLedgerVersion?: number;
+  /** 是否已作废（回收站） */
+  recycleBin?: boolean;
+  /** V2流水允许动作；旧接口没有该字段时按旧能力处理 */
+  allowedActions?: string[];
+  readOnlyReason?: string | null;
 }
 
 // 分页查询

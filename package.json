@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "preview:build": "pnpm build && vite preview",
     "typecheck": "vue-tsc --noEmit --skipLibCheck",
+    "test:finance-order": "vitest run --config vitest.config.ts tests/finance-order",
     "svgo": "svgo -f . -r",
     "clean:cache": "rimraf .eslintcache && rimraf pnpm-lock.yaml && rimraf node_modules && pnpm store prune && pnpm install",
     "lint:eslint": "eslint --cache --max-warnings 0 src mock build --fix",
@@ -61,6 +62,7 @@
     "vue-types": "^6.0.0"
   },
   "devDependencies": {
+    "@vue/test-utils": "^2.4.6",
     "@commitlint/cli": "^20.5.3",
     "@commitlint/config-conventional": "^20.5.3",
     "@commitlint/types": "^20.5.0",
@@ -86,6 +88,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-vue": "^10.9.1",
+    "jsdom": "^30.1.2",
     "gradient-string": "^3.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.2",
@@ -107,6 +110,7 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.10",
+    "vitest": "^4.1.11",
     "vite-plugin-cdn-import": "^1.0.1",
     "vite-plugin-compression": "^0.5.1",
     "vite-plugin-fake-server": "^2.2.3",

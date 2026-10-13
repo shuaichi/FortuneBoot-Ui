@@ -21,6 +21,10 @@ import {
 import { getCurrencySymbol } from "@/utils/currency";
 import { ACCOUNT_FALLBACK_ICON } from "@/utils/accountIcon";
 import { IconifyIconOnline } from "@/components/ReIcon";
+import {
+  BILL_TYPE_OPTIONS,
+  getCashDirection
+} from "@/views/fortune/finance-order/utils/order-contract";
 
 // 名称前渲染图标（无自定义图标时回退默认图标）
 const renderNameWithIcon = (
@@ -184,14 +188,7 @@ export function useHook() {
     background: true
   });
   const billStatistics = ref<BillStatisticsVo>();
-  const billTypeOptions = [
-    { value: 1, label: "支出" },
-    { value: 2, label: "收入" },
-    { value: 3, label: "转账" },
-    { value: 4, label: "余额调整" },
-    { value: 7, label: "垫付" },
-    { value: 8, label: "报销" }
-  ];
+  const billTypeOptions = BILL_TYPE_OPTIONS;
 
   const columns: TableColumnList = [
     {
@@ -215,14 +212,19 @@ export function useHook() {
       cellRenderer: ({ row }) => {
         const type = billTypeOptions.find(t => t.value === row.billType);
         let color = "";
-        if (row.billType === 1 || row.billType === 7) {
+        const direction = getCashDirection(row.billType, row.orderComponent);
+        if (direction === -1) {
           color = "#67C23A"; // 支出-绿色
-        } else if (row.billType === 2 || row.billType === 8) {
+        } else if (direction === 1) {
           color = "#F56C6C"; // 收入-红色
         } else {
           color = "#000000"; // 转账和余额调整-黑色
         }
-        return <span style={{ color }}>{type?.label}</span>;
+        return (
+          <span style={{ color }}>
+            {type?.label ?? `未知类型(${row.billType ?? "-"})`}
+          </span>
+        );
       }
     },
     {

@@ -45,6 +45,10 @@ import { BillQuery, getBillPage } from "@/api/fortune/bill";
 import { message } from "@/utils/message";
 import dayjs from "dayjs";
 import { FinanceOrderVo } from "@/api/fortune/finance-order";
+import {
+  BILL_TYPE_OPTIONS,
+  getCashDirection
+} from "@/views/fortune/finance-order/utils/order-contract";
 
 const loading = ref<boolean>(false);
 const dataList = ref([]);
@@ -69,14 +73,7 @@ const pagination = reactive<PaginationProps>({
   currentPage: 1,
   background: true
 });
-const billTypeOptions = [
-  { value: 1, label: "支出" },
-  { value: 2, label: "收入" },
-  { value: 3, label: "转账" },
-  { value: 4, label: "余额调整" },
-  { value: 7, label: "垫付" },
-  { value: 8, label: "报销" }
-];
+const billTypeOptions = BILL_TYPE_OPTIONS;
 const columns: TableColumnList = [
   {
     label: "所属账本",
@@ -96,14 +93,19 @@ const columns: TableColumnList = [
     cellRenderer: ({ row }) => {
       const type = billTypeOptions.find(t => t.value === row.billType);
       let color = "";
-      if (row.billType === 1 || row.billType === 7) {
+      const direction = getCashDirection(row.billType, row.orderComponent);
+      if (direction === -1) {
         color = "#67C23A"; // 支出-绿色
-      } else if (row.billType === 2 || row.billType === 8) {
+      } else if (direction === 1) {
         color = "#F56C6C"; // 收入-红色
       } else {
         color = "#000000"; // 转账和余额调整-黑色
       }
-      return h("span", { style: { color } }, type?.label);
+      return h(
+        "span",
+        { style: { color } },
+        type?.label ?? `未知类型(${row.billType ?? "-"})`
+      );
     }
   },
   {
