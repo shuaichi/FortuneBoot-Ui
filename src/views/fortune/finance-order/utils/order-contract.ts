@@ -28,6 +28,12 @@ export const ORDER_TYPE_LABELS: Readonly<Record<OrderType, string>> = {
   [ORDER_TYPE.LOAN_IN]: "债务单"
 };
 
+/** 类型页签顺序固定：债权单、债务单、费用报销单；默认债权单 */
+export const ORDER_TYPE_TABS: ReadonlyArray<{
+  value: OrderType;
+  label: string;
+}> = ORDER_TYPE_OPTIONS;
+
 /** 单据状态：100草稿 / 200进行中 / 1000已归档 */
 export const ORDER_STATUS = {
   DRAFT: 100,
@@ -35,6 +41,15 @@ export const ORDER_STATUS = {
   ARCHIVED: 1000
 } as const;
 export type OrderStatus = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS];
+
+export const ORDER_STATUS_OPTIONS: ReadonlyArray<{
+  value: OrderStatus;
+  label: string;
+}> = [
+  { value: ORDER_STATUS.ONGOING, label: "进行中" },
+  { value: ORDER_STATUS.DRAFT, label: "草稿" },
+  { value: ORDER_STATUS.ARCHIVED, label: "已归档" }
+];
 
 /** 单据组件 */
 export const ORDER_COMPONENT = {
@@ -79,6 +94,109 @@ export const ENTRY_ACTION = {
   WRITE_OFF: "WRITE_OFF"
 } as const;
 export type EntryAction = (typeof ENTRY_ACTION)[keyof typeof ENTRY_ACTION];
+
+/** C10：单据类型相关文案与主动作映射 */
+export const ORDER_TYPE_META: Readonly<
+  Record<
+    OrderType,
+    {
+      pendingLabel: string;
+      issuedLabel: string;
+      settledLabel: string;
+      issueAction: EntryAction;
+      settleAction: EntryAction;
+      writeOffText: string;
+      writeOffImpact: string;
+    }
+  >
+> = {
+  [ORDER_TYPE.EXPENSE_CLAIM]: {
+    pendingLabel: "待报销",
+    issuedLabel: "累计垫付",
+    settledLabel: "已到账",
+    issueAction: ENTRY_ACTION.ADVANCE,
+    settleAction: ENTRY_ACTION.REIMBURSE,
+    writeOffText: "转为自付",
+    writeOffImpact: "剩余待报销金额将计入个人支出"
+  },
+  [ORDER_TYPE.LOAN_OUT]: {
+    pendingLabel: "待收回",
+    issuedLabel: "累计借出",
+    settledLabel: "已收回",
+    issueAction: ENTRY_ACTION.LOAN_OUT,
+    settleAction: ENTRY_ACTION.LOAN_RECOVER,
+    writeOffText: "确认无法收回",
+    writeOffImpact: "剩余待收回金额将确认为损失支出"
+  },
+  [ORDER_TYPE.LOAN_IN]: {
+    pendingLabel: "待归还",
+    issuedLabel: "累计借入",
+    settledLabel: "已归还",
+    issueAction: ENTRY_ACTION.LOAN_IN,
+    settleAction: ENTRY_ACTION.LOAN_REPAY,
+    writeOffText: "对方免除还款",
+    writeOffImpact: "剩余待归还金额将确认为收入"
+  }
+};
+
+/** 详情主动作到流水类型/组件的固定映射 */
+export const ENTRY_ACTION_META: Readonly<
+  Record<
+    EntryAction,
+    { billType: number; component: OrderComponent; label: string }
+  >
+> = {
+  ADVANCE: {
+    billType: 7,
+    component: ORDER_COMPONENT.PRINCIPAL,
+    label: "记录垫付"
+  },
+  REIMBURSE: {
+    billType: 8,
+    component: ORDER_COMPONENT.PRINCIPAL,
+    label: "报销到账"
+  },
+  LOAN_OUT: {
+    billType: 9,
+    component: ORDER_COMPONENT.PRINCIPAL,
+    label: "记录借出"
+  },
+  LOAN_RECOVER: {
+    billType: 10,
+    component: ORDER_COMPONENT.PRINCIPAL,
+    label: "收回本金"
+  },
+  LOAN_IN: {
+    billType: 11,
+    component: ORDER_COMPONENT.PRINCIPAL,
+    label: "记录借入"
+  },
+  LOAN_REPAY: {
+    billType: 12,
+    component: ORDER_COMPONENT.PRINCIPAL,
+    label: "归还本金"
+  },
+  INTEREST_IN: {
+    billType: 2,
+    component: ORDER_COMPONENT.INTEREST,
+    label: "收到利息"
+  },
+  INTEREST_OUT: {
+    billType: 1,
+    component: ORDER_COMPONENT.INTEREST,
+    label: "支付利息"
+  },
+  FEE: {
+    billType: 1,
+    component: ORDER_COMPONENT.FEE,
+    label: "支付手续费"
+  },
+  WRITE_OFF: {
+    billType: 1,
+    component: ORDER_COMPONENT.WRITE_OFF,
+    label: "差额结清"
+  }
+};
 
 /** 单据关联流水类型（7-12） */
 export const ORDER_LINKED_BILL_TYPE = {

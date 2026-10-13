@@ -9,6 +9,11 @@ type Events = {
   logoChange: boolean;
   changLayoutRoute: string;
   billCreated: void; // 添加账单创建成功事件
+  "finance-order:mutated": {
+    bookId: number | string;
+    orderId?: number | string | null;
+    billId?: number | string | null;
+  };
 };
 
 export const emitter: Emitter<Events> = mitt<Events>();

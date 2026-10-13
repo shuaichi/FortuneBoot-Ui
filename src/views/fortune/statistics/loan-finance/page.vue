@@ -1,12 +1,10 @@
 <template>
   <div class="statistics-page">
-    <!-- 顶部筛选 -->
     <el-card class="statistics-card">
       <el-form :inline="true" :model="filterForm" class="filter-form">
         <el-form-item label="所属分组">
           <el-select
             v-model="filterForm.groupId"
-            placeholder="请选择分组"
             class="filter-select"
             filterable
             @change="onGroupChange"
@@ -22,7 +20,6 @@
         <el-form-item label="所属账本">
           <el-select
             v-model="filterForm.bookId"
-            placeholder="请选择账本"
             class="filter-select"
             filterable
             @change="loadData"
@@ -35,7 +32,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="理财时间">
+        <el-form-item label="归档时间">
           <el-date-picker
             v-model="financeRange"
             type="daterange"
@@ -49,43 +46,49 @@
       </el-form>
     </el-card>
 
-    <!-- 借贷总览 -->
     <div class="summary-cards">
       <summary-card
         label="待收回"
-        :value="loanOverview.totalReceivable"
+        :value="displayAmount(orderSummary?.receivableAmount)"
         :icon="Sell"
         accent="#67c23a"
-        :currency="currentCurrency"
+        plain
       />
       <summary-card
         label="待归还"
-        :value="loanOverview.totalPayable"
+        :value="displayAmount(orderSummary?.payableAmount)"
         :icon="ShoppingCart"
         accent="#f56c6c"
-        :currency="currentCurrency"
+        plain
       />
       <summary-card
-        label="待收笔数"
-        :value="`${loanOverview.receivableCount} 笔`"
+        label="待报销"
+        :value="displayAmount(orderSummary?.reimbursementAmount)"
         :icon="Tickets"
         accent="#409eff"
         plain
       />
       <summary-card
-        label="待还笔数"
-        :value="`${loanOverview.payableCount} 笔`"
-        :icon="Tickets"
+        label="逾期"
+        :value="displayAmount(overdueTotal)"
+        :icon="Warning"
         accent="#e6a23c"
         plain
       />
     </div>
 
+    <el-alert type="warning" show-icon :closable="false">
+      待核对单据
+      {{ displayCount(orderSummary?.reviewRequiredCount) }} 张，孤立流水
+      {{ displayCount(orderSummary?.orphanLegacyBillCount) }} 笔，待确认流水
+      {{ displayCount(orderSummary?.pendingEntryCount) }}
+      笔；异常数据未计入上方汇总。
+    </el-alert>
+
     <div class="grid-two">
-      <!-- 待收回明细 -->
       <el-card class="statistics-card">
         <template #header>
-          <div class="card-header"><span>待收回明细</span></div>
+          <div class="card-header"><span>待收回对象</span></div>
         </template>
         <pure-table
           :data="loanOverview.topReceivables"
@@ -97,17 +100,16 @@
           <el-table-column label="交易对象" prop="payeeName" />
           <el-table-column label="待收金额">
             <template #default="{ row }">
-              {{ formatCurrency(row.amount) }}
+              {{ formatLegacyCurrency(row.amount) }}
             </template>
           </el-table-column>
           <el-table-column label="最近交易时间" prop="lastTradeTime" />
         </pure-table>
       </el-card>
 
-      <!-- 理财收益 -->
       <el-card class="statistics-card">
         <template #header>
-          <div class="card-header"><span>理财收益</span></div>
+          <div class="card-header"><span>已归档借款收支</span></div>
         </template>
         <pure-table
           :data="financeProfit"
@@ -117,28 +119,28 @@
           align-whole="center"
         >
           <el-table-column label="单据" prop="title" show-overflow-tooltip />
-          <el-table-column label="投入">
+          <el-table-column label="本金投入">
             <template #default="{ row }">
-              {{ formatCurrency(row.outAmount) }}
+              {{ formatLegacyCurrency(row.outAmount) }}
             </template>
           </el-table-column>
-          <el-table-column label="收回">
+          <el-table-column label="本金收回">
             <template #default="{ row }">
-              {{ formatCurrency(row.inAmount) }}
+              {{ formatLegacyCurrency(row.inAmount) }}
             </template>
           </el-table-column>
-          <el-table-column label="收益">
+          <el-table-column label="净收支">
             <template #default="{ row }">
               <span :class="profitClass(row.profit)">
-                {{ formatCurrency(row.profit) }}
+                {{ formatLegacyCurrency(row.profit) }}
               </span>
             </template>
           </el-table-column>
-          <el-table-column label="收益率">
+          <el-table-column label="净收益率">
             <template #default="{ row }">
-              <span :class="profitClass(row.profit)"
-                >{{ row.profitRate }}%</span
-              >
+              <span :class="profitClass(row.profit)">
+                {{ formatRate(row.profitRate) }}
+              </span>
             </template>
           </el-table-column>
         </pure-table>
@@ -163,13 +165,23 @@ import {
   getLoanOverview,
   getFinanceProfit
 } from "@/api/fortune/include";
-import { Sell, ShoppingCart, Tickets } from "@element-plus/icons-vue";
+import {
+  getFinanceOrderSummaryV2,
+  type FinanceOrderSummaryVo
+} from "@/api/fortune/finance-order-v2";
+import { Sell, ShoppingCart, Tickets, Warning } from "@element-plus/icons-vue";
+import {
+  formatOrderAmountText,
+  sumMoneyList
+} from "@/views/fortune/finance-order/utils/order-money";
+import { useFinanceOrderMutationEvents } from "@/views/fortune/finance-order/utils/use-finance-order-refresh";
 
 const filterForm = reactive<{ groupId?: number; bookId?: number }>({});
 const groupOptions = ref<Array<GroupVo>>([]);
 const bookOptions = ref<Array<BookVo>>([]);
-const financeRange = ref<[string, string]>(null);
+const financeRange = ref<[string, string] | null>(null);
 
+const orderSummary = ref<FinanceOrderSummaryVo | null>(null);
 const loanOverview = ref<LoanOverviewVo>({
   totalReceivable: 0,
   totalPayable: 0,
@@ -177,41 +189,86 @@ const loanOverview = ref<LoanOverviewVo>({
   payableCount: 0,
   topReceivables: []
 });
-const loanLoading = ref<boolean>(false);
 const financeProfit = ref<Array<FinanceProfitVo>>([]);
-const financeLoading = ref<boolean>(false);
+const loanLoading = ref(false);
+const financeLoading = ref(false);
+const summaryLoading = ref(false);
+const requestSeq = ref(0);
 
-const currentCurrency = computed(() => {
-  const currentGroup = groupOptions.value.find(
-    group => group.groupId === filterForm.groupId
-  );
-  return currentGroup?.defaultCurrency || "CNY";
+const currentCurrency = computed(
+  () =>
+    orderSummary.value?.currencyCode ??
+    groupOptions.value.find(item => item.groupId === filterForm.groupId)
+      ?.defaultCurrency ??
+    "CNY"
+);
+
+const overdueTotal = computed(() => {
+  if (!orderSummary.value) return null;
+  return sumMoneyList([
+    orderSummary.value.overdueReceivableAmount,
+    orderSummary.value.overduePayableAmount,
+    orderSummary.value.overdueReimbursementAmount
+  ]);
 });
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("zh-CN", {
-    style: "currency",
-    currency: currentCurrency.value,
-    minimumFractionDigits: 2
-  }).format(value);
+function displayAmount(value: string | number | null | undefined) {
+  return `${currentCurrency.value} ${formatOrderAmountText(value, {
+    emptyText: "待核对"
+  })}`;
+}
 
-function profitClass(profit: number) {
+function displayCount(value: number | null | undefined) {
+  return value == null ? "待核对" : String(value);
+}
+
+function formatLegacyCurrency(value: number | null | undefined) {
+  if (value == null) return "待核对";
+  return `${currentCurrency.value} ${formatOrderAmountText(value)}`;
+}
+
+function formatRate(value: number | null | undefined) {
+  if (value == null) return "待核对";
+  return `${formatOrderAmountText(value)}%`;
+}
+
+function profitClass(profit: number | null | undefined) {
+  if (profit == null) return "profit-unknown";
   return profit >= 0 ? "profit-up" : "profit-down";
 }
 
+async function loadSummary() {
+  if (filterForm.bookId == null) return;
+  const seq = ++requestSeq.value;
+  summaryLoading.value = true;
+  try {
+    const result = await getFinanceOrderSummaryV2(filterForm.bookId);
+    if (seq !== requestSeq.value) return;
+    orderSummary.value = result;
+  } catch (e) {
+    if (seq === requestSeq.value) {
+      message((e as Error)?.message || "单据汇总查询失败", { type: "error" });
+    }
+  } finally {
+    if (seq === requestSeq.value) summaryLoading.value = false;
+  }
+}
+
 async function loadLoanOverview() {
-  if (!filterForm.bookId) return;
+  if (filterForm.bookId == null) return;
   loanLoading.value = true;
   try {
     const res = await getLoanOverview(filterForm.bookId);
     loanOverview.value = res.data;
+  } catch (e) {
+    message((e as Error)?.message || "借贷对象查询失败", { type: "error" });
   } finally {
     loanLoading.value = false;
   }
 }
 
 async function loadFinanceProfit() {
-  if (!filterForm.bookId) return;
+  if (filterForm.bookId == null) return;
   financeLoading.value = true;
   try {
     const res = await getFinanceProfit(filterForm.bookId, {
@@ -219,43 +276,61 @@ async function loadFinanceProfit() {
       endDate: financeRange.value?.[1] as unknown as Date
     });
     financeProfit.value = res.data || [];
+  } catch (e) {
+    message((e as Error)?.message || "已归档借款收支查询失败", {
+      type: "error"
+    });
   } finally {
     financeLoading.value = false;
   }
 }
 
 async function loadData() {
-  await Promise.all([loadLoanOverview(), loadFinanceProfit()]);
+  await Promise.all([loadSummary(), loadLoanOverview(), loadFinanceProfit()]);
 }
 
 async function onGroupChange() {
-  if (!filterForm.groupId) return;
-  const bookRes = await getEnableBookList(filterForm.groupId);
-  bookOptions.value = bookRes.data || [];
-  if (bookOptions.value.length === 0) {
-    message("请先启用或创建账本", { type: "warning" });
-    return;
+  if (filterForm.groupId == null) return;
+  try {
+    const bookRes = await getEnableBookList(filterForm.groupId);
+    bookOptions.value = bookRes.data || [];
+    if (bookOptions.value.length === 0) {
+      message("请先启用或创建账本", { type: "warning" });
+      return;
+    }
+    const currentGroup = groupOptions.value.find(
+      item => item.groupId === filterForm.groupId
+    );
+    filterForm.bookId =
+      currentGroup?.defaultBookId || bookOptions.value[0].bookId;
+    await loadData();
+  } catch (e) {
+    message((e as Error)?.message || "账本查询失败", { type: "error" });
   }
-  const currentGroup = groupOptions.value.find(
-    group => group.groupId === filterForm.groupId
-  );
-  filterForm.bookId =
-    currentGroup?.defaultBookId || bookOptions.value[0].bookId;
-  await loadData();
 }
 
 onMounted(async () => {
-  const [groupRes, defaultGroupId] = await Promise.all([
-    getEnableGroupList(),
-    getDefaultGroupId()
-  ]);
-  groupOptions.value = groupRes.data || [];
-  if (groupOptions.value.length === 0) {
-    message("请先启用或创建分组", { type: "warning" });
-    return;
+  try {
+    const [groupRes, defaultGroupId] = await Promise.all([
+      getEnableGroupList(),
+      getDefaultGroupId()
+    ]);
+    groupOptions.value = groupRes.data || [];
+    if (groupOptions.value.length === 0) {
+      message("请先启用或创建分组", { type: "warning" });
+      return;
+    }
+    filterForm.groupId = defaultGroupId.data || groupOptions.value[0].groupId;
+    await onGroupChange();
+  } catch (e) {
+    message((e as Error)?.message || "统计数据初始化失败", { type: "error" });
   }
-  filterForm.groupId = defaultGroupId.data || groupOptions.value[0].groupId;
-  await onGroupChange();
+});
+
+useFinanceOrderMutationEvents(payload => {
+  if (payload.bookId == filterForm.bookId) {
+    loadData();
+  }
 });
 </script>
 
@@ -310,11 +385,16 @@ onMounted(async () => {
 
 .profit-up {
   font-weight: 600;
-  color: #67c23a;
+  color: var(--el-color-success);
 }
 
 .profit-down {
   font-weight: 600;
-  color: #f56c6c;
+  color: var(--el-color-danger);
+}
+
+.profit-unknown {
+  font-weight: 600;
+  color: var(--el-text-color-secondary);
 }
 </style>

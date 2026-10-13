@@ -59,11 +59,6 @@
           </el-form-item>
         </re-col>
         <re-col v-if="showOrderField" :value="12">
-          <el-form-item prop="title" label="标题">
-            <el-input v-model="formData.title" placeholder="请输入标题" />
-          </el-form-item>
-        </re-col>
-        <re-col v-if="showOrderField" :value="12">
           <el-form-item prop="orderId" label="单据" :required="showOrderField">
             <el-select
               v-model="formData.orderId"
@@ -623,11 +618,13 @@ const props = defineProps<{
     readOnlyReason?: string | null;
   };
   groupId: number;
-  bookId: number;
+  bookId: OrderIdLike;
   contextBookId?: OrderIdLike;
   contextOrderId?: OrderIdLike;
   contextBillType?: number;
   contextComponent?: OrderComponent;
+  contextTitle?: string;
+  contextAmount?: string | null;
   expectedVersion?: OrderIdLike;
   lockOrderContext?: boolean;
 }>();
@@ -957,7 +954,7 @@ async function refreshEntryForBookOrType() {
     formData.categoryAmountPair = [];
   }
 
-  const bookRes = await getBookById(props.bookId);
+  const bookRes = await getBookById(Number(props.bookId));
   const direction = getCashDirection(
     formData.billType,
     currentOrderComponent.value
@@ -1047,10 +1044,10 @@ async function handleCategoryPayeeTagRefresh() {
     billType = 2;
   }
   const [categoryRes, payeeRes, tagRes, memberRes] = await Promise.all([
-    getEnableCategoryList(props.bookId, billType),
-    getEnablePayeeList(props.bookId, billType),
-    getEnableTagList(props.bookId, billType),
-    getEnableMemberList(props.bookId)
+    getEnableCategoryList(Number(props.bookId), billType),
+    getEnablePayeeList(Number(props.bookId), billType),
+    getEnableTagList(Number(props.bookId), billType),
+    getEnableMemberList(Number(props.bookId))
   ]);
   categoryOptions.value = categoryRes.data;
   payeeOptions.value = payeeRes.data;
@@ -1091,6 +1088,17 @@ async function initializeContextForm() {
   formData.billType = props.contextBillType ?? 1;
   formData.orderComponent = props.contextComponent ?? null;
   formData.tradeTime = dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss");
+  formData.title = props.contextTitle ?? "";
+
+  if (props.contextAmount != null) {
+    if (showMinimalAmountField.value) {
+      formData.amount = props.contextAmount;
+    } else {
+      formData.categoryAmountPair = [
+        { categoryId: null, amount: Number(props.contextAmount) }
+      ];
+    }
+  }
 
   if (isWriteOff.value) {
     formData.accountId = null;
@@ -1113,7 +1121,7 @@ async function initializeContextForm() {
     formData.include = true;
   }
 
-  const bookRes = await getBookById(props.bookId);
+  const bookRes = await getBookById(Number(props.bookId));
   const direction = getCashDirection(
     formData.billType,
     currentOrderComponent.value
@@ -1183,7 +1191,7 @@ async function handleOpened() {
     formData.tradeTime = dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss");
     formData.memberIdList = [];
     formData.extras = [];
-    const bookRes = await getBookById(props.bookId);
+    const bookRes = await getBookById(Number(props.bookId));
     formData.accountId = bookRes.data.defaultExpenseAccountId;
     orderOptionsReady.value = true;
     await Promise.all([initAccountOptions(), handleCategoryPayeeTagRefresh()]);
@@ -1528,6 +1536,10 @@ async function handleConfirm() {
       formData.categoryAmountPair ?? [],
       formData.billType
     );
+    let mutationResult:
+      | Awaited<ReturnType<typeof addOrderEntryV2>>
+      | Awaited<ReturnType<typeof modifyOrderEntryV2>>
+      | null = null;
 
     if (isV2) {
       const draftCommand = buildEntryCommand({
@@ -1571,13 +1583,13 @@ async function handleConfirm() {
       const formDataObj = buildEntryFormData(command, entryFiles);
 
       if (route === "V2_ADD") {
-        await addOrderEntryV2(
+        mutationResult = await addOrderEntryV2(
           formData.bookId as OrderIdLike,
           formData.orderId as OrderIdLike,
           formDataObj
         );
       } else {
-        await modifyOrderEntryV2(
+        mutationResult = await modifyOrderEntryV2(
           formData.bookId as OrderIdLike,
           formData.orderId as OrderIdLike,
           props.row?.billId as OrderIdLike,
@@ -1616,7 +1628,7 @@ async function handleConfirm() {
 
     message("操作成功", { type: "success" });
     visible.value = false;
-    emits("success");
+    emits("success", mutationResult ?? undefined);
   } catch (e) {
     if (isOrderVersionConflict(e)) {
       message((e as Error).message, { type: "warning" });

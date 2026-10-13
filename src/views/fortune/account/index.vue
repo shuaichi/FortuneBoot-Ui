@@ -285,6 +285,7 @@ import Refresh from "@iconify-icons/ep/refresh";
 import AccountForm from "@/views/fortune/account/account-form.vue";
 import BalanceAdjust from "@/views/fortune/account/balance-adjust.vue";
 import { useResponsiveForm } from "@/views/fortune/hooks/useResponsiveForm";
+import { useFinanceOrderMutationEvents } from "@/views/fortune/finance-order/utils/use-finance-order-refresh";
 
 /** 组件name最好和菜单表中的router_name一致 */
 defineOptions({
@@ -327,4 +328,8 @@ const {
 } = useHook();
 
 const { expanded, width, isVisible } = useResponsiveForm();
+
+useFinanceOrderMutationEvents(() => {
+  onSearch(barRef.value);
+});
 </script>

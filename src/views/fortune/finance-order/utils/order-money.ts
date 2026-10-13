@@ -95,6 +95,19 @@ export function toMoneyFixed2(
   return decimal.toFixed(2);
 }
 
+/** 展示金额：千分位 + 两位小数；异常/空值返回“待核对” */
+export function formatOrderAmountText(
+  input: string | number | Decimal | null | undefined,
+  options: { emptyText?: string } = {}
+): string {
+  const value = toMoneyFixed2(input);
+  if (value == null) return options.emptyText ?? "待核对";
+  const [integer, decimal] = value.split(".");
+  const sign = integer.startsWith("-") ? "-" : "";
+  const digits = sign ? integer.slice(1) : integer;
+  return `${sign}${digits.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}.${decimal}`;
+}
+
 /** compareTo 语义：a<b 返回-1，相等返回0，a>b 返回1；非法输入返回 null */
 export function compareMoney(
   a: string | number | null | undefined,
