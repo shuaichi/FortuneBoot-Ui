@@ -514,7 +514,7 @@ export function useHook() {
       tradeTimeStartTime: searchForm.tradeTimeRange?.[0],
       tradeTimeEndTime: searchForm.tradeTimeRange?.[1]
     };
-    exportBillExcelApi(params, "账单.xls");
+    exportBillExcelApi(params, "账单.xlsx");
     loading.value = false;
   }
 
