@@ -1,13 +1,13 @@
 <template>
   <v-dialog
+    v-model="visible"
     use-body-scrolling
     :fixed-body-height="false"
     title="关联账单"
-    v-model="visible"
     :loading="loading"
+    width="720px"
     @cancel="visible = false"
     @opened="onSearch"
-    width="720px"
   >
     <PureTableBar title="" :columns="columns" @refresh="onSearch">
       <template v-slot="{ size, dynamicColumns }">
@@ -22,12 +22,12 @@
           :columns="dynamicColumns"
           :pagination="pagination"
           :paginationSmall="size === 'small'"
-          @page-size-change="handleSizeChange"
-          @page-current-change="handleCurrentChange"
           :header-cell-style="{
             background: 'var(--el-table-row-hover-bg-color)',
             color: 'var(--el-text-color-primary)'
           }"
+          @page-size-change="handleSizeChange"
+          @page-current-change="handleCurrentChange"
         />
       </template>
     </PureTableBar>
@@ -39,6 +39,8 @@ import PureTable, { type PaginationProps } from "@pureadmin/table";
 import VDialog from "@/components/VDialog/VDialog.vue";
 import { computed, ref, h, reactive } from "vue";
 import { getCurrencySymbol } from "@/utils/currency";
+import { ACCOUNT_FALLBACK_ICON } from "@/utils/accountIcon";
+import { IconifyIconOnline } from "@/components/ReIcon";
 import { BillQuery, getBillPage } from "@/api/fortune/bill";
 import { message } from "@/utils/message";
 import dayjs from "dayjs";
@@ -152,12 +154,39 @@ const columns: TableColumnList = [
   {
     label: "账户",
     prop: "accountName",
-    minWidth: 120,
-    formatter: ({ accountName, toAccountName, billType }) => {
-      if (billType === 3) {
-        return accountName + " -> " + toAccountName;
+    minWidth: 140,
+    cellRenderer: ({ row }) => {
+      if (!row.accountName) return h("span", "-");
+      const iconNode = (icon: string) =>
+        h(IconifyIconOnline, {
+          icon: icon || ACCOUNT_FALLBACK_ICON,
+          class: "mr-1 shrink-0"
+        });
+      const children: any[] = [
+        iconNode(row.accountIcon),
+        h(
+          "span",
+          { class: "min-w-0 truncate", title: row.accountName },
+          row.accountName
+        )
+      ];
+      // 转账展示「转出账户 → 转入账户」
+      if (row.billType === 3 && row.toAccountName) {
+        children.push(h("span", { class: "mx-1 shrink-0" }, "→"));
+        children.push(iconNode(row.toAccountIcon));
+        children.push(
+          h(
+            "span",
+            { class: "min-w-0 truncate", title: row.toAccountName },
+            row.toAccountName
+          )
+        );
       }
-      return accountName;
+      return h(
+        "div",
+        { class: "flex items-center whitespace-nowrap" },
+        children
+      );
     }
   },
   {

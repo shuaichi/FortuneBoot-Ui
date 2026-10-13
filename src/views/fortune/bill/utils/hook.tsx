@@ -19,6 +19,25 @@ import {
   getBillStatistics
 } from "@/api/fortune/include";
 import { getCurrencySymbol } from "@/utils/currency";
+import { ACCOUNT_FALLBACK_ICON } from "@/utils/accountIcon";
+import { IconifyIconOnline } from "@/components/ReIcon";
+
+// 名称前渲染图标（无自定义图标时回退默认图标）
+const renderNameWithIcon = (
+  icon: string,
+  fallback: string,
+  text: string
+): any => {
+  if (!text || text === "-") return <span>-</span>;
+  return (
+    <div class="flex items-center whitespace-nowrap">
+      <IconifyIconOnline icon={icon || fallback} class="mr-1 shrink-0" />
+      <span class="min-w-0 truncate" title={text}>
+        {text}
+      </span>
+    </div>
+  );
+};
 
 // 千分位 + 两位小数格式化（纯函数）
 const formatMoney = (val: unknown): string => {
@@ -179,7 +198,10 @@ export function useHook() {
       label: "所属账本",
       prop: "bookName",
       width: 180,
-      align: "left"
+      align: "left",
+      // 默认隐藏：账单列表已按当前账本过滤，逐行展示所属账本意义不大
+      // 用户如需查看，可在表格右上角「列设置」中自行勾选显示
+      hide: true
     },
     {
       label: "标题",
@@ -248,12 +270,36 @@ export function useHook() {
     {
       label: "账户",
       prop: "accountName",
-      minWidth: 120,
-      formatter: ({ accountName, toAccountName, billType }) => {
-        if (billType === 3) {
-          return accountName + " -> " + toAccountName;
+      minWidth: 140,
+      cellRenderer: ({ row }) => {
+        if (!row.accountName) return <span>-</span>;
+        // 转账展示「转出账户 → 转入账户」，两个账户图标都要带上
+        if (row.billType === 3 && row.toAccountName) {
+          return (
+            <div class="flex items-center whitespace-nowrap">
+              <IconifyIconOnline
+                icon={row.accountIcon || ACCOUNT_FALLBACK_ICON}
+                class="mr-1 shrink-0"
+              />
+              <span class="min-w-0 truncate" title={row.accountName}>
+                {row.accountName}
+              </span>
+              <span class="mx-1 shrink-0">→</span>
+              <IconifyIconOnline
+                icon={row.toAccountIcon || ACCOUNT_FALLBACK_ICON}
+                class="mr-1 shrink-0"
+              />
+              <span class="min-w-0 truncate" title={row.toAccountName}>
+                {row.toAccountName}
+              </span>
+            </div>
+          );
         }
-        return accountName;
+        return renderNameWithIcon(
+          row.accountIcon,
+          ACCOUNT_FALLBACK_ICON,
+          row.accountName
+        );
       }
     },
     {
@@ -265,22 +311,30 @@ export function useHook() {
     {
       label: "分类",
       prop: "categoryName",
-      minWidth: 120
+      minWidth: 140,
+      cellRenderer: ({ row }) =>
+        renderNameWithIcon(row.categoryIcon, "ep:menu", row.categoryName)
     },
     {
       label: "标签",
       prop: "tagName",
-      minWidth: 120
+      minWidth: 140,
+      cellRenderer: ({ row }) =>
+        renderNameWithIcon(row.tagIcon, "ep:collection-tag", row.tagName)
     },
     {
       label: "交易对象",
       prop: "payeeName",
-      width: 100
+      width: 120,
+      cellRenderer: ({ row }) =>
+        renderNameWithIcon(row.payeeIcon, "ep:shop", row.payeeName)
     },
     {
       label: "成员",
       prop: "memberName",
-      minWidth: 120
+      minWidth: 120,
+      cellRenderer: ({ row }) =>
+        renderNameWithIcon(row.memberIcon, "ep:user", row.memberName)
     },
     {
       label: "确认状态",
@@ -358,15 +412,19 @@ export function useHook() {
         tagName: item.tagList
           ? item.tagList.map(tag => tag.tagName).join(", ")
           : "-",
+        tagIcon: item.tagList?.[0]?.icon ?? null,
         categoryName: item.categoryAmountPair
           ? item.categoryAmountPair
               .map(category => category.categoryName)
               .join(", ")
           : "-",
+        categoryIcon: item.categoryAmountPair?.[0]?.icon ?? null,
         memberName: item.memberList
           ? item.memberList.map(member => member.memberName).join(", ")
           : "-",
+        memberIcon: item.memberList?.[0]?.icon ?? null,
         payeeName: item.payeeName ? item.payeeName : "-",
+        payeeIcon: item.payeeIcon ?? null,
         hasFileDesc: item.hasFile ? "是" : "否"
       }));
       pagination.total = data.total;

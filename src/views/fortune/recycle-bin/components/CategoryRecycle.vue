@@ -133,6 +133,7 @@ import PureTable from "@pureadmin/table";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import {
   computed,
+  h,
   onBeforeUnmount,
   onMounted,
   reactive,
@@ -140,6 +141,7 @@ import {
   watch
 } from "vue";
 import Refresh from "@iconify-icons/ep/refresh";
+import { IconifyIconOnline } from "@/components/ReIcon";
 import {
   categoryPutBackApi,
   CategoryQuery,
@@ -190,7 +192,19 @@ const columns: TableColumnList = [
     label: "分类名称",
     prop: "categoryName",
     minWidth: 200,
-    align: "left"
+    align: "left",
+    cellRenderer: ({ row }) =>
+      h("div", { class: "flex items-center whitespace-nowrap" }, [
+        h(IconifyIconOnline, {
+          icon: row.icon || "ep:menu",
+          class: "mr-1 shrink-0"
+        }),
+        h(
+          "span",
+          { class: "min-w-0 truncate", title: row.categoryName },
+          row.categoryName
+        )
+      ])
   },
   {
     label: "备注",

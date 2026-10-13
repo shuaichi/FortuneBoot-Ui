@@ -3,6 +3,8 @@ import { http } from "@/utils/http";
 export interface MemberVo {
   memberId?: number;
   memberName?: string;
+  /** 成员图标（Iconify 图标名，如 ep:user） */
+  icon?: string;
   bookId?: number;
   sort?: number;
   remark?: string;
@@ -20,6 +22,8 @@ export interface MemberQuery extends BasePageQuery {
 
 export interface AddMemberCommand {
   memberName?: string;
+  /** 成员图标（Iconify 图标名，如 ep:user） */
+  icon?: string;
   bookId?: number;
   enable?: boolean;
   sort?: number;

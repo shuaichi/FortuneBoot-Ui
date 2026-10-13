@@ -3,6 +3,8 @@ import { http } from "@/utils/http";
 export interface PayeeVo {
   payeeId?: number;
   payeeName?: string;
+  /** 交易对象图标（Iconify 图标名，如 ep:shop） */
+  icon?: string;
   bookId?: number;
   canExpense?: boolean;
   canIncome?: boolean;
@@ -24,6 +26,8 @@ export interface PayeeQuery extends BasePageQuery {
 
 export interface AddPayeeCommand {
   payeeName?: string;
+  /** 交易对象图标（Iconify 图标名，如 ep:shop） */
+  icon?: string;
   bookId?: number;
   canExpense?: boolean;
   canIncome?: boolean;

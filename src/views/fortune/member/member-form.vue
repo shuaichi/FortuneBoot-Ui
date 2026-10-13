@@ -20,6 +20,13 @@
       </el-row>
       <el-row :gutter="30">
         <re-col :value="12">
+          <el-form-item prop="icon" label="成员图标">
+            <IconSelect v-model="formData.icon" />
+          </el-form-item>
+        </re-col>
+      </el-row>
+      <el-row :gutter="30">
+        <re-col :value="12">
           <el-form-item prop="enable" label="启用状态">
             <el-switch v-model="formData.enable" :style="switchStyle" />
           </el-form-item>
@@ -53,6 +60,7 @@
 
 <script setup lang="ts">
 import VDialog from "@/components/VDialog/VDialog.vue";
+import IconSelect from "@/components/ReIcon/src/Select.vue";
 import ReCol from "@/components/ReCol";
 import { usePublicHooks } from "@/views/system/hooks";
 import { computed, reactive, ref } from "vue";

@@ -15,9 +15,10 @@ import {
   tagCanTransferApi,
   tagDisableApi,
   tagEnableApi,
-  TagQuery,
-  TagVo
+  type TagQuery,
+  type TagVo
 } from "@/api/fortune/tag";
+import { IconifyIconOnline } from "@/components/ReIcon";
 
 const { tagStyle } = usePublicHooks();
 export function useHook() {
@@ -90,7 +91,7 @@ export function useHook() {
       }
       message(`${action}成功`, { type: "success" });
       await onSearch();
-    } catch (error) {
+    } catch {
       console.log("操作取消");
     }
   }
@@ -114,7 +115,7 @@ export function useHook() {
       }
       message(`${action}成功`, { type: "success" });
       await onSearch();
-    } catch (error) {
+    } catch {
       console.log("操作取消");
     }
   }
@@ -138,7 +139,7 @@ export function useHook() {
       }
       message(`${action}成功`, { type: "success" });
       await onSearch();
-    } catch (error) {
+    } catch {
       console.log("操作取消");
     }
   }
@@ -162,7 +163,7 @@ export function useHook() {
       }
       message(`${action}成功`, { type: "success" });
       await onSearch();
-    } catch (error) {
+    } catch {
       console.log("操作取消");
     }
   }
@@ -180,12 +181,26 @@ export function useHook() {
     }
   }
 
+  /** 标签默认图标（用户未自定义图标时的回退） */
+  const defaultIcon = "ep:collection-tag";
+
   const columns: TableColumnList = [
     {
       label: "标签名称",
       prop: "tagName",
       minWidth: 200,
-      align: "left"
+      align: "left",
+      cellRenderer: ({ row }) => (
+        <div class="flex items-center whitespace-nowrap">
+          <IconifyIconOnline
+            icon={row.icon || defaultIcon}
+            class="mr-1 shrink-0"
+          />
+          <span class="min-w-0 truncate" title={row.tagName}>
+            {row.tagName}
+          </span>
+        </div>
+      )
     },
     {
       label: "支出状态",

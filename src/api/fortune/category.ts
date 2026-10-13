@@ -1,9 +1,11 @@
 import { http } from "@/utils/http";
-import { Tree } from "@/utils/tree";
+import type { Tree } from "@/utils/tree";
 
 export interface CategoryVo extends Tree {
   categoryId?: number;
   categoryName?: string;
+  /** 分类图标（Iconify 图标名，如 ep:menu） */
+  icon?: string;
   categoryType?: number;
   bookId?: number;
   parentId?: number;
@@ -24,6 +26,8 @@ export interface AddCategoryCommand {
   bookId?: number;
   parentId?: number;
   categoryName?: string;
+  /** 分类图标（Iconify 图标名，如 ep:menu） */
+  icon?: string;
   categoryType?: number;
   enable?: boolean;
   sort?: number;

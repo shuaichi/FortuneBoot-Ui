@@ -79,7 +79,17 @@
               style="width: 100%"
               :props="categoryTreeProps"
               clearable
-            />
+            >
+              <template #default="{ data }">
+                <span class="flex items-center">
+                  <IconifyIconOnline
+                    :icon="data.icon || 'ep:menu'"
+                    class="mr-1 shrink-0"
+                  />
+                  <span>{{ data.categoryName }}</span>
+                </span>
+              </template>
+            </el-tree-select>
           </el-form-item>
         </re-col>
         <re-col :value="12">
@@ -92,7 +102,17 @@
               check-strictly
               filterable
               :props="tagTreeProps"
-            />
+            >
+              <template #default="{ data }">
+                <span class="flex items-center">
+                  <IconifyIconOnline
+                    :icon="data.icon || 'ep:collection-tag'"
+                    class="mr-1 shrink-0"
+                  />
+                  <span>{{ data.tagName }}</span>
+                </span>
+              </template>
+            </el-tree-select>
           </el-form-item>
         </re-col>
       </el-row>
@@ -205,6 +225,7 @@ import {
 import { CategoryVo, getEnableCategoryList } from "@/api/fortune/category";
 import { getEnableTagList, TagVo } from "@/api/fortune/tag";
 import dayjs from "dayjs";
+import { IconifyIconOnline } from "@/components/ReIcon";
 import { message } from "@/utils/message";
 
 const props = defineProps<Props>();

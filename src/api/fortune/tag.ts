@@ -1,9 +1,11 @@
 import { http } from "@/utils/http";
-import { Tree } from "@/utils/tree";
+import type { Tree } from "@/utils/tree";
 
 export interface TagVo extends Tree {
   tagId?: number;
   tagName?: string;
+  /** 标签图标（Iconify 图标名，如 ep:collection-tag） */
+  icon?: string;
   bookId?: number;
   parentId?: number;
   canExpense?: boolean;
@@ -28,6 +30,8 @@ export interface TagQuery extends BasePageQuery {
 
 export interface AddTagCommand {
   tagName?: string;
+  /** 标签图标（Iconify 图标名，如 ep:collection-tag） */
+  icon?: string;
   bookId?: number;
   parentId?: number;
   canExpense?: boolean;

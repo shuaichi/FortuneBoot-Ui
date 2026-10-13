@@ -92,6 +92,14 @@
 
       <el-row :gutter="30">
         <re-col :value="12">
+          <el-form-item prop="icon" label="账户图标">
+            <IconSelect v-model="formData.icon" />
+          </el-form-item>
+        </re-col>
+      </el-row>
+
+      <el-row :gutter="30">
+        <re-col :value="12">
           <el-form-item prop="balance" label="余额">
             <el-input-number
               v-model="formData.balance"
@@ -210,6 +218,7 @@ import {
 } from "@/api/fortune/account";
 import { useHook } from "@/views/fortune/account/utils/hook";
 import ReCol from "@/components/ReCol";
+import IconSelect from "@/components/ReIcon/src/Select.vue";
 import VDialog from "@/components/VDialog/VDialog.vue";
 import { FormRules } from "element-plus";
 import {

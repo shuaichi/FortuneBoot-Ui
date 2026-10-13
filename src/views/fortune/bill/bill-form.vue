@@ -126,7 +126,15 @@
                 :key="item.accountId"
                 :label="item.accountName"
                 :value="item.accountId"
-              />
+              >
+                <span class="flex items-center">
+                  <IconifyIconOnline
+                    :icon="getAccountIcon(item)"
+                    class="mr-1 shrink-0"
+                  />
+                  <span>{{ item.accountName }}</span>
+                </span>
+              </el-option>
             </el-select>
           </el-form-item>
         </re-col>
@@ -177,7 +185,17 @@
                 clearable
                 node-key="categoryId"
                 :filter-node-method="filterNodeMethod('categoryName')"
-              />
+              >
+                <template #default="{ data }">
+                  <span class="flex items-center">
+                    <IconifyIconOnline
+                      :icon="data.icon || 'ep:menu'"
+                      class="mr-1 shrink-0"
+                    />
+                    <span>{{ data.categoryName }}</span>
+                  </span>
+                </template>
+              </el-tree-select>
             </el-form-item>
           </re-col>
           <el-col :span="3" class="category-actions">
@@ -293,7 +311,15 @@
                 :key="item.accountId"
                 :label="item.accountName"
                 :value="item.accountId"
-              />
+              >
+                <span class="flex items-center">
+                  <IconifyIconOnline
+                    :icon="getAccountIcon(item)"
+                    class="mr-1 shrink-0"
+                  />
+                  <span>{{ item.accountName }}</span>
+                </span>
+              </el-option>
             </el-select>
           </el-form-item>
         </re-col>
@@ -335,7 +361,17 @@
               :props="tagTreeProps"
               node-key="tagId"
               :filter-node-method="filterNodeMethod('tagName')"
-            />
+            >
+              <template #default="{ data }">
+                <span class="flex items-center">
+                  <IconifyIconOnline
+                    :icon="data.icon || 'ep:collection-tag'"
+                    class="mr-1 shrink-0"
+                  />
+                  <span>{{ data.tagName }}</span>
+                </span>
+              </template>
+            </el-tree-select>
           </el-form-item>
         </re-col>
         <re-col v-if="formData.billType !== 3" :value="12">
@@ -352,7 +388,15 @@
                 :key="item.payeeId"
                 :label="item.payeeName"
                 :value="item.payeeId"
-              />
+              >
+                <span class="flex items-center">
+                  <IconifyIconOnline
+                    :icon="item.icon || 'ep:shop'"
+                    class="mr-1 shrink-0"
+                  />
+                  <span>{{ item.payeeName }}</span>
+                </span>
+              </el-option>
             </el-select>
           </el-form-item>
         </re-col>
@@ -372,7 +416,15 @@
                 :key="item.memberId"
                 :label="item.memberName"
                 :value="item.memberId"
-              />
+              >
+                <span class="flex items-center">
+                  <IconifyIconOnline
+                    :icon="item.icon || 'ep:user'"
+                    class="mr-1 shrink-0"
+                  />
+                  <span>{{ item.memberName }}</span>
+                </span>
+              </el-option>
             </el-select>
           </el-form-item>
         </re-col>
@@ -534,6 +586,8 @@ import { Plus as PlusIcon } from "@element-plus/icons-vue";
 import { getFileByBillId } from "@/api/fortune/file";
 import dayjs from "dayjs";
 import { QuestionFilled } from "@element-plus/icons-vue";
+import { IconifyIconOnline } from "@/components/ReIcon";
+import { getAccountIcon } from "@/utils/accountIcon";
 import {
   FinanceOrderVo,
   getUsingFinanceOrderApi

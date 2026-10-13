@@ -91,13 +91,33 @@ export interface BillQuery extends BasePageQuery {
 export interface BillVo {
   billId: number;
   bookId: number;
+  bookName?: string;
+  title?: string;
   tradeTime: string;
   billType?: number;
-  categoryAmountPair?: [{ categoryName: string; amount: number }];
+  accountId?: number;
+  accountName?: string;
+  /** 账户图标（Iconify 图标名，如 ep:wallet） */
+  accountIcon?: string;
+  toAccountId?: number;
+  toAccountName?: string;
+  /** 转入账户图标（Iconify 图标名，如 ep:wallet） */
+  toAccountIcon?: string;
+  convertedAmount?: number;
+  categoryAmountPair?: Array<{
+    categoryId?: number;
+    categoryName: string;
+    /** 分类图标（Iconify 图标名，如 ep:menu） */
+    icon?: string;
+    amount: number;
+  }>;
   tagList?: Array<TagVo>;
-  memberList?: Array<{ memberId: number; memberName: string }>; // 新增成员
+  memberList?: Array<{ memberId: number; memberName: string; icon?: string }>; // 新增成员
   currencyCode?: string;
+  payeeId?: number;
   payeeName?: string;
+  /** 交易对象图标（Iconify 图标名，如 ep:shop） */
+  payeeIcon?: string;
   hasFile?: boolean;
   confirm?: boolean;
   include?: boolean;
