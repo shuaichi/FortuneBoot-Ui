@@ -32,13 +32,22 @@
         >
           导入账单
         </el-button>
-        <el-button
-          type="warning"
-          :icon="useRenderIcon(Download)"
-          @click="exportAllExcel"
-        >
-          导出账单
-        </el-button>
+        <el-dropdown @command="handleExportCommand">
+          <el-button type="warning" :icon="useRenderIcon(Download)">
+            导出账单
+            <el-icon class="el-icon--right"><arrow-down /></el-icon>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="view">
+                导出账单（查看用）
+              </el-dropdown-item>
+              <el-dropdown-item command="importable">
+                导出账单（可再导入）
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
       </template>
       <template v-slot="{ size, dynamicColumns }">
         <pure-table
@@ -121,6 +130,7 @@ import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import Download from "@iconify-icons/ep/download";
 import Upload from "@iconify-icons/ep/upload";
+import { ArrowDown } from "@element-plus/icons-vue";
 import { PureTableBar } from "@/components/RePureTableBar";
 import PureTable from "@pureadmin/table";
 import { useRoute } from "vue-router";
@@ -176,11 +186,20 @@ const {
   billStatistics,
   onSearch,
   exportAllExcel,
+  exportImportableExcel,
   handleDelete,
   resetForm,
   handleSizeChange,
   handleCurrentChange
 } = useHook();
+
+function handleExportCommand(command: "view" | "importable") {
+  if (command === "importable") {
+    exportImportableExcel();
+  } else {
+    exportAllExcel();
+  }
+}
 
 onMounted(async () => {
   // 初始化分组

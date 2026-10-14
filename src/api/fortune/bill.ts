@@ -193,6 +193,16 @@ export const exportBillExcelApi = (params: BillQuery, fileName: string) => {
   });
 };
 
+/** 导出可再导入的账单Excel（与导入模板同构，可直接走导入流程回导） */
+export const exportBillImportExcelApi = (
+  params: BillQuery,
+  fileName: string
+) => {
+  return http.download("/fortune/bill/import/excel", fileName, {
+    params
+  });
+};
+
 export interface FortuneBillImportResultVo {
   totalCount: number;
   successCount: number;

@@ -11,7 +11,8 @@ import {
   unConfirmBillApi,
   includeBillApi,
   excludeBillApi,
-  exportBillExcelApi
+  exportBillExcelApi,
+  exportBillImportExcelApi
 } from "@/api/fortune/bill";
 import dayjs from "dayjs";
 import {
@@ -567,14 +568,23 @@ export function useHook() {
     await onSearch();
   }
 
-  async function exportAllExcel() {
-    loading.value = true;
-    const params = {
+  function buildSearchParams() {
+    return {
       ...searchForm,
       tradeTimeStartTime: searchForm.tradeTimeRange?.[0],
       tradeTimeEndTime: searchForm.tradeTimeRange?.[1]
     };
-    exportBillExcelApi(params, "账单.xls");
+  }
+
+  async function exportAllExcel() {
+    loading.value = true;
+    exportBillExcelApi(buildSearchParams(), "账单.xlsx");
+    loading.value = false;
+  }
+
+  async function exportImportableExcel() {
+    loading.value = true;
+    exportBillImportExcelApi(buildSearchParams(), "账单_可导入.xlsx");
     loading.value = false;
   }
 
@@ -589,6 +599,7 @@ export function useHook() {
     billStatistics,
     onSearch,
     exportAllExcel,
+    exportImportableExcel,
     handleDelete,
     handleSizeChange,
     handleCurrentChange,
