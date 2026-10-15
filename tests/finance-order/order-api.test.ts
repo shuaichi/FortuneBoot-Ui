@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   addOrderEntryV2,
+  confirmFinanceOrderReconciliationV2,
   createFinanceOrderV2,
   FinanceOrderV2Error,
   getFinanceOrderPageV2,
@@ -60,6 +61,25 @@ describe("finance order v2 HTTP contract", () => {
     });
     expect(specs[1].params).toBeUndefined();
     expect(specs[1].data).toMatchObject({ bookId: 2, type: 2 });
+  });
+
+  it("posts manual reconciliation confirmation to the exact order path", async () => {
+    __setFinanceOrderV2TransportForTest(recordTransport);
+
+    await confirmFinanceOrderReconciliationV2(2, "9007199254740993", {
+      requestId: "confirm-id",
+      expectedVersion: 7
+    });
+
+    expect(specs[0]).toMatchObject({
+      method: "post",
+      url: "/fortune/finance/order/v2/2/9007199254740993/reconciliation/confirm",
+      data: {
+        requestId: "confirm-id",
+        expectedVersion: 7
+      }
+    });
+    expect(specs[0].params).toBeUndefined();
   });
 
   it("posts and puts entry multipart data on the exact order paths", async () => {

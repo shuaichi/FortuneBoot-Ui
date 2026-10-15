@@ -182,6 +182,7 @@ export interface FinanceOrderReconciliationVo {
   orderId?: OrderIdLike | null;
   billId?: OrderIdLike | null;
   bookId: OrderIdLike;
+  version?: OrderIdLike | null;
   issueCodes: string[];
   originalStatus?: number | null;
   originalOutAmount?: string | null;
@@ -439,6 +440,18 @@ export function getFinanceOrderReconciliationV2(
     method: "get",
     url: `${V2_BASE}/${bookId}/reconciliation`,
     params
+  });
+}
+
+export function confirmFinanceOrderReconciliationV2(
+  bookId: OrderIdLike,
+  orderId: OrderIdLike,
+  data: FinanceOrderTransitionCommand
+): Promise<FinanceOrderMutationVo> {
+  return callV2({
+    method: "post",
+    url: `${V2_BASE}/${bookId}/${orderId}/reconciliation/confirm`,
+    data
   });
 }
 

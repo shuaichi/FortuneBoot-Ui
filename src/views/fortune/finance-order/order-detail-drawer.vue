@@ -164,7 +164,10 @@
           <order-audit :book-id="bookId" :order-id="orderId" />
         </el-tab-pane>
         <el-tab-pane label="核对报告" name="reconciliation">
-          <order-reconciliation :book-id="bookId" />
+          <order-reconciliation
+            :book-id="bookId"
+            @mutated="handleChildMutated"
+          />
         </el-tab-pane>
       </el-tabs>
     </div>
